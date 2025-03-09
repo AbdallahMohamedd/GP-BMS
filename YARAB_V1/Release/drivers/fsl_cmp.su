@@ -1,0 +1,11 @@
+../drivers/fsl_cmp.c:74:6:CMP_Init	12	static
+../drivers/fsl_cmp.c:125:6:CMP_Deinit	0	static
+../drivers/fsl_cmp.c:136:6:CMP_GetDefaultConfig	0	static
+../drivers/fsl_cmp.c:151:6:CMP_SetInputChannels	8	static
+../drivers/fsl_cmp.c:161:6:CMP_EnableDMA	0	static
+../drivers/fsl_cmp.c:177:6:CMP_SetFilterConfig	8	static
+../drivers/fsl_cmp.c:202:6:CMP_SetDACConfig	0	static
+../drivers/fsl_cmp.c:223:6:CMP_EnableInterrupts	0	static
+../drivers/fsl_cmp.c:238:6:CMP_DisableInterrupts	0	static
+../drivers/fsl_cmp.c:253:10:CMP_GetStatusFlags	8	static
+../drivers/fsl_cmp.c:272:6:CMP_ClearStatusFlags	0	static

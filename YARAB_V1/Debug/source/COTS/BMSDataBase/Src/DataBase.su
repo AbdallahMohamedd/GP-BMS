@@ -1,0 +1,10 @@
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS/core_cm0plus.h:804:22:NVIC_SetPriority	24	static
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS/core_cm0plus.h:885:26:SysTick_Config	16	static
+../source/COTS/BMSDataBase/Src/DataBase.c:22:6:DataBase_UpdateMeasurementData	16	static
+../source/COTS/BMSDataBase/Src/DataBase.c:46:6:DataBase_UpdateFaultData	16	static
+../source/COTS/BMSDataBase/Src/DataBase.c:67:6:DataBase_GetCurrentMeasurementData	16	static
+../source/COTS/BMSDataBase/Src/DataBase.c:78:6:DataBase_GetPreviousMeasurementData	16	static
+../source/COTS/BMSDataBase/Src/DataBase.c:89:6:DataBase_GetCurrentFaultData	16	static
+../source/COTS/BMSDataBase/Src/DataBase.c:100:6:DataBase_GetPreviousFaultData	16	static
+../source/COTS/BMSDataBase/Src/DataBase.c:111:6:SysTick_Handler	8	static
+../source/COTS/BMSDataBase/Src/DataBase.c:132:6:configure_systick	8	static

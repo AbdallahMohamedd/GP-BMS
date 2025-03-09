@@ -1,0 +1,40 @@
+################################################################################
+# Automatically-generated file. Do not edit!
+################################################################################
+
+# Add inputs and outputs from these tool invocations to the build variables 
+C_SRCS += \
+../source/Team/Team_src/BMS_Data_Base.c \
+../source/Team/Team_src/Diag_Manager.c \
+../source/Team/Team_src/LCD.c \
+../source/Team/Team_src/helpful.c 
+
+C_DEPS += \
+./source/Team/Team_src/BMS_Data_Base.d \
+./source/Team/Team_src/Diag_Manager.d \
+./source/Team/Team_src/LCD.d \
+./source/Team/Team_src/helpful.d 
+
+OBJS += \
+./source/Team/Team_src/BMS_Data_Base.o \
+./source/Team/Team_src/Diag_Manager.o \
+./source/Team/Team_src/LCD.o \
+./source/Team/Team_src/helpful.o 
+
+
+# Each subdirectory must supply rules for building sources it contributes
+source/Team/Team_src/%.o: ../source/Team/Team_src/%.c source/Team/Team_src/subdir.mk
+	@echo 'Building file: $<'
+	@echo 'Invoking: MCU C Compiler'
+	arm-none-eabi-gcc -D__REDLIB__ -DCPU_MKL25Z128VLK4_cm0plus -DCPU_MKL25Z128VLK4 -DFSL_RTOS_BM -DSDK_OS_BAREMETAL -DSDK_DEBUGCONSOLE=1 -DCR_INTEGER_PRINTF -DPRINTF_FLOAT_ENABLE=0 -DSDK_DEBUGCONSOLE_UART -D__MCUXPRESSO -D__USE_CMSIS -DDEBUG -I"C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS" -I"C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers" -I"C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\board" -I"C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\utilities" -I"C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS_driver" -I"C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\source" -I"C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1" -I"C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\startup" -O0 -fno-common -g3 -gdwarf-4 -Wall -c -fmessage-length=0 -fno-builtin -ffunction-sections -fdata-sections -fmerge-constants -fmacro-prefix-map="$(<D)/"= -mcpu=cortex-m0plus -mthumb -D__REDLIB__ -fstack-usage -specs=redlib.specs -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	@echo 'Finished building: $<'
+	@echo ' '
+
+
+clean: clean-source-2f-Team-2f-Team_src
+
+clean-source-2f-Team-2f-Team_src:
+	-$(RM) ./source/Team/Team_src/BMS_Data_Base.d ./source/Team/Team_src/BMS_Data_Base.o ./source/Team/Team_src/Diag_Manager.d ./source/Team/Team_src/Diag_Manager.o ./source/Team/Team_src/LCD.d ./source/Team/Team_src/LCD.o ./source/Team/Team_src/helpful.d ./source/Team/Team_src/helpful.o
+
+.PHONY: clean-source-2f-Team-2f-Team_src
+

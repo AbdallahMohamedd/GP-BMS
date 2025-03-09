@@ -1,0 +1,29 @@
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS/core_cm0plus.h:745:22:NVIC_EnableIRQ	16	static
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS/core_cm0plus.h:804:22:NVIC_SetPriority	24	static
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers/fsl_clock.h:584:20:CLOCK_EnableClock	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:14:9:calculate_crc8	32	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:26:9:checkcrc8	32	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:49:6:SPI_Callback	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:71:6:SPI_Init	32	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:106:6:SPI_WriteRegister	64	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:154:10:SPI_ReadRegister	72	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:223:6:Set_Initialization	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:240:6:setGo2Sleep_SPI	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:253:6:Set_System_Config_1	16	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:264:6:Set_System_Config_2	16	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:279:6:setADCConfig	8	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:285:6:setADC2OffsetCompensation	8	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:294:6:Set_OV_UV_Enable	16	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:305:10:Read_Cell_Over_Voltage_Flags	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:320:10:Read_Cell_Under_Voltage_Flags	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:336:6:Enable_Cell_Balancing	32	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:381:6:Cell_Balancing_Driver_Status	32	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:404:10:Cell_Balancing_Shorted_Status	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:412:10:Cell_Balancing_Open_Load_Status	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:421:6:Configure_All_Gpios_For_Temp_Sensors	16	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:438:15:Get_GPIO_AN_Flags	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:454:19:Get_Temp_Flags	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:470:10:Get_Number_Of_Coulomb_Samples	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:478:6:Is_Coulomb_Samples_Sufficient	24	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:491:7:Get_Cell_Voltage	32	static
+../source/COTS/SlaveControllerIF/Src/Slave_Center_IF.c:529:7:Get_Stack_Voltage	32	static

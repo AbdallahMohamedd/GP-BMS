@@ -1,0 +1,17 @@
+../source/COTS/ScreenIF/Src/ScreenIF.c:51:6:I2C_MasterSignalEvent_t	0	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:74:6:ScreenIF_ExpanderWrite	16	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:40:13:DelayUS	16	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:82:6:ScreenIF_PulseEnable	16	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:92:6:ScreenIF_SendCommand	16	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:116:13:ScreenIF_Write4Bits	8	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:46:10:I2C0_GetFreq	8	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:60:6:I2C_init	16	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:104:6:ScreenIF_Home	8	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:121:6:ScreenIF_Clear	8	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:122:6:ScreenIF_Display	8	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:125:6:ScreenIF_Init	16	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:170:6:ScreenIF_SetCursor	40	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:181:6:ScreenIF_PrintStr	24	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:185:6:ScreenIF_CreateSpecialChar	32	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:198:6:I2C0_InitPins	0	static
+../source/COTS/ScreenIF/Src/ScreenIF.c:201:6:I2C0_DeinitPins	0	static

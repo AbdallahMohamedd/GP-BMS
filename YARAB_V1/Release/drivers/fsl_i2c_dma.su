@@ -1,0 +1,5 @@
+../drivers/fsl_i2c_dma.c:126:13:I2C_MasterTransferCallbackDMA	16	static
+../drivers/fsl_i2c_dma.c:386:6:I2C_MasterTransferCreateHandleDMA	32	static
+../drivers/fsl_i2c_dma.c:413:10:I2C_MasterTransferDMA	56	static
+../drivers/fsl_i2c_dma.c:529:10:I2C_MasterTransferGetCountDMA	0	static
+../drivers/fsl_i2c_dma.c:550:6:I2C_MasterTransferAbortDMA	16	static

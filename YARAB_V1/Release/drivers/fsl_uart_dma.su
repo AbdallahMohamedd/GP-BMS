@@ -1,0 +1,9 @@
+../drivers/fsl_uart_dma.c:126:13:UART_TransferSendDMACallback	8	static
+../drivers/fsl_uart_dma.c:148:13:UART_TransferReceiveDMACallback	8	static
+../drivers/fsl_uart_dma.c:170:6:UART_TransferCreateHandleDMA	32	static
+../drivers/fsl_uart_dma.c:223:10:UART_TransferSendDMA	48	static
+../drivers/fsl_uart_dma.c:261:10:UART_TransferReceiveDMA	48	static
+../drivers/fsl_uart_dma.c:299:6:UART_TransferAbortSendDMA	8	static
+../drivers/fsl_uart_dma.c:316:6:UART_TransferAbortReceiveDMA	8	static
+../drivers/fsl_uart_dma.c:333:10:UART_TransferGetSendCountDMA	0	static
+../drivers/fsl_uart_dma.c:349:10:UART_TransferGetReceiveCountDMA	0	static

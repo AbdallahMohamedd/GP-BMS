@@ -1,0 +1,8 @@
+../source/COTS/BatteryStatusMonitor/Src/DataMonitor.c:12:6:floatToString	32	static
+../source/COTS/BatteryStatusMonitor/Src/DataMonitor.c:63:6:DataMonitor_soc_disp	24	static
+../source/COTS/BatteryStatusMonitor/Src/DataMonitor.c:71:6:DataMonitor_soh_disp	24	static
+../source/COTS/BatteryStatusMonitor/Src/DataMonitor.c:79:6:DataMonitor_current_disp	24	static
+../source/COTS/BatteryStatusMonitor/Src/DataMonitor.c:87:6:DataMonitor_Fault_disp	8	static
+../source/COTS/BatteryStatusMonitor/Src/DataMonitor.c:107:6:DataMonitor_Temp_disp	24	static
+../source/COTS/BatteryStatusMonitor/Src/DataMonitor.c:116:6:DataMonitor_Mode_disp	8	static
+../source/COTS/BatteryStatusMonitor/Src/DataMonitor.c:129:6:DataMonitor_lcd	32	static

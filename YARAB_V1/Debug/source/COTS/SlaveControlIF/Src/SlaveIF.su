@@ -1,0 +1,29 @@
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS/core_cm0plus.h:745:22:NVIC_EnableIRQ	16	static
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS/core_cm0plus.h:804:22:NVIC_SetPriority	24	static
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers/fsl_clock.h:584:20:CLOCK_EnableClock	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:15:16:calculate_crc8	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:27:16:checkcrc8	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:50:13:SPI_Callback	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:72:6:SlaveIF_TransferInit	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:112:13:SlaveIF_SlaveWriteRegister	72	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:163:17:SlaveIF_SlaveReadRegister	80	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:233:6:SlaveIF_SystemSetup	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:249:6:SlaveIF_Go2SleepMode	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:262:6:SlaveIF_SystemConfig1	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:276:6:SlaveIF_SystemConfig2	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:291:6:SlaveIF_CfgADC	8	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:297:6:SlaveIF_CfgADCOffset	8	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:306:6:SlaveIF_EnableOVUV	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:317:10:SlaveIF_ReadCellOverVoltageStatus	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:333:10:SlaveIF_ReadCellUnderVoltageStatus	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:350:6:SlaveIF_EnableCellBalancing	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:395:6:SlaveIF_ReadCellBalancingDriverStatus	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:419:10:SlaveIF_ReadCellBalancingShortedStatus	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:428:10:SlaveIF_ReadCellBalancingOpenLoadStatus	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:438:6:SlaveIF_CfgAllGpiosForTempSensors	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:456:15:SlaveIF_ReadGpioAnStatus	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:474:19:SlaveIF_ReadOtUttatus	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:491:10:SlaveIF_ReadNumberCoulombSamples	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:500:6:SlaveIF_IsCoulombSamplesSufficient	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:514:7:SlaveIF_ReadCellVoltage	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:552:7:SlaveIF_ReadStackVoltage	32	static

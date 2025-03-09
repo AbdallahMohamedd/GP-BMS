@@ -1,0 +1,29 @@
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS/core_cm0plus.h:745:22:NVIC_EnableIRQ	16	static
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS/core_cm0plus.h:804:22:NVIC_SetPriority	24	static
+../source/Team/Team_src/LCD.c:46:13:DelayUS	24	static
+../source/Team/Team_src/LCD.c:53:10:I2C0_GetFreq	8	static
+../source/Team/Team_src/LCD.c:58:6:I2C_MasterSignalEvent_t	16	static
+../source/Team/Team_src/LCD.c:67:6:I2C_init	8	static
+../source/Team/Team_src/LCD.c:81:6:ExpanderWrite	32	static
+../source/Team/Team_src/LCD.c:89:6:PulseEnable	16	static
+../source/Team/Team_src/LCD.c:99:6:SendCommand	32	static
+../source/Team/Team_src/LCD.c:111:6:HD44780_Home	8	static
+../source/Team/Team_src/LCD.c:116:13:Send	32	static
+../source/Team/Team_src/LCD.c:123:13:Write4Bits	16	static
+../source/Team/Team_src/LCD.c:128:6:HD44780_Clear	8	static
+../source/Team/Team_src/LCD.c:129:6:HD44780_Display	8	static
+../source/Team/Team_src/LCD.c:132:6:HD44780_Init	16	static
+../source/Team/Team_src/LCD.c:177:6:HD44780_SetCursor	40	static
+../source/Team/Team_src/LCD.c:188:6:HD44780_PrintStr	16	static
+../source/Team/Team_src/LCD.c:192:6:HD44780_CreateSpecialChar	24	static
+../source/Team/Team_src/LCD.c:201:13:SendChar	16	static
+../source/Team/Team_src/LCD.c:206:6:floatToString	64	static
+../source/Team/Team_src/LCD.c:257:6:soc_disp	40	static
+../source/Team/Team_src/LCD.c:265:6:soh_disp	40	static
+../source/Team/Team_src/LCD.c:273:6:current_disp	40	static
+../source/Team/Team_src/LCD.c:281:6:Fault_disp	16	static
+../source/Team/Team_src/LCD.c:301:6:Temp_disp	40	static
+../source/Team/Team_src/LCD.c:310:6:Mode_disp	16	static
+../source/Team/Team_src/LCD.c:323:6:lcd	32	static
+../source/Team/Team_src/LCD.c:337:6:I2C0_InitPins	8	static
+../source/Team/Team_src/LCD.c:360:6:I2C0_DeinitPins	8	static
