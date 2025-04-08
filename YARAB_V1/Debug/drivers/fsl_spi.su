@@ -2,7 +2,7 @@ C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nx
 ../drivers/fsl_clock.h:584:20:CLOCK_EnableClock	24	static
 ../drivers/fsl_clock.h:595:20:CLOCK_DisableClock	24	static
 ../drivers/fsl_common.h:212:20:EnableIRQ	16	static
-../drivers/fsl_spi.h:677:20:SPI_SlaveTransferAbort	16	static
+../drivers/fsl_spi.h:676:20:SPI_SlaveTransferAbort	16	static
 ../drivers/fsl_spi.c:134:10:SPI_GetInstance	24	static
 ../drivers/fsl_spi.c:152:13:SPI_WriteNonBlocking	32	static
 ../drivers/fsl_spi.c:191:13:SPI_ReadNonBlocking	32	static

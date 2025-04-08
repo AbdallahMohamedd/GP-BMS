@@ -14,15 +14,27 @@
 #include <COTS/DebugInfoManager/Inc/DebugInfo.h>
 
 
-
-
 #ifndef SLAVE_CENTER_IF_H
 #define SLAVE_CENTER_IF_H
 
-#define VCT_ANX_RES_V 152.58789    // µV/LSB
-#define VVPWR_RES 2441.41 		   // µV/LSB
-#define MEAS_DATA_READY 0x8000	   // 0b1000 0000 0000 0000
 
+
+
+
+
+
+// --- Resolution Values (Table 9) ---
+#define VCT_ANX_RES_V            152.58789f // Cell voltage resolution uV/LSB (from Table 9)
+#define VVPWR_RES                2441.41f   // Pack voltage resolution mV/LSB (typo in datasheet? units uV/LSB?) Assuming uV/LSB based on scale.
+#define V2RES_UV_PER_LSB         0.6f       // Current sense user register resolution uV/LSB (Table 9)
+#define MEAS_DATA_READY_BIT      15	        // 0b1000 0000 0000 0000
+#define ADC2_SAT_BIT             15u        // Bit 15 in MEAS_ISENSE2   ($31)
+#define PGA_GCHANGE_BIT          14u        // Bit 14 in MEAS_ISENSE2   ($31)
+#define MEAS_ISENSE2_LSB_MASK    0x000Fu    // Bits 0-3 in MEAS_ISENSE2 ($31)
+#define MEAS_ISENSE2_MSB_MASK    0x7FFFu
+
+// --- Shunt Resistor Value (!! Must be adapted to actual hardware !!) ---
+#define SHUNT_RESISTANCE_OHMS    0.0001f // Example: 100 micro-Ohms
 
 
 // Structure to hold the temperature flags
@@ -32,11 +44,9 @@ typedef struct {
 } Temperature_Flags;
 
 
-
-
 // Structure to hold the GPIO_AN flags
 typedef struct {
-	uint8_t GPIO_SH_Flag;
+	uint8_t GPIO_SH_Flags;
 	uint8_t AN_OL_Flags;
 } GPIO_AN_Flags;
 
@@ -53,17 +63,35 @@ typedef struct {
     The system configuration registers control various global settings of the device,
     including power management and communication settings.
  */
-#define SYS_CFG_GLOBAL                      0x02          // Global system configuration register
-#define SYS_CFG1                            0x03          // System configuration register 1
-#define SYS_CFG2                            0x04          // System configuration register 2
-#define SYS_DIAG                            0x05          // System diagnostic register
+#define SYS_CFG_GLOBAL_ADDR                 0x02          // Global system configuration register
+#define SYS_CFG1_ADDR                       0x03          // System configuration register 1
+#define SYS_CFG2_ADDR                       0x04          // System configuration register 2
+#define SYS_DIAG_ADDR                       0x05          // System diagnostic register
 /*
     The ADC configuration registers control the settings for the analog-to-digital converter (ADC),
     which is responsible for measuring voltages and currents within the system.
  */
-#define ADC_CFG                             0x06          // ADC configuration register
-#define ADC2_OFFSET_COMP                    0x07          // ADC2 offset compensation register
+#define ADC_CFG_ADDR                        0x06          // ADC configuration register
+#define ADC2_OFFSET_COMP_ADDR               0x07          // ADC2 offset compensation register
 
+// ADC_CFG ($06 - Table 50)
+#define ADC_CFG_RESOLUTION_16BIT 			0x03u // Binary '11'
+#define ADC_CFG_PGA_GAIN_SHIFT   			8u
+#define ADC_CFG_PGA_GAIN_4X      			0x00u // '0000' - Gain = 4
+#define ADC_CFG_PGA_GAIN_16X     			0x01u // '0001' - Gain = 16
+#define ADC_CFG_PGA_GAIN_64X     			0x02u // '0010' - Gain = 64
+#define ADC_CFG_PGA_GAIN_256X    			0x03u // '0011' - Gain = 256
+#define ADC_CFG_PGA_GAIN_AUTO_4X 			0x04u // '0100' - Auto Gain, starts at 4x
+#define ADC_CFG_TAGID_SHIFT                 8     // Starting bit position for the 4-bit Tag ID field
+#define ADC_CFG_TAGID_MASK                  0x0F  // Mask to isolate the 4 Tag ID bits (binary 1111)
+
+
+#define ADC_CFG_SOC_BIT          			15u
+
+// ADC2_OFFSET_COMP ($07 - Table 51)
+#define ADC2_OFFSET_SHIFT        			0u
+#define FREE_CNT_BIT_POS         			15u // Bit position for FREE_CNT
+#define CC_RST_CFG_BIT_POS      			14u // Bit position for CC_RST_CFG
 
 
 /*====================================================================================================*/
@@ -74,8 +102,8 @@ typedef struct {
     such as overvoltage (OV) and under voltage (UV) conditions.
  */
 #define OV_UV_EN_ADDR                       0x08          // Overvoltage/under voltage enable register
-#define CELL_OV_FLT                         0x09          // Overvoltage fault register
-#define CELL_UV_FLT                         0x0A          // under voltage fault register
+#define CELL_OV_FLT_ADDR                    0x09          // Overvoltage fault register
+#define CELL_UV_FLT_ADDR                    0x0A          // under voltage fault register
 
 /*====================================================================================================*/
 /*============================== Cell Balancing Configuration Registers ==============================*/
@@ -115,8 +143,6 @@ typedef struct {
     allowing control over the functionality and behavior of the GPIO pins.
  */
 #define GPIO_CFG1_ADDR                      0x1D          // GPIO configuration register 1
-#define GPIO_CFG2                           0x1E          // GPIO configuration register 2
-#define GPIO_STS                            0x1F          // GPIO status register
 
 /*=======================================================================================*/
 /*================================ Temp. fault Registers ================================*/
@@ -174,8 +200,8 @@ typedef struct {
 /*
  These register used to to measure the the current .
  */
-#define MEAS_ISENSE1                        0x30          // ISENSE measurement
-#define MEAS_ISENSE2                        0x31          // ISENSE measurement
+#define MEAS_ISENSE1_ADDR                   0x30          // Current Measurement MSB
+#define MEAS_ISENSE2_ADDR                   0x31          // Current Measurement LSB
 
 /*================================================================================================*/
 /*============================== Cell Voltage Measurement Registers ==============================*/
@@ -202,13 +228,13 @@ typedef struct {
 /*
  * ANX is analog input
  */
-#define MEAS_AN6                            0x41          // AN6 voltage measurement
-#define MEAS_AN5                            0x42          // AN5 voltage measurement
-#define MEAS_AN4                            0x43          // AN4 voltage measurement
-#define MEAS_AN3                            0x44          // AN3 voltage measurement
-#define MEAS_AN2                            0x45          // AN2 voltage measurement
-#define MEAS_AN1                            0x46          // AN1 voltage measurement
-#define MEAS_ANO                            0x47          // ANO voltage measurement
+#define MEAS_AN6_ADDR                       0x41          // AN6 voltage measurement
+#define MEAS_AN5_ADDR                       0x42          // AN5 voltage measurement
+#define MEAS_AN4_ADDR                       0x43          // AN4 voltage measurement
+#define MEAS_AN3_ADDR                       0x44          // AN3 voltage measurement
+#define MEAS_AN2_ADDR                       0x45          // AN2 voltage measurement
+#define MEAS_AN1_ADDR                       0x46          // AN1 voltage measurement
+#define MEAS_AN0_ADDR                       0x47          // ANO voltage measurement
 /*
  * These register IC temperature measurement
  */
@@ -236,7 +262,7 @@ typedef struct {
 /*
     These register is CTx over and under voltage threshold Registers
  */
-#define TH_ALL_CT                           0x4B          // CTx  over and under voltage threshold
+#define TH_ALL_CT_ADDR                      0x4B          // CTx  over and under voltage threshold
 #define TH_CT14                             0x4C          // CT14 over and under voltage threshold
 #define TH_CT13                             0x4D          // CT13 over and under voltage threshold
 #define TH_CT12                             0x4E          // CT12 over and under voltage threshold
@@ -250,31 +276,31 @@ typedef struct {
 #define TH_CT4                              0x56          // CT4  over and under voltage threshold
 #define TH_CT3                              0x57          // CT3  over and under voltage threshold
 #define TH_CT2                              0x58          // CT2  over and under voltage threshold
-#define TH_CT1                              0x59          // CT1  over and under voltage threshold
+#define TH_CT1_ADDR                              0x59          // CT1  over and under voltage threshold
 /*
     These register is TH_ANx_OT overtemperature threshold Registers
  */
-#define TH_AN6_OT                           0x5A          // AN6 overtemperature threshold
-#define TH_AN5_OT                           0x5B          // AN5 overtemperature threshold
-#define TH_AN4_OT                           0x5C          // AN4 overtemperature threshold
-#define TH_AN3_OT                           0x5D          // AN3 overtemperature threshold
-#define TH_AN2_OT                           0x5E          // AN2 overtemperature threshold
-#define TH_AN1_OT                           0x5F          // AN1 overtemperature threshold
-#define TH_ANO_OT                           0x60          // ANO overtemperature threshold
+#define TH_AN6_OT_ADDR                      0x5A          // AN6 overtemperature threshold
+#define TH_AN5_OT_ADDR                      0x5B          // AN5 overtemperature threshold
+#define TH_AN4_OT_ADDR                      0x5C          // AN4 overtemperature threshold
+#define TH_AN3_OT_ADDR                      0x5D          // AN3 overtemperature threshold
+#define TH_AN2_OT_ADDR                      0x5E          // AN2 overtemperature threshold
+#define TH_AN1_OT_ADDR                      0x5F          // AN1 overtemperature threshold
+#define TH_ANO_OT_ADDR                      0x60          // ANO overtemperature threshold
 /*
    These register is ANX undertemperature threshold  Registers
  */
-#define TH_AN6_UT                           0x61          // AN6 undertemperature threshold
-#define TH_AN5_UT                           0x62          // AN5 undertemperature threshold
-#define TH_AN4_UT                           0x63          // AN4 undertemperature threshold
-#define TH_AN3_UT                           0x64          // AN3 undertemperature threshold
-#define TH_AN2_UT                           0x65          // AN2 undertemperature threshold
-#define TH_AN1_UT                           0x66          // AN1 undertemperature threshold
-#define TH_ANO_UT                           0x67          // ANO undertemperature threshold
+#define TH_AN6_UT_ADDR                      0x61          // AN6 undertemperature threshold
+#define TH_AN5_UT_ADDR                      0x62          // AN5 undertemperature threshold
+#define TH_AN4_UT_ADDR                      0x63          // AN4 undertemperature threshold
+#define TH_AN3_UT_ADDR                      0x64          // AN3 undertemperature threshold
+#define TH_AN2_UT_ADDR                      0x65          // AN2 undertemperature threshold
+#define TH_AN1_UT_ADDR                      0x66          // AN1 undertemperature threshold
+#define TH_AN0_UT_ADDR                      0x67          // ANO undertemperature threshold
 /*
  This register ISENSE overcurrent threshold Register
  */
-#define TH_ISENSE_OC                        0x68          // ISENSE overcurrent threshold
+#define TH_ISENSE_OC_ADDR                   0x68          // ISENSE overcurrent threshold
 /*
   This register over Coulomb counter threshold
  */
@@ -306,139 +332,290 @@ typedef struct {
 /*========================================================================================*/
 
 /**
- * @brief Initializes the SPI transfer module.
+ * @brief Initializes the SPI transfer module for communication with the MC33771B via the MC33664 transceiver.
  */
-void SlaveIF_TransferInit(void);
+void SlaveIF_initTransfer(void);
 
 /* ============================= System Configuration APIs ============================= */
 /**
- * @brief Enables or disables initialization of the MC33771B.
- * @param channel_switch A boolean value (1 or 0) to enable or disable MC33771B initialization.
+ * @brief Configures the initialization of the MC33771B with Cluster ID and bus switch settings.
+ * @param channelSwitch Boolean value: true to enable bus switch, false to disable it.
  */
-void SlaveIF_SystemSetup(bool channel_switch);
+void SlaveIF_setupSystem(bool channelSwitch);
 
 /**
- * @brief Enables or disables sleep mode to save power.
- * @param Sleep_Mode A boolean value (1 or 0) to enable or disable sleep mode in MC33771B.
+ * @brief Sets the MC33771B to sleep mode to save power or wakes it up.
+ * @param sleepMode Boolean value: true to enter sleep mode, false to wake up.
  */
-void SlaveIF_Go2SleepMode(bool Sleep_Mode);
+void SlaveIF_setSleepMode(bool sleepMode);
 
 /**
- * @brief Configures System Configuration Register 1.
+ * @brief Configures System Configuration Register 1 with predefined settings.
  */
-void SlaveIF_SystemConfig1(void);
+void SlaveIF_configSystem1(void);
 
 /**
- * @brief Configures System Configuration Register 2.
+ * @brief Configures System Configuration Register 2 with predefined settings.
  */
-void SlaveIF_SystemConfig2(void);
+void SlaveIF_configSystem2(void);
 
 /* ============================= ADC Configuration APIs ============================= */
 /**
- * @brief Configures ADC settings.
+ * @brief Configures the ADC resolutions and the current sense PGA settings.
+ * @details Writes to the ADC_CFG register ($06). Sets all ADCs (ADC1A, ADC1B, ADC2)
+ *          to 16-bit resolution and configures the ADC2 PGA for automatic gain
+ *          control, starting at 4x. Ensures SOC bit remains 0.
+ * @note Assumes ADC_CFG_ADDR, ADC_CFG_RESOLUTION_16BIT, ADC_CFG_PGA_GAIN_AUTO_4X,
+ *       ADC_CFG_PGA_GAIN_SHIFT macros/constants are defined. Refer to Table 50.
  */
-void SlaveIF_CfgADC(void);
+void SlaveIF_configAdc(void);
 
 /**
- * @brief Sets ADC2 offset compensation.
+ * @brief Configures the ADC2 offset compensation register.
+ * @details Writes to the ADC2_OFFSET_COMP ($07) register. Sets the PCB offset to 0
+ *          and configures Coulomb Counter behavior (free-running, rollover, reset on explicit command).
+ * @param pcbOffset Signed 8-bit value (-128 to 127) for PCB offset compensation.
+ *                  This value usually requires system calibration. Default 0.
+ * (Based on Datasheet Rev 8.0, Table 51)
  */
-void SlaveIF_CfgADCOffset(void);
+void SlaveIF_configAdcOffset(int8_t pcbOffset);
 
+/**
+ * @brief Triggers a single on-demand measurement cycle using a fixed Tag ID of 0.
+ * @details This function initiates a new measurement sequence by the MC33771A.
+ *          It reads the current configuration from the ADC_CFG register ($06),
+ *          preserves existing settings (like resolution and PGA gain), sets the
+ *          Start of Conversion (SOC) bit (bit 12) to 1, ensures the Tag ID
+ *          (bits 11-8) is 0, and then writes the modified configuration back to
+ *          the ADC_CFG register.
+ * @return true If both the initial read of ADC_CFG and the subsequent write
+ *              to trigger the conversion were successful via SPI.
+ * @return false If the initial read from ADC_CFG failed, or if the final write
+ *               to ADC_CFG failed (indicating the SOC command was not sent).
+ * @note Setting the SOC bit prompts the slave device to perform a full measurement
+ *       cycle according to the current ADC configuration. This function uses a
+ *       fixed Tag ID of 0 for simplicity, as tag correlation might be limited based
+ *       on the device's response behavior for individual measurement registers.
+ */
+bool SlaveIF_startMeasurementCycle(void);
 /* ============================= Voltage Fault Monitoring APIs ============================= */
 /**
- * @brief Enables or disables overvoltage/under voltage detection.
+ * @brief Enables overvoltage and undervoltage detection for all cells.
  */
-void SlaveIF_EnableOVUV(void);
+void SlaveIF_enableOvUv(void);
 
 /**
- * @brief Reads the CELL_OV_FLT register and returns the overvoltage status of each cell.
- * @return uint16_t A bitfield where each bit represents the overvoltage status of a cell.
- *         Bit 0: CT1_OV_FLT, Bit 1: CT2_OV_FLT, ..., Bit 13: CT14_OV_FLT
- *         Bit 14 and Bit 15 are reserved and will always be 0.
+ * @brief Reads the CELL_OV_FLT register to retrieve the overvoltage status of each cell.
+ * @return uint16_t A 16-bit value where bits 0-13 represent the overvoltage status of cells CT1-CT14 (1 = fault, 0 = no fault).
+ *         Bits 14-15 are reserved and always 0.
  */
-uint16_t SlaveIF_ReadCellOverVoltageStatus(void);
+uint16_t SlaveIF_readCellOverVoltageStatus(void);
 
 /**
- * @brief Reads the CELL_UV_FLT register and returns the under voltage status of each cell.
- * @return uint16_t A bitfield where each bit represents the under voltage status of a cell.
- *         Bit 0: CT1_UV_FLT, Bit 1: CT2_UV_FLT, ..., Bit 13: CT14_UV_FLT
- *         Bit 14 and Bit 15 are reserved and will always be 0.
+ * @brief Reads the CELL_UV_FLT register to retrieve the undervoltage status of each cell.
+ * @return uint16_t A 16-bit value where bits 0-13 represent the undervoltage status of cells CT1-CT14 (1 = fault, 0 = no fault).
+ *         Bits 14-15 are reserved and always 0.
  */
-uint16_t SlaveIF_ReadCellUnderVoltageStatus(void);
+uint16_t SlaveIF_readCellUnderVoltageStatus(void);
 
 /* ============================= Cell Balancing APIs ============================= */
 /**
- * @brief Configures the cell balancing for a specific cell.
+ * @brief Configures cell balancing for a specific cell with a timer.
  * @param cellNumber The cell number to configure (1 to 14).
- * @param enable     Enable or disable cell balancing (true or false).
- * @param Timer_Value_In_Minutes The cell balance timer value in minutes (e.g., 1.5 for one and a half minutes).
+ * @param enable Boolean value: true to enable cell balancing, false to disable it.
+ * @param timerValueInMinutes The duration of cell balancing in minutes (e.g., 1.5 for 1.5 minutes).
  */
-void SlaveIF_EnableCellBalancing(uint8_t cellNumber, bool enable, float Timer_Value_In_Minutes);
+void SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerValueInMinutes);
 
 /**
- * @brief Reads the CB_DRV_STS register and prints the status of each cell balance driver.
+ * @brief Reads the CB_DRV_STS register and prints the status of each cell balancing driver.
  */
-void SlaveIF_ReadCellBalancingDriverStatus(void);
+void SlaveIF_readCellBalancingDriverStatus(void);
 
 /**
- * @brief Reads the CB_SHORT_FLT register and returns the shorted load status for cell balancing circuits.
- * @return uint16_t A bitfield representing the shorted load status of each cell.
+ * @brief Reads the CB_SHORT_FLT register to retrieve the shorted load status of cell balancing circuits.
+ * @return uint16_t A 16-bit value where each bit represents the shorted status of a cell’s balancing circuit.
  */
-uint16_t SlaveIF_ReadCellBalancingShortedStatus(void);
+uint16_t SlaveIF_readCellBalancingShortedStatus(void);
 
 /**
- * @brief Reads the CB_OPEN_FLT register and returns the open load status for cell balancing circuits.
- * @return uint16_t A bitfield representing the open load status of each cell.
+ * @brief Reads the CB_OPEN_FLT register to retrieve the open load status of cell balancing circuits.
+ * @return uint16_t A 16-bit value where each bit represents the open load status of a cell’s balancing circuit.
  */
-uint16_t SlaveIF_ReadCellBalancingOpenLoadStatus(void);
+uint16_t SlaveIF_readCellBalancingOpenLoadStatus(void);
 
 /* ============================= GPIO Configuration APIs ============================= */
 /**
- * @brief Configures all GPIO pins as analog inputs for ratiometric temperature measurement.
+ * @brief Configures all GPIO pins (0-6) as analog inputs for ratiometric temperature measurement.
  */
-void SlaveIF_CfgAllGpiosForTempSensors(void);
+void SlaveIF_configAllGpiosForTempSensors(void);
 
-/* ============================= Temp APIs ============================= */
+/* ============================= Temperature APIs ============================= */
 /**
- * @brief Reads the AN_OT_UT_FLT register and returns both overtemperature and undertemperature flags.
- * @return Temperature_Flags A structure containing the overtemperature and undertemperature flags.
+ * @brief Reads the AN_OT_UT_FLT_STS register to retrieve overtemperature and undertemperature flags.
+ * @return Temperature_Flags A structure containing two 8-bit fields:
+ *         - Over_Temp_Flags: Bits 0-6 indicate overtemperature faults for AN0-AN6.
+ *         - Under_Temp_Flags: Bits 0-6 indicate undertemperature faults for AN0-AN6.
  */
-Temperature_Flags SlaveIF_ReadOtUttatus(void);
+Temperature_Flags SlaveIF_readOtUtStatus(void);
 
-/* ============================= GPIO flag APIs ============================= */
 /**
- * @brief Reads the GPIO_SHORT_ANx_OPEN_STS register and returns the GPIO and AN open load flags.
- * @return GPIO_AN_Flags A structure containing the GPIO short circuit and AN open load flags.
+ * @brief Reads the temperature from a specified GPIO sensor (AN0-AN6).
+ * @param sensorNumber The GPIO sensor number (0 to 6).
+ * @return float The temperature in degrees Celsius. Returns -999.0 if the sensor number is invalid or data is not ready.
  */
-GPIO_AN_Flags SlaveIF_ReadGpioAnStatus(void);
+float SlaveIF_readTemperature(uint8_t sensorNumber);
 
-/* ============================= Coulomb Counter & Threshold Configuration ============================= */
+/* ============================= GPIO Flag APIs ============================= */
 /**
- * @brief Reads the CC_NB_SAMPLES register and returns the number of samples.
- * @return uint16_t The number of samples accumulated for the coulomb count value.
+ * @brief Reads the GPIO_SH_AN_OL_STS register to retrieve GPIO short circuit and analog open load flags.
+ * @return GPIO_AN_Flags A structure containing two 8-bit fields:
+ *         - GPIO_SH_Flag: Bits 0-6 indicate short circuit faults for GPIO0-GPIO6.
+ *         - AN_OL_Flags: Bits 0-6 indicate open load faults for AN0-AN6.
  */
-uint16_t SlaveIF_ReadNumberCoulombSamples(void);
+GPIO_AN_Flags SlaveIF_readGpioAnStatus(void);
+
+/* ============================= Coulomb Counter APIs ============================= */
+/**
+ * @brief Reads the CC_NB_SAMPLES register to retrieve the number of accumulated coulomb counter samples.
+ * @return uint16_t The number of samples accumulated for coulomb counting.
+ */
+uint16_t SlaveIF_readNumberCoulombSamples(void);
 
 /**
  * @brief Checks if the number of coulomb counter samples is sufficient for a valid reading.
- * @return true if number is sufficient and false otherwise.
+ * @return bool True if the number of samples is >= 1, false otherwise.
  */
-bool SlaveIF_IsCoulombSamplesSufficient(void);
+bool SlaveIF_isCoulombSamplesSufficient(void);
 
 /* ============================= Voltage, Current & Temperature Measurement APIs ============================= */
 /**
- * @brief Reads the Cell_Voltage value from MEAS_CELLx register.
+ * @brief Reads the voltage of a specified cell from the MEAS_CELLx register.
  * @param cellNumber The cell number to read (1 to 14).
- * @return float The Cell_Voltage value from the specified cell, or 0 if data is invalid.
+ * @return float The cell voltage in volts. Returns 0.0 if data is invalid or not ready.
  */
-float SlaveIF_ReadCellVoltage(uint8_t cellNumber);
+float SlaveIF_readCellVoltage(uint8_t cellNumber);
 
 /**
- * @brief Reads the stack voltage measurement.
- * @return float The stack voltage in Volts (adjust scaling if needed). Returns -1.0 if data is not ready.
+ * @brief Reads the total stack voltage from the MEAS_STACK register.
+ * @return float The stack voltage in volts. Returns -1.0 if data is not ready.
  */
-float SlaveIF_ReadStackVoltage(void);
+float SlaveIF_readPackVoltage(void);
 
+/**
+ * @brief Reads current combining 14 MSB (+$30 bit 14 as sign) + 4 LSB ($31) -> 18-bit signed value (USER INTERPRETATION).
+ * @details This function implements a user-specified interpretation of current reading:
+ *          - Reads $30 (MEAS_ISENSE1) & $31 (MEAS_ISENSE2).
+ *          - Checks Data Ready ($30[15]).
+ *          - Uses $30[14] as the SIGN BIT for the combined value.
+ *          - Uses $30[13:0] as the 14 MSBs.
+ *          - Uses $31[3:0] as the 4 LSBs.
+ *          - Combines into an 18-bit value and sign-extends to 32 bits.
+ *          - Determines PGA gain from $06 (ADC_CFG).
+ *          - Scales the 18-bit signed value relative to ±150mV input range *and* PGA gain to find VIND.
+ *          - Calculates current using Ohm's law.
+ *          !!! WARNING: This method STRONGLY DEVIATES from the standard interpretation
+ *              of datasheet Rev 8.0 (Tables 80, 81, 9). Use with extreme caution and validation. !!!
+ * @return Current in amperes (A), or a distinct negative value signifying an error.
+ */
+float SlaveIF_readCurrent(void);
 
+/* ========================= Public Threshold Configuration Functions ========================= */
+
+/**
+ * @brief Sets the global Overvoltage (OV) and Undervoltage (UV) thresholds for all cells.
+ *
+ * This function calculates the appropriate 16-bit value based on the desired
+ * voltage thresholds and writes it to the TH_ALL_CT register (0x4B) via SPI.
+ * The OV threshold occupies the high byte (bits 15-8) and the UV threshold
+ * occupies the low byte (bits 7-0).
+ *
+ * @param ov_volts Desired global Overvoltage threshold in Volts.
+ * @param uv_volts Desired global Undervoltage threshold in Volts.
+ * @return true If the SPI write operation to the slave device was successful.
+ * @return false If the SPI write operation failed (e.g., timeout, CRC error).
+ *
+ * @note Refer to MC33771A Datasheet (Rev 8.0) Table 82 for TH_ALL_CT register details
+ *       and Table 43 for the register address. Resolution for both OV/UV is
+ *       19.53125 mV/LSB.
+ */
+bool SlaveIf_setGlobalOvUvThreshold(float ov_volts, float uv_volts);
+
+/**
+ * @brief Sets the individual Overvoltage (OV) and Undervoltage (UV) thresholds for a specific cell.
+ *
+ * This function calculates the appropriate 16-bit value for the specified cell
+ * index and writes it to the corresponding TH_CTx register (0x4C to 0x59) via SPI.
+ * The OV threshold occupies the high byte (bits 15-8) and the UV threshold
+ * occupies the low byte (bits 7-0).
+ *
+ * @param cell_index The target cell index (1 to 14). Index 1 corresponds to TH_CT1 (0x59),
+ *                   index 14 corresponds to TH_CT14 (0x4C).
+ * @param ov_volts Desired Overvoltage threshold for the specified cell in Volts.
+ * @param uv_volts Desired Undervoltage threshold for the specified cell in Volts.
+ * @return true If the cell_index is valid and the SPI write operation was successful.
+ * @return false If the cell_index is invalid or the SPI write operation failed.
+ *
+ * @note Refer to MC33771A Datasheet (Rev 8.0) Table 83 for TH_CTx register details
+ *       and Table 43 for register addresses. Resolution is 19.53125 mV/LSB.
+ */
+bool SlaveIf_setCellOvUvThreshold(uint8_t cell_index, float ov_volts, float uv_volts);
+
+/**
+ * @brief Sets the Overtemperature (OT) threshold for a specific analog input (GPIOx used as ANx).
+ *
+ * This function calculates the appropriate 10-bit value based on the desired
+ * threshold voltage (typically from an NTC) and writes it to the corresponding
+ * TH_ANx_OT register (0x5A to 0x60) via SPI.
+ *
+ * @param anx_index The target analog input index (0 to 6). Index 0 corresponds to TH_AN0_OT (0x60),
+ *                  index 6 corresponds to TH_AN6_OT (0x5A).
+ * @param overTemp_inVolt Desired Overtemperature threshold expressed as a voltage in Volts.
+ * @return true If the anx_index is valid and the SPI write operation was successful.
+ * @return false If the anx_index is invalid or the SPI write operation failed.
+ *
+ * @note Refer to MC33771A Datasheet (Rev 8.0) Table 84 for TH_ANx_OT register details
+ *       and Table 43 for register addresses. Resolution is 4.8828125 mV/LSB.
+ *       The calculated value occupies bits 9-0 of the register.
+ */
+bool SlaveIf_setOverTempThreshold(uint8_t anx_index, float overTemp_inVolt);
+
+/**
+ * @brief Sets the Undertemperature (UT) threshold for a specific analog input (GPIOx used as ANx).
+ *
+ * This function calculates the appropriate 10-bit value based on the desired
+ * threshold voltage (typically from an NTC) and writes it to the corresponding
+ * TH_ANx_UT register (0x61 to 0x67) via SPI.
+ *
+ * @param anx_index The target analog input index (0 to 6). Index 0 corresponds to TH_AN0_UT (0x67),
+ *                  index 6 corresponds to TH_AN6_UT (0x61).
+ * @param underTemp_inVolt Desired Undertemperature threshold expressed as a voltage in Volts.
+ * @return true If the anx_index is valid and the SPI write operation was successful.
+ * @return false If the anx_index is invalid or the SPI write operation failed.
+ *
+ * @note Refer to MC33771A Datasheet (Rev 8.0) Table 85 for TH_ANx_UT register details
+ *       and Table 43 for register addresses. Resolution is 4.8828125 mV/LSB.
+ *       The calculated value occupies bits 9-0 of the register.
+ */
+bool SlaveIf_setUnderTempThreshold(uint8_t anx_index, float underTemp_inVolt);
+
+/**
+ * @brief Sets the Overcurrent (OC) threshold during sleep mode.
+ *
+ * This function calculates the appropriate 12-bit value based on the desired
+ * overcurrent limit and the shunt resistor value, then writes it to the
+ * TH_ISENSE_OC register (0x68) via SPI.
+ *
+ * @param overCurrent_amps Desired Overcurrent threshold in Amperes.
+ * @param shunt_resistance_micro_ohms The resistance of the external current shunt
+ *                                    resistor in micro-Ohms (e.g., 100 for 100uOhm).
+ * @return true If the SPI write operation to the slave device was successful.
+ * @return false If the SPI write operation failed.
+ *
+ * @note Refer to MC33771A Datasheet (Rev 8.0) Table 86 for TH_ISENSE_OC register details
+ *       and Table 43 for the register address. Resolution is 1.2 uV/LSB.
+ *       The calculated value occupies bits 11-0 of the register.
+ */
+bool SlaveIf_setOverCurrentThreshold(float overCurrent_amps, float shunt_resistance_micro_ohms);
 
 #endif

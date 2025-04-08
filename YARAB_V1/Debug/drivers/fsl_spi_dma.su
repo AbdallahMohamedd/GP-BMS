@@ -1,6 +1,6 @@
-../drivers/fsl_spi.h:350:20:SPI_Enable	16	static
-../drivers/fsl_spi.h:443:20:SPI_EnableDMA	24	static
-../drivers/fsl_spi.h:464:24:SPI_GetDataRegisterAddress	16	static
+../drivers/fsl_spi.h:349:20:SPI_Enable	16	static
+../drivers/fsl_spi.h:442:20:SPI_EnableDMA	24	static
+../drivers/fsl_spi.h:463:24:SPI_GetDataRegisterAddress	16	static
 ../drivers/fsl_dma.h:269:20:DMA_SetDestinationAddress	24	static
 ../drivers/fsl_dma.h:283:20:DMA_SetTransferSize	24	static
 ../drivers/fsl_dma.h:441:24:DMA_GetRemainingBytes	16	static

@@ -53,6 +53,12 @@ BOARD_InitPins:
   - {pin_num: '31', peripheral: GPIOA, signal: 'GPIO, 5', pin_signal: PTA5/USB_CLKIN/TPM0_CH2}
   - {pin_num: '30', peripheral: GPIOA, signal: 'GPIO, 4', pin_signal: TSI0_CH5/PTA4/I2C1_SDA/TPM0_CH1/NMI_b}
   - {pin_num: '32', peripheral: GPIOA, signal: 'GPIO, 12', pin_signal: PTA12/TPM1_CH0}
+  - {pin_num: '71', peripheral: GPIOC, signal: 'GPIO, 16', pin_signal: PTC16}
+  - {pin_num: '77', peripheral: SPI1, signal: PCS0_SS, pin_signal: PTD4/LLWU_P14/SPI1_PCS0/UART2_RX/TPM0_CH4}
+  - {pin_num: '78', peripheral: SPI1, signal: SCK, pin_signal: ADC0_SE6b/PTD5/SPI1_SCK/UART2_TX/TPM0_CH5}
+  - {pin_num: '2', peripheral: SPI1, signal: SIN, pin_signal: PTE1/SPI1_MOSI/UART1_RX/SPI1_MISO/I2C1_SCL}
+  - {pin_num: '80', peripheral: SPI1, signal: SOUT, pin_signal: PTD7/SPI1_MISO/UART0_TX/SPI1_MOSI}
+  - {pin_num: '1', peripheral: GPIOE, signal: 'GPIO, 0', pin_signal: PTE0/UART1_TX/RTC_CLKOUT/CMP0_OUT/I2C1_SDA}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -73,6 +79,8 @@ void BOARD_InitPins(void)
     CLOCK_EnableClock(kCLOCK_PortC);
     /* Port D Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortD);
+    /* Port E Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortE);
 
     /* PORTA1 (pin 27) is configured as UART0_RX */
     PORT_SetPinMux(BOARD_INITPINS_DEBUG_UART_RX_PORT, BOARD_INITPINS_DEBUG_UART_RX_PIN, kPORT_MuxAlt2);
@@ -98,6 +106,9 @@ void BOARD_InitPins(void)
     /* PORTB19 (pin 54) is configured as PTB19 */
     PORT_SetPinMux(BOARD_INITPINS_LED_GREEN_PORT, BOARD_INITPINS_LED_GREEN_PIN, kPORT_MuxAsGpio);
 
+    /* PORTC16 (pin 71) is configured as PTC16 */
+    PORT_SetPinMux(PORTC, 16U, kPORT_MuxAsGpio);
+
     /* PORTC4 (pin 61) is configured as SPI0_PCS0 */
     PORT_SetPinMux(PORTC, 4U, kPORT_MuxAlt2);
 
@@ -118,6 +129,21 @@ void BOARD_InitPins(void)
 
     /* PORTD1 (pin 74) is configured as PTD1 */
     PORT_SetPinMux(BOARD_INITPINS_LED_BLUE_PORT, BOARD_INITPINS_LED_BLUE_PIN, kPORT_MuxAsGpio);
+
+    /* PORTD4 (pin 77) is configured as SPI1_PCS0 */
+    PORT_SetPinMux(PORTD, 4U, kPORT_MuxAlt2);
+
+    /* PORTD5 (pin 78) is configured as SPI1_SCK */
+    PORT_SetPinMux(PORTD, 5U, kPORT_MuxAlt2);
+
+    /* PORTD7 (pin 80) is configured as SPI1_MOSI */
+    PORT_SetPinMux(PORTD, 7U, kPORT_MuxAlt5);
+
+    /* PORTE0 (pin 1) is configured as PTE0 */
+    PORT_SetPinMux(PORTE, 0U, kPORT_MuxAsGpio);
+
+    /* PORTE1 (pin 2) is configured as SPI1_MISO */
+    PORT_SetPinMux(PORTE, 1U, kPORT_MuxAlt5);
 
     SIM->SOPT5 = ((SIM->SOPT5 &
                    /* Mask bits to zero which are setting */

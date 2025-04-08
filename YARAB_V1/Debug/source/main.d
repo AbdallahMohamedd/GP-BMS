@@ -25,6 +25,7 @@ source/main.o source/main.d: ../source/main.c \
  C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_spi.h \
  C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\CMSIS/MKL25Z4.h \
  C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\utilities/fsl_debug_console.h \
+ C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\source/COTS/FuSaSupervisor/Inc/FuSa.h \
  C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\source/COTS/BatteryStatusMonitor/Inc/DataMonitor.h
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\board/board.h:
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\board/clock_config.h:
@@ -52,4 +53,5 @@ C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Des
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_spi.h:
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\CMSIS/MKL25Z4.h:
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\utilities/fsl_debug_console.h:
+C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\source/COTS/FuSaSupervisor/Inc/FuSa.h:
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\source/COTS/BatteryStatusMonitor/Inc/DataMonitor.h:

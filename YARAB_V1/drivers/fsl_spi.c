@@ -402,7 +402,7 @@ void SPI_MasterGetDefaultConfig(spi_master_config_t *config)
 
     config->pinMode = kSPI_PinModeNormal;
     config->outputMode = kSPI_SlaveSelectAutomaticOutput;
-    config->baudRate_Bps = 500000U;
+    config->baudRate_Bps = 100000U;
 }
 
 void SPI_MasterInit(SPI_Type *base, const spi_master_config_t *config, uint32_t srcClock_Hz)

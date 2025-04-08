@@ -31,7 +31,6 @@
 #define _FSL_SPI_H_
 
 #include "fsl_common.h"
-#define BUFFERSIZE 5
 /*!
  * @addtogroup spi_driver
  * @{

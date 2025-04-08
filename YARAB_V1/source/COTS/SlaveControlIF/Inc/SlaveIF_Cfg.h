@@ -5,14 +5,32 @@
  *	File: 		SlaveIF_Cfg.h
  */
 #include <COTS/Public/Inc/helpful.h>
-
+#include "fsl_gpio.h"
 #ifndef COTS_SLAVECONTROLLERIF_INC_SLAVEIF_CFG_H_
 #define COTS_SLAVECONTROLLERIF_INC_SLAVEIF_CFG_H_
 
-#define BUFFERSIZE 5
-#define SPI_used SPI0
-#define DEFAULT_CID 0x0 		   // Default value for Cluster ID
 
+// === Configuration Macros (Define these based on your project) ===
+#define SPI_TX          SPI0      // SPI peripheral for Transmit
+#define SPI_RX          SPI1      // SPI peripheral for Receive
+#define SPI_BAUDRATE    2000000U  // 2 Mbps baud rate
+#define BUFFER_SIZE     5U        // 40-bit frame = 5 bytes
+#define DEFAULT_CID     0U        // Default Cluster ID (Example, adjust as needed)
+#define SPI_TIMEOUT_US  500000U   // Timeout for waiting for SPI completion (e.g., 500ms) - Adjust as needed
+#define SPI_RETRY_COUNT 3U        // Number of retries on failure
+#define SPI_READ_ERROR_VALUE 0x0000U // Value returned by SlaveIF_readRegister on any error
+
+
+
+	gpio_pin_config_t led_config = {kGPIO_DigitalOutput, 0}; // Configure as output, initial state low
+
+
+
+// --- Chip Select Pin Configuration (IMPORTANT: Define and configure these!) ---
+// Example: Assuming CS for SPI0 (TX) is on PTC4
+#define CS_TX_GPIO      GPIOC
+#define CS_TX_LOGICAL_PIN 4U
+// Add similar definitions if manual CS control is needed for SPI1 (RX), although MC33664 manages CSB_RX output
 
 static const uint8_t crc_table[256] = {
     0x00, 0x2f, 0x5e, 0x71, 0xbc, 0x93, 0xe2, 0xcd, 0x57, 0x78, 0x09, 0x26, 0xeb, 0xc4, 0xb5, 0x9a,

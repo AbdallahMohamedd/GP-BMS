@@ -1,8 +1,3 @@
-../source/COTS/BMSDataBase/Src/DataBase.c:67:6:DataBase_GetCurrentMeasurementData	8	static
-../source/COTS/BMSDataBase/Src/DataBase.c:22:6:DataBase_UpdateMeasurementData	16	static
-../source/COTS/BMSDataBase/Src/DataBase.c:78:6:DataBase_GetPreviousMeasurementData	8	static
-../source/COTS/BMSDataBase/Src/DataBase.c:89:6:DataBase_GetCurrentFaultData	8	static
-../source/COTS/BMSDataBase/Src/DataBase.c:46:6:DataBase_UpdateFaultData	16	static
-../source/COTS/BMSDataBase/Src/DataBase.c:100:6:DataBase_GetPreviousFaultData	8	static
-../source/COTS/BMSDataBase/Src/DataBase.c:111:6:SysTick_Handler	8	static
-../source/COTS/BMSDataBase/Src/DataBase.c:132:6:configure_systick	8	static
+../source/COTS/BMSDataBase/Src/DataBase.c:41:6:DataBase_GetCurrentMeasurementData	8	static
+../source/COTS/BMSDataBase/Src/DataBase.c:17:6:DataBase_UpdateMeasurementData	24	static
+../source/COTS/BMSDataBase/Src/DataBase.c:52:6:DataBase_GetPreviousMeasurementData	8	static

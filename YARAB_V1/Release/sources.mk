@@ -20,7 +20,9 @@ board \
 drivers \
 source/COTS/BMSDataBase/Src \
 source/COTS/BatteryStatusMonitor/Src \
+source/COTS/DebugInfoManager/Src \
 source/COTS/DiagnosticManager/Src \
+source/COTS/FuSaSupervisor/Src \
 source/COTS/Public/Src \
 source/COTS/ScreenIF/Src \
 source/COTS/SlaveControlIF/Src \

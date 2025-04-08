@@ -9,7 +9,7 @@
 
 #define DebugInfoManager
 
-#define DebugInfo PRINTF("@ Func: %s, File: %s, Line: %d \n\r\r", __func__, __FILE__, __LINE__);
+#define DebugInfo PRINTF("DebugInfo(msg): @ Func: %s, File: %s, Line: %d \n\r\r", __func__, __FILE__, __LINE__);
 
 
 #endif /* COTS_DEBUGINFOMANAGER_INC_DEBUGINFO_H_ */
