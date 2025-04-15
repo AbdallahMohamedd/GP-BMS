@@ -331,6 +331,9 @@ typedef struct {
 /****************************************** APIs ******************************************/
 /*========================================================================================*/
 
+bool SlaveIF_wakeUp(void);
+
+
 /**
  * @brief Initializes the SPI transfer module for communication with the MC33771B via the MC33664 transceiver.
  */

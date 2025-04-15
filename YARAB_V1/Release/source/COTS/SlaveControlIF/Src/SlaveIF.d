@@ -19,7 +19,12 @@ source/COTS/SlaveControlIF/Src/SlaveIF.o \
  C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\source/COTS/DebugInfoManager/Inc/DebugInfo.h \
  C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\source/COTS/SlaveControlIF/Inc/SlaveIF_Cfg.h \
  C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\source/COTS/Public/Inc/helpful.h \
- C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_gpio.h
+ C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_gpio.h \
+ C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_dmamux.h \
+ C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_dma.h \
+ C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_spi_dma.h \
+ C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_spi.h \
+ C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_dma.h
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\source/COTS/SlaveControlIF/Inc/SlaveIF.h:
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_spi.h:
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_common.h:
@@ -39,3 +44,8 @@ C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Des
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\source/COTS/SlaveControlIF/Inc/SlaveIF_Cfg.h:
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\source/COTS/Public/Inc/helpful.h:
 C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_gpio.h:
+C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_dmamux.h:
+C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_dma.h:
+C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_spi_dma.h:
+C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_spi.h:
+C:\Users\abdal\OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University\Desktop\nxp\YARAB_V1\drivers/fsl_dma.h:

@@ -6,6 +6,11 @@
  */
 #include <COTS/Public/Inc/helpful.h>
 #include "fsl_gpio.h"
+#include "fsl_dmamux.h"
+#include "fsl_dma.h"
+#include "fsl_spi_dma.h"
+
+
 #ifndef COTS_SLAVECONTROLLERIF_INC_SLAVEIF_CFG_H_
 #define COTS_SLAVECONTROLLERIF_INC_SLAVEIF_CFG_H_
 
@@ -26,10 +31,6 @@
 
 
 
-// --- Chip Select Pin Configuration (IMPORTANT: Define and configure these!) ---
-// Example: Assuming CS for SPI0 (TX) is on PTC4
-#define CS_TX_GPIO      GPIOC
-#define CS_TX_LOGICAL_PIN 4U
 // Add similar definitions if manual CS control is needed for SPI1 (RX), although MC33664 manages CSB_RX output
 
 static const uint8_t crc_table[256] = {

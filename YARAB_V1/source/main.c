@@ -15,6 +15,7 @@
 #include "stdio.h"
 #include "stdint.h"
 #include "string.h"
+
 #include "stdbool.h"
 
 // --- Platform/MCU Specific Includes --- //
@@ -72,8 +73,6 @@ int main(void)
 	/* Define the init structure for the output LED pin */
 	gpio_pin_config_t led_config = {kGPIO_DigitalOutput, 0}; // Configure as output, initial state low
 
-//GPIO_PinInit(GPIOE, 0U, &led_config); // EN = 1
-
 	// Initialize GPIO pins used for status LEDs
 	//GPIO_PinInit(GPIOA, 5U, &led_config);  // Example: Green LED
 	GPIO_PinInit(BOARD_LED_BLUE_GPIO, BOARD_LED_BLUE_GPIO_PIN, &led_config);
@@ -89,10 +88,11 @@ int main(void)
 
 	// Configure SysTick timer for periodic tasks
 	configure_systick(); 	              // Configures for 100ms interval
-//GPIO_WritePinOutput(GPIOE, 0U, 1);
-//delay_seconds(1);
+	NVIC_SetPriority(SysTick_IRQn, 3); // Lower priority than DMA
+	//__enable_irq(); // Enable global interrupts
 	// Initialize SPI Master for communication with MC33771B
 	SlaveIF_initTransfer();               // This function initializes SPI and sets up handles
+
 	PRINTF("SPI Master Initialized.\n\r\r");
 
 
@@ -100,10 +100,15 @@ int main(void)
 	/* ==================== --- 5. MC33771B (Slave) Initialization and Configuration --- ==================== */
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	PRINTF("Configuring MC33771B Slave Device...\n\r\r");
+	//SlaveIF_wakeUp();
 	SlaveIF_setupSystem(true);             // This function sets up the system for MC33771B
+	//for (volatile int i = 0; i < 100; i++); // Adjust delay as needed
 	SlaveIF_configSystem1();               // This function configures the system settings for MC33771B
+	//for (volatile int i = 0; i < 100; i++); // Adjust delay as needed
 	SlaveIF_configSystem2();               // This function configures the system settings for MC33771B
+	//for (volatile int i = 0; i < 100; i++); // Adjust delay as needed
 	SlaveIF_configAdc();                   // This function configures the ADC settings for MC33771B
+	//for (volatile int i = 0; i < 100; i++); // Adjust delay as needed
 	SlaveIF_configAdcOffset(1);            // This function configures the ADC offset for MC33771B
 	SlaveIF_enableOvUv();                  // This function enables over-voltage and under-voltage protection for MC33771B
 	SlaveIF_configAllGpiosForTempSensors();// This function configures GPIOs for temperature sensors
@@ -174,6 +179,7 @@ DataMonitor_lcd(59, 100, 0.25, 25.6, 1, 0);
 	//////////////////////////////////////////////////////////////////////////////////////////
 	PRINTF("Setup Complete. Entering main application loop.\n\r\r");
 	// This loop continuously checks for data and fault interrupts and processes them.
+	//while (1){}
 	while (1)
 	{
 		// --- Task 1: Process Data Update Request (triggered by SysTick) ---
@@ -233,6 +239,8 @@ DataMonitor_lcd(59, 100, 0.25, 25.6, 1, 0);
 		// }
 
 	} // End of main loop (while(1))
+
+
 
 } // End of main
 

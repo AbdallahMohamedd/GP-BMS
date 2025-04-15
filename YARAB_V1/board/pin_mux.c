@@ -41,9 +41,7 @@ BOARD_InitPins:
   - {pin_num: '28', peripheral: UART0, signal: TX, pin_signal: TSI0_CH3/PTA2/UART0_TX/TPM2_CH1}
   - {pin_num: '27', peripheral: UART0, signal: RX, pin_signal: TSI0_CH2/PTA1/UART0_RX/TPM2_CH0}
   - {pin_num: '64', peripheral: SPI0, signal: SIN, pin_signal: CMP0_IN1/PTC7/SPI0_MISO/SPI0_MOSI}
-  - {pin_num: '62', peripheral: SPI0, signal: SCK, pin_signal: PTC5/LLWU_P9/SPI0_SCK/LPTMR0_ALT2/CMP0_OUT}
   - {pin_num: '63', peripheral: SPI0, signal: SOUT, pin_signal: CMP0_IN0/PTC6/LLWU_P10/SPI0_MOSI/EXTRG_IN/SPI0_MISO}
-  - {pin_num: '61', peripheral: SPI0, signal: PCS0_SS, pin_signal: PTC4/LLWU_P8/SPI0_PCS0/UART1_TX/TPM0_CH3}
   - {pin_num: '74', peripheral: GPIOD, signal: 'GPIO, 1', pin_signal: ADC0_SE5b/PTD1/SPI0_SCK/TPM0_CH1}
   - {pin_num: '66', peripheral: I2C0, signal: SDA, pin_signal: CMP0_IN3/PTC9/I2C0_SDA/TPM0_CH5}
   - {pin_num: '65', peripheral: I2C0, signal: SCL, pin_signal: CMP0_IN2/PTC8/I2C0_SCL/TPM0_CH4}
@@ -59,6 +57,8 @@ BOARD_InitPins:
   - {pin_num: '2', peripheral: SPI1, signal: SIN, pin_signal: PTE1/SPI1_MOSI/UART1_RX/SPI1_MISO/I2C1_SCL}
   - {pin_num: '80', peripheral: SPI1, signal: SOUT, pin_signal: PTD7/SPI1_MISO/UART0_TX/SPI1_MOSI}
   - {pin_num: '1', peripheral: GPIOE, signal: 'GPIO, 0', pin_signal: PTE0/UART1_TX/RTC_CLKOUT/CMP0_OUT/I2C1_SDA}
+  - {pin_num: '62', peripheral: SPI0, signal: SCK, pin_signal: PTC5/LLWU_P9/SPI0_SCK/LPTMR0_ALT2/CMP0_OUT}
+  - {pin_num: '61', peripheral: SPI0, signal: PCS0_SS, pin_signal: PTC4/LLWU_P8/SPI0_PCS0/UART1_TX/TPM0_CH3}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
