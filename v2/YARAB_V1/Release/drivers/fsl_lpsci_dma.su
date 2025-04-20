@@ -1,0 +1,9 @@
+../drivers/fsl_lpsci_dma.c:98:13:LPSCI_TransferSendDMACallback	8	static
+../drivers/fsl_lpsci_dma.c:120:13:LPSCI_TransferReceiveDMACallback	8	static
+../drivers/fsl_lpsci_dma.c:142:6:LPSCI_TransferCreateHandleDMA	32	static
+../drivers/fsl_lpsci_dma.c:195:10:LPSCI_TransferSendDMA	48	static
+../drivers/fsl_lpsci_dma.c:233:10:LPSCI_TransferReceiveDMA	48	static
+../drivers/fsl_lpsci_dma.c:271:6:LPSCI_TransferAbortSendDMA	8	static
+../drivers/fsl_lpsci_dma.c:288:6:LPSCI_TransferAbortReceiveDMA	8	static
+../drivers/fsl_lpsci_dma.c:305:10:LPSCI_TransferGetSendCountDMA	0	static
+../drivers/fsl_lpsci_dma.c:321:10:LPSCI_TransferGetReceiveCountDMA	0	static

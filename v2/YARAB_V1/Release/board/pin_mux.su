@@ -1,0 +1,2 @@
+../board/pin_mux.c:71:6:BOARD_InitPins	12	static
+../board/pin_mux.c:32:6:BOARD_InitBootPins	8	static
