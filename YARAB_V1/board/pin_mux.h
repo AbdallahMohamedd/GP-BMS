@@ -60,20 +60,6 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_LED_BLUE_PIN_MASK (1U << 1U)      /*!<@brief PORT pin mask */
                                                          /* @} */
 
-/*! @name PORTB18 (number 53), D3[1]/LEDRGB_RED
-  @{ */
-
-/* Symbols to be used with GPIO driver */
-#define BOARD_INITPINS_LED_RED_FGPIO FGPIOB              /*!<@brief FGPIO peripheral base pointer */
-#define BOARD_INITPINS_LED_RED_GPIO GPIOB                /*!<@brief GPIO peripheral base pointer */
-#define BOARD_INITPINS_LED_RED_GPIO_PIN_MASK (1U << 18U) /*!<@brief GPIO pin mask */
-
-/* Symbols to be used with PORT driver */
-#define BOARD_INITPINS_LED_RED_PORT PORTB                /*!<@brief PORT peripheral base pointer */
-#define BOARD_INITPINS_LED_RED_PIN 18U                   /*!<@brief PORT pin number */
-#define BOARD_INITPINS_LED_RED_PIN_MASK (1U << 18U)      /*!<@brief PORT pin mask */
-                                                         /* @} */
-
 /*! @name PORTB19 (number 54), D3[4]/LEDRGB_GREEN
   @{ */
 
@@ -87,6 +73,20 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_LED_GREEN_PIN 19U                   /*!<@brief PORT pin number */
 #define BOARD_INITPINS_LED_GREEN_PIN_MASK (1U << 19U)      /*!<@brief PORT pin mask */
                                                            /* @} */
+
+/*! @name PORTB18 (number 53), D3[1]/LEDRGB_RED
+  @{ */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_LED_RED_FGPIO FGPIOB              /*!<@brief FGPIO peripheral base pointer */
+#define BOARD_INITPINS_LED_RED_GPIO GPIOB                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_LED_RED_GPIO_PIN_MASK (1U << 18U) /*!<@brief GPIO pin mask */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_LED_RED_PORT PORTB                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_LED_RED_PIN 18U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_LED_RED_PIN_MASK (1U << 18U)      /*!<@brief PORT pin mask */
+                                                         /* @} */
 
 /*!
  * @brief Configures pin routing and optionally pin electrical features.

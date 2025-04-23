@@ -1,1 +1,4 @@
-../source/COTS/Public/Src/helpful.c:9:6:delay_seconds	24	static
+../source/COTS/Public/Src/helpful.c:55:6:SysTick_Init	8	static
+../source/COTS/Public/Src/helpful.c:78:6:delay_us	72	static
+../source/COTS/Public/Src/helpful.c:108:6:delay_ms	24	static
+../source/COTS/Public/Src/helpful.c:122:6:delay_seconds	24	static

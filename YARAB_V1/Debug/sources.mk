@@ -20,6 +20,7 @@ board \
 drivers \
 source/COTS/BMSDataBase/Src \
 source/COTS/BatteryStatusMonitor/Src \
+source/COTS/ChargingManager/Src \
 source/COTS/DebugInfoManager/Src \
 source/COTS/DiagnosticManager/Src \
 source/COTS/FuSaSupervisor/Src \

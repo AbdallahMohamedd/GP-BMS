@@ -2,47 +2,60 @@ C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nx
 C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\CMSIS/core_cm0plus.h:804:22:NVIC_SetPriority	24	static
 C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers/fsl_clock.h:584:20:CLOCK_EnableClock	24	static
 C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers/fsl_gpio.h:157:20:GPIO_WritePinOutput	24	static
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers/fsl_gpio.h:215:24:GPIO_ReadPinInput	16	static
 C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers/fsl_dmamux.h:98:20:DMAMUX_EnableChannel	16	static
 C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers/fsl_dmamux.h:128:20:DMAMUX_SetSource	24	static
 C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers/fsl_spi_dma.h:144:20:SPI_SlaveTransferCreateHandleDMA	40	static
 C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers/fsl_spi_dma.h:167:24:SPI_SlaveTransferDMA	24	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:31:16:calculateCrc8	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:51:13:spiDmaTxCallback	24	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:61:13:spiDmaRxCallback	24	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:72:13:resetSpi0	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:87:6:SlaveIF_initTransfer	48	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:141:6:DMA0_IRQHandler	8	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:157:13:SlaveIF_writeRegister	96	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:240:17:SlaveIF_readRegister	96	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:334:6:SlaveIF_setupSystem	24	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:353:6:SlaveIF_setSleepMode	24	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:366:6:SlaveIF_configSystem1	16	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:376:6:SlaveIF_configSystem2	16	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:391:6:SlaveIF_configAdc	16	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:427:6:SlaveIF_configAdcOffset	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:469:6:SlaveIF_startMeasurementCycle	24	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:506:6:SlaveIF_enableOvUv	16	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:517:10:SlaveIF_readCellOverVoltageStatus	24	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:528:10:SlaveIF_readCellUnderVoltageStatus	24	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:544:6:SlaveIF_enableCellBalancing	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:582:6:SlaveIF_readCellBalancingDriverStatus	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:598:10:SlaveIF_readCellBalancingShortedStatus	16	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:608:10:SlaveIF_readCellBalancingOpenLoadStatus	16	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:619:6:SlaveIF_configAllGpiosForTempSensors	16	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:632:15:SlaveIF_readGpioAnStatus	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:649:19:SlaveIF_readOtUtStatus	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:666:7:SlaveIF_readTemperature	40	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:710:10:SlaveIF_readNumberCoulombSamples	16	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:720:6:SlaveIF_isCoulombSamplesSufficient	8	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:733:7:SlaveIF_readCellVoltage	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:770:7:SlaveIF_readPackVoltage	24	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:802:7:SlaveIF_readCurrent	128	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:913:17:SlaveIf_CalculateOvUvThresholdReg	40	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:927:17:SlaveIf_CalculateOverTempThresholdReg	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:937:17:SlaveIf_CalculateUnderTempThresholdReg	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:947:17:SlaveIf_CalculateOverCurrentThresholdReg	32	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:959:6:SlaveIf_setGlobalOvUvThreshold	56	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:968:6:SlaveIf_setCellOvUvThreshold	72	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:983:6:SlaveIf_setOverTempThreshold	48	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:998:6:SlaveIf_setUnderTempThreshold	48	static
-../source/COTS/SlaveControlIF/Src/SlaveIF.c:1013:6:SlaveIf_setOverCurrentThreshold	56	static
+C:\Users\abdal\OneDrive - Faculty of Engineering Ain Shams University\Desktop\nxp\YARAB_V1\drivers/fsl_port.h:321:20:PORT_SetPinMux	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:129:13:spiDmaTxCallback	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:152:13:spiDmaRxCallback	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:176:6:DMA0_IRQHandler	8	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:203:16:calculateCrc8	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:221:13:resetSpi0	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:252:13:SlaveIF_writeEnPin	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:279:17:SlaveIF_readIntbPin	8	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:301:13:SlaveIF_registerHasTagID	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:351:13:SlaveIF_writeRegister	96	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:460:17:SlaveIF_readRegister	104	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:573:13:SlaveIF_setupSystem	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:599:13:SlaveIF_configSystem1	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:615:13:SlaveIF_configSystem2	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:629:13:SlaveIF_enableOvUv	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:645:13:SlaveIF_configAllGpiosForTempSensors	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:668:17:SlaveIf_calculateOvUvThresholdReg	40	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:693:17:SlaveIf_calculateOverTempThresholdReg	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:713:17:SlaveIf_calculateUnderTempThresholdReg	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:734:17:SlaveIf_calculateOverCurrentThresholdReg	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:757:13:SlaveIf_setGlobalOvUvThreshold	56	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:774:13:SlaveIf_setCellOvUvThreshold	72	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:802:13:SlaveIf_setOverTempThreshold	48	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:831:13:SlaveIf_setUnderTempThreshold	48	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:860:13:SlaveIf_setOverCurrentThreshold	56	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:880:6:SlaveIF_initTransfer	48	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:934:6:SlaveIF_tplEnable	8	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:963:6:SlaveIF_wakeUp	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1001:6:SlaveIF_setSleepMode	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1031:6:SlaveIF_configAdc	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1059:6:SlaveIF_configAdcOffset	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1103:6:SlaveIF_init	16	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1181:6:SlaveIF_configureProtectionThresholds	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1251:6:SlaveIF_startMeasurementCycle	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1336:10:SlaveIF_getFault1Status	8	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1353:10:SlaveIF_getFault2Status	8	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1369:10:SlaveIF_getFault3Status	8	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1386:10:SlaveIF_readCellOverVoltageStatus	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1400:10:SlaveIF_readCellUnderVoltageStatus	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1420:6:SlaveIF_enableCellBalancing	56	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1471:10:SlaveIF_readCellBalancingDriverStatus	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1496:10:SlaveIF_readCellBalancingShortedStatus	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1516:10:SlaveIF_readCellBalancingOpenLoadStatus	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1539:15:SlaveIF_readGpioAnStatus	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1580:19:SlaveIF_readOtUtStatus	32	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1617:7:SlaveIF_readTemperature	40	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1680:7:SlaveIF_readCellVoltage	48	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1735:7:SlaveIF_readPackVoltage	40	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1791:7:SlaveIF_readCurrent	88	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1959:10:SlaveIF_readNumberCoulombSamples	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1981:10:SlaveIF_readCoulombCountRaw	24	static
+../source/COTS/SlaveControlIF/Src/SlaveIF.c:1999:6:SlaveIF_isCoulombSamplesSufficient	24	static

@@ -11,6 +11,8 @@
 
 /* Command */
 #include "COTS/ScreenIF/Inc/ScreenIF_Cfg.h"
+#include <COTS/DebugInfoManager/Inc/DebugInfo.h>
+
 #define LCD_CLEARDISPLAY 0x01
 #define LCD_RETURNHOME 0x02
 #define LCD_ENTRYMODESET 0x04
@@ -66,7 +68,7 @@ static void ScreenIF_Send(uint8_t, uint8_t);
 static void ScreenIF_Write4Bits(uint8_t);
 static void ScreenIF_ExpanderWrite(uint8_t);
 static void ScreenIF_PulseEnable(uint8_t);
-static void DelayUS(uint32_t);
+//void DelayUS(uint32_t);
 void ScreenIF_Init(uint8_t rows);
 void ScreenIF_Clear();
 void ScreenIF_Home();

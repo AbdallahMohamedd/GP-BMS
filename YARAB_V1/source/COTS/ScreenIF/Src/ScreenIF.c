@@ -37,11 +37,7 @@ uint8_t special2[8] = {
         0b00110,
         0b00000
 };
-static void DelayUS(uint32_t us)
-{
-    volatile uint32_t count = us * (CLOCK_GetCoreSysClkFreq() / 1000000U);
-    while (count--) __NOP();
-}
+
 
 uint32_t I2C0_GetFreq(void)
 {
@@ -82,9 +78,9 @@ void ScreenIF_ExpanderWrite(uint8_t data)
 void ScreenIF_PulseEnable(uint8_t data)
 {
 	ScreenIF_ExpanderWrite(data | ENABLE | dpBacklight);
-    DelayUS(20);
+    delay_us(20);
     ScreenIF_ExpanderWrite((data & ~ENABLE) | dpBacklight);
-    DelayUS(20);
+    delay_us(20);
 }
 
 
@@ -103,7 +99,7 @@ void ScreenIF_SendCommand(uint8_t cmd)
 
 void ScreenIF_Home() {
 	 ScreenIF_SendCommand(LCD_RETURNHOME);
-     DelayUS(2000);
+     delay_us(2000);
 }
 /* Send Data (Characters) to LCD */
 static void ScreenIF_Send(uint8_t value, uint8_t mode)
@@ -118,7 +114,7 @@ static void ScreenIF_Write4Bits(uint8_t value)
 	ScreenIF_ExpanderWrite(value);
 	ScreenIF_PulseEnable(value);
 }
-void ScreenIF_Clear() { ScreenIF_SendCommand(LCD_CLEARDISPLAY); DelayUS(2000); }
+void ScreenIF_Clear() { ScreenIF_SendCommand(LCD_CLEARDISPLAY); delay_us(2000); }
 void ScreenIF_Display() { dpControl |= LCD_DISPLAYON; ScreenIF_SendCommand(LCD_DISPLAYCONTROL | dpControl); }
 
 /* LCD Initialization */
@@ -139,20 +135,20 @@ void ScreenIF_Init(uint8_t rows)
 
     /* Wait for initialization */
 
-    DelayUS(500);
+    delay_us(500);
 
     ScreenIF_ExpanderWrite(dpBacklight);
-    DelayUS(1000);
+    delay_us(1000);
 
     /* 4-bit Mode Initialization */
     ScreenIF_Write4Bits(0x03 << 4);
-    DelayUS(4500);
+    delay_us(4500);
     ScreenIF_Write4Bits(0x03 << 4);
-    DelayUS(4500);
+    delay_us(4500);
     ScreenIF_Write4Bits(0x03 << 4);
-    DelayUS(4500);
+    delay_us(4500);
     ScreenIF_Write4Bits(0x02 << 4);
-    DelayUS(100);
+    delay_us(100);
 
     /* Set Display Function */
     ScreenIF_SendCommand(LCD_FUNCTIONSET | dpFunction);
@@ -163,7 +159,7 @@ void ScreenIF_Init(uint8_t rows)
     /* Set Entry Mode */
     dpMode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT;
     ScreenIF_SendCommand(LCD_ENTRYMODESET | dpMode);
-    DelayUS(4500);
+    delay_us(4500);
 
     ScreenIF_Home();
 }

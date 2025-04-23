@@ -5,7 +5,6 @@
  *	File: 		Diag_Manager.h
  */
 
-#include <COTS/Public/Inc/helpful.h>
 #include <COTS/DebugInfoManager/Inc/DebugInfo.h>
 
 #ifndef COTS_DIAGNOSTICMANAGER_INC_DIAG_MANAGER_H_

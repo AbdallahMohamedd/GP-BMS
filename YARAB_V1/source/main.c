@@ -1,22 +1,23 @@
-/*
- * Copyright 2016-2025 NXP
- * All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
 /**
  * @file    main.c
- * @brief   Application entry point.
+ * @brief   Application entry point for the Battery Management System (BMS).
+ *
+ * @details This file initializes the MCU, peripherals, and BMS modules, then enters
+ *          the main loop to handle periodic measurement updates, fault monitoring,
+ *          and safety actions (e.g., opening SSR on fault detection).
+ *
+ * @note Project: Graduation Project - Battery Management System
+ * @note Engineer: Abdullah Mohamed
+ * @note Dependencies: Relies on FuSa, DataBase, SlaveIF, DebugInfo,Battery status Monitor,CB Manager,
+ *  Charging Manager, ScreenIF and Temp Manager modules.
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ * Copyright 2016-2025 NXP. All rights reserved.
  */
-
 
 // --- Needed library --- //
 #include "stdio.h"
-#include "stdint.h"
 #include "string.h"
-
-#include "stdbool.h"
 
 // --- Platform/MCU Specific Includes --- //
 #include "board.h"
@@ -29,19 +30,17 @@
 #include "fsl_device_registers.h"
 
 // --- External Dependencies --- //
-#include <COTS/DebugInfoManager/Inc/DebugInfo.h>
-#include <COTS/Public/Inc/helpful.h>
 #include <COTS/BMSDataBase/Inc/DataBase.h>
-#include <COTS/FuSaSupervisor/Inc/FuSa.h>
 #include <COTS/BatteryStatusMonitor/Inc/DataMonitor.h>
+#include <COTS/ChargingManager/Inc/ChargingManager.h>
 
 // --- Global variables for ISR flags --- //
 extern volatile bool data_interrupt;
 extern volatile bool fault_interrupt;
 extern volatile uint32_t systick_count;
-#define EN_Transceiver_Port  PORTE   // EN pin port (e.g., PORTE for FRDM-KL25Z)
-#define EN_Transceiver_PIN   0U      // EN pin number (e.g., PTB0, common GPIO on KL25Z)
 
+// --- Static Variables --- //
+static bool isCircuitDisconnected = false; // Tracks SSR state to avoid redundant calls
 
 // --- Main Application Entry Point --- //
 int main(void)
@@ -49,200 +48,128 @@ int main(void)
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	/* ========================= --- 1. MCU and Board Initialization --- ========================= */
 	/////////////////////////////////////////////////////////////////////////////////////////////////
-	/* Initialize Board Hardware */
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
-	BOARD_InitBootPeripherals();          // Initializes peripherals configured by MCUXpresso tool
+	BOARD_InitBootPeripherals(); // Initializes peripherals configured by MCUXpresso
 #ifndef BOARD_INIT_DEBUG_CONSOLE_PERIPHERAL
-	BOARD_InitDebugConsole();             // Initialize debug console (for PRINTF)
+	BOARD_InitDebugConsole(); // Initialize debug console for PRINTF
 #endif
 	PRINTF("Board Initialized.\n\r\r");
 
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	/* ==================== 2. GPIO Initialization (LEDs and CS) ==================== */
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	gpio_pin_config_t led_config = {kGPIO_DigitalOutput, 0}; // Output, initial state low
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	/* ========================= --- 2. Application Data Initialization --- ========================= */
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Local variables to store current and previous measurement/fault data
-	MeasurementData current_Data, previous_Data;
-	FaultData current_Faults, previous_Faults;
+	GPIO_PinInit(GPIOB, 19U, &led_config);									 // Green LED
+	GPIO_PinInit(BOARD_LED_BLUE_GPIO, BOARD_LED_BLUE_GPIO_PIN, &led_config); // Blue LED
+	PRINTF("Status LEDs and CS Initialized.\n\r\r");
 
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/* ========================= --- 3. GPIO Initialization (Example for LEDs) --- ========================= */
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/* Define the init structure for the output LED pin */
-	gpio_pin_config_t led_config = {kGPIO_DigitalOutput, 0}; // Configure as output, initial state low
-
-	// Initialize GPIO pins used for status LEDs
-	//GPIO_PinInit(GPIOA, 5U, &led_config);  // Example: Green LED
-	GPIO_PinInit(BOARD_LED_BLUE_GPIO, BOARD_LED_BLUE_GPIO_PIN, &led_config);
-	PRINTF("Status LEDs Initialized.\n\r\r");
-
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/* ====================== --- 4. Peripheral Initialization (I2C, SPI, Timers) --- ====================== */
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// Initialize I2C communication (e.g., for an LCD)
-	I2C_init(); 				          // This function initializes the I2C peripheral
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	/* ==================== 3. Peripheral Initialization ==================== */
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	I2C_init(); // Initialize I2C for LCD or other peripherals
 	PRINTF("I2C Initialized.\n\r\r");
 
-	// Configure SysTick timer for periodic tasks
-	configure_systick(); 	              // Configures for 100ms interval
-	NVIC_SetPriority(SysTick_IRQn, 3); // Lower priority than DMA
-	//__enable_irq(); // Enable global interrupts
-	// Initialize SPI Master for communication with MC33771B
-	SlaveIF_initTransfer();               // This function initializes SPI and sets up handles
+	SysTick_Init();
+	FuSa_configure_systick(); // Configure SysTick for 100ms interval
+	PRINTF("SysTick Initialized. Core frequency: %u Hz\n\r", CLOCK_GetCoreSysClkFreq());
 
+	SlaveIF_initTransfer(); // Initialize SPI and DMA handles
+	SlaveIF_tplEnable();	// Enable MC33664 TPL
+	SlaveIF_wakeUp();		// Wake up MC33771B
 	PRINTF("SPI Master Initialized.\n\r\r");
 
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	/* ==================== --- 5. MC33771B (Slave) Initialization and Configuration --- ==================== */
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	/* ==================== 4. MC33771B Slave Initialization ==================== */
+	/////////////////////////////////////////////////////////////////////////////////////////////
 	PRINTF("Configuring MC33771B Slave Device...\n\r\r");
-	//SlaveIF_wakeUp();
-	SlaveIF_setupSystem(true);             // This function sets up the system for MC33771B
-	//for (volatile int i = 0; i < 100; i++); // Adjust delay as needed
-	SlaveIF_configSystem1();               // This function configures the system settings for MC33771B
-	//for (volatile int i = 0; i < 100; i++); // Adjust delay as needed
-	SlaveIF_configSystem2();               // This function configures the system settings for MC33771B
-	//for (volatile int i = 0; i < 100; i++); // Adjust delay as needed
-	SlaveIF_configAdc();                   // This function configures the ADC settings for MC33771B
-	//for (volatile int i = 0; i < 100; i++); // Adjust delay as needed
-	SlaveIF_configAdcOffset(1);            // This function configures the ADC offset for MC33771B
-	SlaveIF_enableOvUv();                  // This function enables over-voltage and under-voltage protection for MC33771B
-	SlaveIF_configAllGpiosForTempSensors();// This function configures GPIOs for temperature sensors
-	PRINTF("MC33771B Basic Configuration Complete.\n\r\r");
+	if (SlaveIF_init())
+		PRINTF("MC33771B Basic Configuration Complete.\n\r\r");
+	else
+		PRINTF("MC33771B Basic Configuration Failed!\n\r\r");
 
-
-	//////////////////////////////////////////////////////////////////////////////////////////////
-	/* ========================= --- 6. Set Protection Thresholds --- ========================= */
-	//////////////////////////////////////////////////////////////////////////////////////////////
-	bool success;
-	// Use placeholder values for demonstration purposes
-	float placeholder_global_ov = 4.00f;
-	float placeholder_global_uv = 2.80f;
-	float placeholder_cell_ov = 4.00f;
-	float placeholder_cell_uv = 2.80f;
-	float placeholder_ot_v = 0.6f;          // Voltage corresponding to max temp
-	float placeholder_ut_v = 2.9f;          // Voltage corresponding to min temp
-	float placeholder_oc_a = 1.00f;         // Amperes
-    float placeholder_shunt = 100;          // Defined earlier
-
-	PRINTF("\n--- Setting Protection Thresholds ---\n\r\r");
-
-	// a) Set Global OV/UV Threshold
-	PRINTF("Setting Global OV/UV Threshold...\n\r\r");
-	success = SlaveIf_setGlobalOvUvThreshold(placeholder_global_ov, placeholder_global_uv);
-	if (!success) PRINTF("ERROR: Failed to set Global OV/UV!\n\r\r");
-
-	// b) Set Overtemperature Thresholds (Loop through AN0-AN6)
-	PRINTF("Setting Overtemperature Thresholds (AN0-AN6)...\n\r\r");
-	for (uint8_t i = 0; i <= 6; i++)
-	{
-		success = SlaveIf_setOverTempThreshold(i, placeholder_ot_v);
-		if (!success)  PRINTF("ERROR: Failed to set OT for AN%d!\n", i+1);
-	}
-
-	// c) Set Undertemperature Thresholds (Loop through AN0-AN6)
-	PRINTF("Setting Undertemperature Thresholds (AN0-AN6)...\n\r\r");
-	for (uint8_t i = 0; i <= 6; i++)
-	{
-		success = SlaveIf_setUnderTempThreshold(i, placeholder_ut_v);
-		if (!success) PRINTF("ERROR: Failed to set UT for AN%d!\n", i);
-	}
-
-	// d) Set Overcurrent Threshold
-	PRINTF("Setting Overcurrent Threshold...\n\r\r");
-	success = SlaveIf_setOverCurrentThreshold(placeholder_oc_a, 100);
-	if (!success) PRINTF("ERROR: Failed to set Overcurrent!\n\r\r");
-
-	PRINTF("--- Protection Threshold Configuration Attempted ---\n\r\r");
-
+	if (SlaveIF_configureProtectionThresholds())
+		PRINTF("MC33771B Thresholds Configuration Complete.\n\r\r");
+	else
+		PRINTF("MC33771B Thresholds Configuration Failed!\n\r\r");
 
 	/////////////////////////////////////////////////////////////////////////////////////////////
-	/* ========================= --- 7. Initial Data Acquisition --- ========================= */
+	/* ==================== 5. Application Data Initialization ==================== */
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	MeasurementData currentData, previousData;
+	FaultData currentFaults, previousFaults;
+	DataBase_Init(); // Initialize measurement database
+	FuSa_Init();	 // Initialize functional safety supervisor
+
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	/* ==================== 6. Initial Data Acquisition ==================== */
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	PRINTF("Performing initial data acquisition...\n\r\r");
-	SlaveIF_startMeasurementCycle(); 						// Trigger with tag 0
+	SlaveIF_startMeasurementCycle();				  // Trigger initial measurement
+	DataBase_UpdateMeasurementData();				  // Update measurements
+	DataBase_GetCurrentMeasurementData(&currentData); // Get initial data
+	FuSa_updateFaultData();							  // Update fault status
+	FuSa_getCurrentFaultData(&currentFaults);		  // Get initial fault status
+	// DataMonitor_lcd(59, 100, 0.25, 25.6, 1, 0);         // Update LCD with initial data
+	PRINTF("Initial Data Acquisition Complete.\n\r\r");
 
-	DataBase_UpdateMeasurementData();	                     // Update Measurements first time
-	DataBase_GetCurrentMeasurementData(&current_Data);       // Get the initial data
-
-	FuSa_updateFaultData();                                  // Update Faults Status first time
-	FuSa_getCurrentFaultData(&current_Faults);               // Get the initial fault status
-
-DataMonitor_lcd(59, 100, 0.25, 25.6, 1, 0);
-
-	//////////////////////////////////////////////////////////////////////////////////////////
-	/* ========================= --- 8. Main Application Loop --- ========================= */
-	//////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////////////////////////////////////////
+	/* ==================== 7. Main Application Loop ==================== */
+	/////////////////////////////////////////////////////////////////////////////////////////////
 	PRINTF("Setup Complete. Entering main application loop.\n\r\r");
-	// This loop continuously checks for data and fault interrupts and processes them.
-	//while (1){}
 	while (1)
 	{
-		// --- Task 1: Process Data Update Request (triggered by SysTick) ---
+		// Task 1: Handle Data Update (every 5 seconds, triggered by SysTick)
 		if (data_interrupt)
 		{
-			data_interrupt = false; // Clear the interrupt flag
-
-			// Shift data: current becomes previous
-			DataBase_GetPreviousMeasurementData(&previous_Data); // Optional: Store previous before overwriting
-
-		    SlaveIF_startMeasurementCycle();
-
-			// Update measurement database (this likely reads registers from the slave)
-			DataBase_UpdateMeasurementData();
-
-			// Get the newly updated data
-			DataBase_GetCurrentMeasurementData(&current_Data);
-
-			// Process or display the new data (e.g., update LCD, run algorithms)
-			// PRINTF("Data Update: Current = %f A\n", current_Data.Current); // Example print
-			// DataMonitor_lcd(current_Data.SOC, current_Data.SOH, current_Data.Current, ...);
+			data_interrupt = false;							   // Clear flag
+			DataBase_GetCurrentMeasurementData(&previousData); // Store previous data
+			SlaveIF_startMeasurementCycle();				   // Trigger new measurement
+			DataBase_UpdateMeasurementData();				   // Update measurements
+			DataBase_GetCurrentMeasurementData(&currentData);  // Get new data
+			// Update LCD or other outputs
+			// DataMonitor_lcd(currentData.SOC, currentData.SOH, currentData.Current, ...);
 		}
 
-		// --- Task 2: Process Fault Update Request (triggered by SysTick) ---
+		// Task 2: Handle Fault Update (every 1 second, triggered by SysTick)
 		if (fault_interrupt)
 		{
-			fault_interrupt = false; // Clear the interrupt flag
+			fault_interrupt = false;				   // Clear flag
+			FuSa_getCurrentFaultData(&previousFaults); // Store previous faults
+			SlaveIF_startMeasurementCycle();		   // Trigger new measurement
+			FuSa_updateFaultData();					   // Update fault status
+			FuSa_getCurrentFaultData(&currentFaults);  // Get new fault status
 
-			// Shift data: current becomes previous
-			FuSa_getPreviousFaultData(&previous_Faults); // Optional: Store previous before overwriting
-
-		    SlaveIF_startMeasurementCycle();
-
-			// Update fault status database (this likely reads fault registers)
-			FuSa_updateFaultData();
-
-			// Get the newly updated fault status
-			FuSa_getCurrentFaultData(&current_Faults);
-
-			// Process faults (e.g., trigger safety actions, display warnings)
-			// if (current_Faults.OV_Flag) { /* Handle Overvoltage */ }
-			// PRINTF("Fault Check Completed.\n\r\r"); // Example print
+			// Check for any fault and take action
+			if (!isCircuitDisconnected &&
+					(currentFaults.rawFault1Status || currentFaults.rawFault2Status || currentFaults.rawFault3Status ||
+							currentFaults.overVoltageFlags || currentFaults.underVoltageFlags ||
+							currentFaults.overtemperatureFlags || currentFaults.undertemperatureFlags ||
+							currentFaults.gpioShortFlags || currentFaults.anOpenLoadFlags ||
+							currentFaults.cbShortFlags || currentFaults.cbOpenFlags))
+			{
+				ChargingManager_ssrOpen(true);										  // Open SSR to disconnect battery
+				isCircuitDisconnected = true;										  // Update state
+				DebugInfo_PrintFaultReason(&currentFaults);							  // Print detailed fault reason
+				GPIO_WritePinOutput(BOARD_LED_BLUE_GPIO, BOARD_LED_BLUE_GPIO_PIN, 1); // Indicate fault with LED
+			}
 		}
 
-		// --- Other Tasks ---
-		// Add other non-blocking tasks here, such as:
-		// - Handling user interface inputs
-		// - Running state machine logic
-		// - Sending data over CAN/other communication bus
-		// - Controlling contactors based on state/faults
+		// Task 3: Other Non-Blocking Tasks
+		// Example: Handle UI inputs, run state machine, or send data over CAN
+		// if (user_input) { /* Process input */ }
 
-		// --- Low Power Mode ---
-		// If no flags are set and no other tasks need immediate attention,
-		// the MCU could potentially enter a low-power sleep mode until the next interrupt.
-		// if (!data_interrupt && !fault_interrupt && !other_flags) {
-		//   __WFI(); // Wait For Interrupt (example for ARM Cortex-M)
-		// }
+		// Task 4: Low-Power Mode
+		if (!data_interrupt && !fault_interrupt)
+		{
+			__WFI(); // Wait for interrupt to reduce power consumption
+		}
+	}
 
-	} // End of main loop (while(1))
+	return 0; // Unreachable
+}
 
-
-
-} // End of main
-
-/////////////////////////////////////////////////////////////////////////////
-/* ========================= --- End of File --- ========================= */
+//=============================================================================
+// End of File
+//=============================================================================

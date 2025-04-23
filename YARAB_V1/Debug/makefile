@@ -17,6 +17,7 @@ RM := rm -rf
 -include source/COTS/FuSaSupervisor/Src/subdir.mk
 -include source/COTS/DiagnosticManager/Src/subdir.mk
 -include source/COTS/DebugInfoManager/Src/subdir.mk
+-include source/COTS/ChargingManager/Src/subdir.mk
 -include source/COTS/BatteryStatusMonitor/Src/subdir.mk
 -include source/COTS/BMSDataBase/Src/subdir.mk
 -include source/subdir.mk

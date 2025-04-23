@@ -13,12 +13,15 @@ package_id: MKL25Z128VLK4
 mcu_data: ksdk2_0
 processor_version: 13.0.1
 board: FRDM-KL25Z
+pin_labels:
+- {pin_num: '32', pin_signal: PTA12/TPM1_CH0, label: 'J1[8]/D3', identifier: initB}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
 
 #include "fsl_common.h"
 #include "fsl_port.h"
+#include "fsl_dmamux.h"
 #include "pin_mux.h"
 
 /* FUNCTION ************************************************************************************************************
@@ -45,20 +48,18 @@ BOARD_InitPins:
   - {pin_num: '74', peripheral: GPIOD, signal: 'GPIO, 1', pin_signal: ADC0_SE5b/PTD1/SPI0_SCK/TPM0_CH1}
   - {pin_num: '66', peripheral: I2C0, signal: SDA, pin_signal: CMP0_IN3/PTC9/I2C0_SDA/TPM0_CH5}
   - {pin_num: '65', peripheral: I2C0, signal: SCL, pin_signal: CMP0_IN2/PTC8/I2C0_SCL/TPM0_CH4}
-  - {pin_num: '53', peripheral: GPIOB, signal: 'GPIO, 18', pin_signal: TSI0_CH11/PTB18/TPM2_CH0}
   - {pin_num: '54', peripheral: GPIOB, signal: 'GPIO, 19', pin_signal: TSI0_CH12/PTB19/TPM2_CH1}
   - {pin_num: '33', peripheral: TPM1, signal: 'CH, 1', pin_signal: PTA13/TPM1_CH1}
-  - {pin_num: '31', peripheral: GPIOA, signal: 'GPIO, 5', pin_signal: PTA5/USB_CLKIN/TPM0_CH2}
-  - {pin_num: '30', peripheral: GPIOA, signal: 'GPIO, 4', pin_signal: TSI0_CH5/PTA4/I2C1_SDA/TPM0_CH1/NMI_b}
-  - {pin_num: '32', peripheral: GPIOA, signal: 'GPIO, 12', pin_signal: PTA12/TPM1_CH0}
-  - {pin_num: '71', peripheral: GPIOC, signal: 'GPIO, 16', pin_signal: PTC16}
   - {pin_num: '77', peripheral: SPI1, signal: PCS0_SS, pin_signal: PTD4/LLWU_P14/SPI1_PCS0/UART2_RX/TPM0_CH4}
-  - {pin_num: '78', peripheral: SPI1, signal: SCK, pin_signal: ADC0_SE6b/PTD5/SPI1_SCK/UART2_TX/TPM0_CH5}
   - {pin_num: '2', peripheral: SPI1, signal: SIN, pin_signal: PTE1/SPI1_MOSI/UART1_RX/SPI1_MISO/I2C1_SCL}
   - {pin_num: '80', peripheral: SPI1, signal: SOUT, pin_signal: PTD7/SPI1_MISO/UART0_TX/SPI1_MOSI}
   - {pin_num: '1', peripheral: GPIOE, signal: 'GPIO, 0', pin_signal: PTE0/UART1_TX/RTC_CLKOUT/CMP0_OUT/I2C1_SDA}
   - {pin_num: '62', peripheral: SPI0, signal: SCK, pin_signal: PTC5/LLWU_P9/SPI0_SCK/LPTMR0_ALT2/CMP0_OUT}
-  - {pin_num: '61', peripheral: SPI0, signal: PCS0_SS, pin_signal: PTC4/LLWU_P8/SPI0_PCS0/UART1_TX/TPM0_CH3}
+  - {pin_num: '32', peripheral: GPIOA, signal: 'GPIO, 12', pin_signal: PTA12/TPM1_CH0, identifier: ''}
+  - {pin_num: '78', peripheral: SPI1, signal: SCK, pin_signal: ADC0_SE6b/PTD5/SPI1_SCK/UART2_TX/TPM0_CH5}
+  - {pin_num: '61', peripheral: GPIOC, signal: 'GPIO, 4', pin_signal: PTC4/LLWU_P8/SPI0_PCS0/UART1_TX/TPM0_CH3}
+  - {pin_num: '53', peripheral: GPIOB, signal: 'GPIO, 18', pin_signal: TSI0_CH11/PTB18/TPM2_CH0}
+  - {peripheral: DMA, signal: 'CH, 0', pin_signal: SPI0_Transmit}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -71,6 +72,8 @@ BOARD_InitPins:
  * END ****************************************************************************************************************/
 void BOARD_InitPins(void)
 {
+    /* DMA Mux Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_Dmamux0);
     /* Port A Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortA);
     /* Port B Clock Gate Control: Clock enabled */
@@ -81,6 +84,8 @@ void BOARD_InitPins(void)
     CLOCK_EnableClock(kCLOCK_PortD);
     /* Port E Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortE);
+    /* DMA Channel Source (Slot) 0: SPI0 Transmit */
+    DMAMUX_SetSource(DMAMUX0, 0U, (uint8_t)kDmaRequestMux0SPI0Tx);
 
     /* PORTA1 (pin 27) is configured as UART0_RX */
     PORT_SetPinMux(BOARD_INITPINS_DEBUG_UART_RX_PORT, BOARD_INITPINS_DEBUG_UART_RX_PIN, kPORT_MuxAlt2);
@@ -94,23 +99,14 @@ void BOARD_InitPins(void)
     /* PORTA2 (pin 28) is configured as UART0_TX */
     PORT_SetPinMux(BOARD_INITPINS_DEBUG_UART_TX_PORT, BOARD_INITPINS_DEBUG_UART_TX_PIN, kPORT_MuxAlt2);
 
-    /* PORTA4 (pin 30) is configured as PTA4 */
-    PORT_SetPinMux(PORTA, 4U, kPORT_MuxAsGpio);
-
-    /* PORTA5 (pin 31) is configured as PTA5 */
-    PORT_SetPinMux(PORTA, 5U, kPORT_MuxAsGpio);
-
     /* PORTB18 (pin 53) is configured as PTB18 */
     PORT_SetPinMux(BOARD_INITPINS_LED_RED_PORT, BOARD_INITPINS_LED_RED_PIN, kPORT_MuxAsGpio);
 
     /* PORTB19 (pin 54) is configured as PTB19 */
     PORT_SetPinMux(BOARD_INITPINS_LED_GREEN_PORT, BOARD_INITPINS_LED_GREEN_PIN, kPORT_MuxAsGpio);
 
-    /* PORTC16 (pin 71) is configured as PTC16 */
-    PORT_SetPinMux(PORTC, 16U, kPORT_MuxAsGpio);
-
-    /* PORTC4 (pin 61) is configured as SPI0_PCS0 */
-    PORT_SetPinMux(PORTC, 4U, kPORT_MuxAlt2);
+    /* PORTC4 (pin 61) is configured as PTC4 */
+    PORT_SetPinMux(PORTC, 4U, kPORT_MuxAsGpio);
 
     /* PORTC5 (pin 62) is configured as SPI0_SCK */
     PORT_SetPinMux(PORTC, 5U, kPORT_MuxAlt2);
