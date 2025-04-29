@@ -36,8 +36,8 @@ void DebugInfo_PrintFaultReason(const FaultData *faultData)
 		return;
 	}
 
-	extern volatile uint32_t systick_count; // From main.c
-	PRINTF("\n[FAULT DETECTED] Time: %lu ms - Circuit Disconnected (SSR Opened)\n", systick_count * 100);
+	//extern volatile uint32_t pit_count; // From main.c
+	//PRINTF("\n[FAULT DETECTED] Time: %lu ms - Circuit Disconnected (SSR Opened)\n", pit_count * 100);
 	PRINTF("------------------------------------------------------------\n");
 
 	// Check FAULT1-related faults

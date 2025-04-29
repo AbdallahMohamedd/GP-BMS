@@ -1,10 +1,10 @@
 /**
- * @file FuSa.c
+ * @file fusa.c
  * @brief Implementation of the Functional Safety (FuSa) Supervisor module.
  *
  * @details This module periodically checks summary fault registers from the BMS slave(s).
  *          If a summary fault is detected, it reads the detailed status registers
- *          related to that fault category. It uses the SysTick timer for timing.
+ *          related to that fault category. It relies on timing functions from helpful.c.
  *
  * @note Project: Graduation Project - Battery Management System
  * @note Engineer: Abdullah Mohamed
@@ -14,32 +14,11 @@
 //=============================================================================
 // Includes
 //=============================================================================
-#include <COTS/FuSaSupervisor/Inc/FuSa.h> // Public header for this module
+#include <COTS/FuSaSupervisor/Inc/fusa.h> // Public header for this module
 
 //=============================================================================
 // Module-Scope Variables (Static & Volatile)
 //=============================================================================
-/**
- * @brief Counter incremented by the SysTick handler.
- * @details Used to generate periodic events based on SysTick intervals.
- *          Declared volatile as it's modified in an ISR and read elsewhere.
- */
-volatile uint32_t systick_count = 0;
-
-/**
- * @brief Flag set by SysTick handler to signal a fault check is due.
- * @details Typically checked in the main loop or a dedicated task.
- *          Declared volatile as it's modified in an ISR and read elsewhere.
- */
-volatile bool fault_interrupt = false;
-
-/**
- * @brief Flag set by SysTick handler to signal a data update is due.
- * @details Typically checked in the main loop or a dedicated task.
- *          Declared volatile as it's modified in an ISR and read elsewhere.
- */
-volatile bool data_interrupt = false;
-
 /**
  * @brief Stores the most recently acquired fault data set.
  * @details Holds the latest fault status read from the slave interface.
@@ -57,6 +36,8 @@ static FaultData previousFaultData;
 //=============================================================================
 /**
  * @brief Initializes the FuSa module.
+ * @details Resets fault data and interrupt flags. Timing-related initialization
+ *          (e.g., SysTick) should be handled separately via helpful.c.
  */
 void FuSa_Init(void)
 {
@@ -65,13 +46,12 @@ void FuSa_Init(void)
 #endif
 	memset(&currentFaultData, 0, sizeof(FaultData));
 	memset(&previousFaultData, 0, sizeof(FaultData));
-	systick_count = 0;
-	fault_interrupt = false;
-	data_interrupt = false;
 }
 
 /**
  * @brief Updates the fault database based on fault register checks.
+ * @details Reads fault summary registers and, if faults are detected, reads detailed
+ *          status registers to update the fault database.
  */
 void FuSa_updateFaultData(void)
 {
@@ -99,7 +79,6 @@ void FuSa_updateFaultData(void)
 		primary_read_success = false;
 		// Do not update currentFaultData further, retain previous data
 		// The readSuccess flag remains false for this cycle.
-		return 0; // Exit the update function
 	}
 
 	// Store raw values regardless of success for potential analysis
@@ -238,6 +217,8 @@ void FuSa_updateFaultData(void)
 
 /**
  * @brief Retrieves the most recently updated fault data set.
+ * @param data Pointer to a FaultData structure to store the current fault data.
+ * @return true if data was successfully retrieved, false if the input pointer is NULL.
  */
 bool FuSa_getCurrentFaultData(FaultData *data)
 {
@@ -249,6 +230,8 @@ bool FuSa_getCurrentFaultData(FaultData *data)
 
 /**
  * @brief Retrieves the fault data set from the previous update cycle.
+ * @param data Pointer to a FaultData structure to store the previous fault data.
+ * @return true if data was successfully retrieved, false if the input pointer is NULL.
  */
 bool FuSa_getPreviousFaultData(FaultData *data)
 {
@@ -258,64 +241,8 @@ bool FuSa_getPreviousFaultData(FaultData *data)
 	return true;
 }
 
-/**
- * @brief Configures the SysTick timer and enables its interrupt.
- */
-void FuSa_configure_systick(void)
-{
-#ifdef FUSA_DEBUG_UPDATE // Or FUSA_DEBUG_INIT
-	PRINTF("FuSa: Configuring SysTick Timer...\n\r\r");
-#endif
-	// Configure for 100 ms interval (10 Hz)
-	SysTick_Config(SystemCoreClock / 10);
-}
-
-//=============================================================================
-// Interrupt Service Routine (ISR) Implementations
-//=============================================================================
-/**
- * @brief SysTick Interrupt Service Routine.
- */
-void SysTick_Handler(void)
-{
-	// Increment the global SysTick counter
-	systick_count++;
-
-#ifdef FUSA_DEBUG_ISR
-	// Print only occasionally to avoid flooding console
-	if (systick_count % 10 == 0)
-	{ // Example: Print every second
-		PRINTF("SysTick: Count = %lu\n\r", systick_count);
-	}
-#endif
-
-	// Trigger fault check (e.g., every 10 ticks = 1 second)
-	if (systick_count % 10 == 0)
-	{
-#ifdef FUSA_DEBUG_ISR
-		PRINTF("SysTick: Setting fault_interrupt flag.\n\r\r");
-#endif
-		fault_interrupt = true;
-	}
-
-	// Trigger less frequent data update (e.g., every 50 ticks = 5 seconds)
-	if (systick_count % 50 == 0)
-	{
-#ifdef FUSA_DEBUG_ISR
-		PRINTF("SysTick: Setting data_interrupt flag.\n\r\r");
-#endif
-		data_interrupt = true;
-	}
-
-	if (systick_count == UINT32_MAX)
-	{
-#ifdef FUSA_DEBUG_ISR
-		PRINTF("SysTick: Counter rollover occurred.\n\r\r");
-#endif
-		systick_count = 0;
-	}
-}
-
 //=============================================================================
 // End of File
 //=============================================================================
+
+

@@ -67,14 +67,13 @@
 // #define SLAVEIF_DEBUG_VOLTAGE   ///< Enable SlaveIF Voltage reading prints
 // #define SLAVEIF_DEBUG_CURRENT   ///< Enable SlaveIF Current reading prints
 // #define SLAVEIF_DEBUG_GPIO      ///< Enable SlaveIF GPIO status prints
-
+// #define SLAVEIF_DEBUG
 // --- FuSa Module Debug Switches ---
 /**
  * @brief Define these macros to enable specific debug print categories within FuSa.c.
  * @details Uncomment the desired lines to activate the corresponding PRINTF statements.
  */
 // #define FUSA_DEBUG_UPDATE   ///< Enable prints during FuSa_updateFaultData execution
-// #define FUSA_DEBUG_ISR      ///< Enable prints inside SysTick_Handler
 // #define FUSA_DEBUG_VERBOSE  ///< Enable even more detailed prints within update function
 
 // --- ChargingManager Module Debug Switches ---

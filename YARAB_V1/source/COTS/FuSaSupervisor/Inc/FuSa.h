@@ -1,10 +1,8 @@
 /**
- * @file FuSa.h
- * @brief Public interface header for the Functional Safety (FuSa) Supervisor module.
+ * @file fusa.h
+ * @brief Public interface for the Functional Safety (FuSa) Supervisor module.
  *
- * @details Defines the public interface for the FuSa module, including the
- *          data structure for storing fault information (`FaultData`), fault bit
- *          definitions, and function prototypes.
+ * @details Declares functions and types for fault monitoring and data retrieval.
  *
  * @note Project: Graduation Project - Battery Management System
  * @note Engineer: Abdullah Mohamed
@@ -108,35 +106,32 @@ typedef struct
 // Public Function Prototypes
 //=============================================================================
 /**
- * @brief Initializes the Functional Safety Supervisor module.
+ * @brief Initializes the FuSa module.
+ * @details Resets fault data and interrupt flags.
  */
 void FuSa_Init(void);
 
 /**
- * @brief Configures the SysTick timer for periodic interrupts.
- */
-void FuSa_configure_systick(void);
-
-/**
  * @brief Updates the fault database based on fault register checks.
- * @details Reads FAULT1/2/3 registers. If summary fault bits are set,
- *          it reads the corresponding detailed fault/status registers from SlaveIF.
+ * @details Reads fault summary registers and, if faults are detected, reads detailed
+ *          status registers to update the fault database.
  */
 void FuSa_updateFaultData(void);
 
 /**
  * @brief Retrieves the most recently updated fault data set.
- * @param[out] data Pointer to a `FaultData` structure to copy the data into.
- * @return bool True if the data pointer was valid and copy succeeded, false otherwise.
+ * @param data Pointer to a FaultData structure to store the current fault data.
+ * @return true if data was successfully retrieved, false if the input pointer is NULL.
  */
 bool FuSa_getCurrentFaultData(FaultData *data);
 
 /**
  * @brief Retrieves the fault data set from the previous update cycle.
- * @param[out] data Pointer to a `FaultData` structure to copy the data into.
- * @return bool True if the data pointer was valid and copy succeeded, false otherwise.
+ * @param data Pointer to a FaultData structure to store the previous fault data.
+ * @return true if data was successfully retrieved, false if the input pointer is NULL.
  */
 bool FuSa_getPreviousFaultData(FaultData *data);
+
 
 #endif /* FuSaA_SUPERVISOR */
 

@@ -28,6 +28,7 @@
 #include "fsl_gpio.h"
 #include "fsl_pit.h"
 #include "fsl_device_registers.h"
+#include "fsl_tpm.h"
 
 // --- External Dependencies --- //
 #include <COTS/BMSDataBase/Inc/DataBase.h>
@@ -37,7 +38,6 @@
 // --- Global variables for ISR flags --- //
 extern volatile bool data_interrupt;
 extern volatile bool fault_interrupt;
-extern volatile uint32_t systick_count;
 
 // --- Static Variables --- //
 static bool isCircuitDisconnected = false; // Tracks SSR state to avoid redundant calls
@@ -60,6 +60,7 @@ int main(void)
 	/* ==================== 2. GPIO Initialization (LEDs and CS) ==================== */
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	gpio_pin_config_t led_config = {kGPIO_DigitalOutput, 0}; // Output, initial state low
+	GPIO_PinInit(GPIOC, 4U, &(gpio_pin_config_t){kGPIO_DigitalOutput, 1});			 // CS pin
 
 	GPIO_PinInit(GPIOB, 19U, &led_config);									 // Green LED
 	GPIO_PinInit(BOARD_LED_BLUE_GPIO, BOARD_LED_BLUE_GPIO_PIN, &led_config); // Blue LED
@@ -71,11 +72,28 @@ int main(void)
 	I2C_init(); // Initialize I2C for LCD or other peripherals
 	PRINTF("I2C Initialized.\n\r\r");
 
-	SysTick_Init();
-	FuSa_configure_systick(); // Configure SysTick for 100ms interval
+	// Initialize PIT module using SDK function
+
+	PRINTF("System Clocks Initialized.\r\n");
+	PRINTF("Core Clock: %u Hz\r\n", SystemCoreClock);
+	PRINTF("Bus Clock: %u Hz\r\n", CLOCK_GetFreq(kCLOCK_BusClk));
+
+
+
+	Timer_Init(); // Initialize our SysTick delay and PIT interrupts
+
+
+
 	PRINTF("SysTick Initialized. Core frequency: %u Hz\n\r", CLOCK_GetCoreSysClkFreq());
 
 	SlaveIF_initTransfer(); // Initialize SPI and DMA handles
+
+
+	GPIO_WritePinOutput(GPIOC, 4, 0);
+	delay_us(4);
+	GPIO_WritePinOutput(GPIOC, 4, 1);
+
+
 	SlaveIF_tplEnable();	// Enable MC33664 TPL
 	SlaveIF_wakeUp();		// Wake up MC33771B
 	PRINTF("SPI Master Initialized.\n\r\r");
@@ -123,6 +141,7 @@ int main(void)
 		// Task 1: Handle Data Update (every 5 seconds, triggered by SysTick)
 		if (data_interrupt)
 		{
+			PRINTF("********** 55 Second Tick! **********\r\n");
 			data_interrupt = false;							   // Clear flag
 			DataBase_GetCurrentMeasurementData(&previousData); // Store previous data
 			SlaveIF_startMeasurementCycle();				   // Trigger new measurement
@@ -135,6 +154,7 @@ int main(void)
 		// Task 2: Handle Fault Update (every 1 second, triggered by SysTick)
 		if (fault_interrupt)
 		{
+			PRINTF("********** 10 Second Tick! **********\r\n");
 			fault_interrupt = false;				   // Clear flag
 			FuSa_getCurrentFaultData(&previousFaults); // Store previous faults
 			SlaveIF_startMeasurementCycle();		   // Trigger new measurement
@@ -160,11 +180,6 @@ int main(void)
 		// Example: Handle UI inputs, run state machine, or send data over CAN
 		// if (user_input) { /* Process input */ }
 
-		// Task 4: Low-Power Mode
-		if (!data_interrupt && !fault_interrupt)
-		{
-			__WFI(); // Wait for interrupt to reduce power consumption
-		}
 	}
 
 	return 0; // Unreachable

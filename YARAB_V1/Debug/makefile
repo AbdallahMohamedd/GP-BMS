@@ -54,10 +54,10 @@ all:
 main-build: YARAB_V1.axf
 
 dependents:
-	-cd C:/Users/abdal/OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University/Desktop/nxp/YARAB_V1/Release && $(MAKE) all
+	-cd D:/Work_Space/NXP/gp/YARAB_V1/Release && $(MAKE) all
 
 # Tool invocations
-YARAB_V1.axf: $(OBJS) $(USER_OBJS) C:/Users/abdal/OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University/Desktop/nxp/YARAB_V1/Release/YARAB_V1.axf makefile $(OPTIONAL_TOOL_DEPS)
+YARAB_V1.axf: $(OBJS) $(USER_OBJS) D:/Work_Space/NXP/gp/YARAB_V1/Release/YARAB_V1.axf makefile $(OPTIONAL_TOOL_DEPS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MCU Linker'
 	arm-none-eabi-gcc -nostdlib -Xlinker -Map="YARAB_V1.map" -Xlinker --gc-sections -Xlinker -print-memory-usage -Xlinker --sort-section=alignment -Xlinker --cref -mcpu=cortex-m0plus -mthumb -T YARAB_V1_Debug.ld -o "YARAB_V1.axf" $(OBJS) $(USER_OBJS) $(LIBS)
@@ -75,6 +75,6 @@ post-build:
 	-@echo ' '
 
 .PHONY: all clean dependents main-build post-build
-C:/Users/abdal/OneDrive\ -\ Faculty\ of\ Engineering\ Ain\ Shams\ University/Desktop/nxp/YARAB_V1/Release/YARAB_V1.axf:
+D:/Work_Space/NXP/gp/YARAB_V1/Release/YARAB_V1.axf:
 
 -include ../makefile.targets

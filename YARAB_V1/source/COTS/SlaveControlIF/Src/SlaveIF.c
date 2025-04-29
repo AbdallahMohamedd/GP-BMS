@@ -19,6 +19,8 @@
 #include <COTS/SlaveControlIF/Inc/SlaveIF.h>
 #include <COTS/SlaveControlIF/Inc/SlaveIF_Cfg.h>
 
+// #define  TRANSFER_INFO
+
 float placeholder_global_ov = 4.00f;
 float placeholder_global_uv = 2.80f;
 // float placeholder_cell_ov = 4.00f; // For individual cell settings if needed
@@ -128,6 +130,7 @@ static void spiDmaRxCallback(SPI_Type *base, spi_dma_handle_t *handle, status_t 
  */
 static void spiDmaTxCallback(SPI_Type *base, spi_dma_handle_t *handle, status_t status, void *userData)
 {
+	GPIO_WritePinOutput(SPI_CS_GPIO, SPI_CS_PIN, 1); // Ensure CSB is high
 #ifdef SLAVEIF_DEBUG_DMA
 	PRINTF("DMA TX Callback Triggered! Status: %d\n\r", status);
 	if (status == kStatus_Success)
@@ -140,6 +143,7 @@ static void spiDmaTxCallback(SPI_Type *base, spi_dma_handle_t *handle, status_t 
 	}
 #endif
 	spiDmaTxCompleted = true; // Signal completion
+
 }
 
 /**
@@ -175,9 +179,9 @@ static void spiDmaRxCallback(SPI_Type *base, spi_dma_handle_t *handle, status_t 
  */
 void DMA0_IRQHandler(void)
 {
-	#ifdef SLAVEIF_DEBUG_ISR
+#ifdef SLAVEIF_DEBUG_ISR
 	PRINTF("DMA0 Interrupt Triggered! Calling SDK Handlers...\n\r");
-	#endif
+#endif
 
 	// --- Call NXP SDK DMA Interrupt Handlers ---
 	// Call the handler for the TX channel's DMA handle
@@ -186,9 +190,9 @@ void DMA0_IRQHandler(void)
 	// Call the handler for the RX channel's DMA handle (if using DMA for RX)
 	// Since SPI1 RX is configured, we should handle its potential interrupts too,
 	// even if nothing is connected, to clear its flags.
-	//DMA_HandleIRQ(&dmaRxHandle);
+	DMA_HandleIRQ(&dmaRxHandle);
 
-    // No DSB needed for Cortex-M0+
+	// No DSB needed for Cortex-M0+
 }
 /* ========================= Static API Implementations (Helpers) ========================= */
 /**
@@ -228,12 +232,12 @@ static void resetSpi0(void)
 	// Reconfigure SPI0 Master
 	spi_master_config_t masterConfig;
 	SPI_MasterGetDefaultConfig(&masterConfig);
-	masterConfig.baudRate_Bps = SPI_BAUDRATE;				   // Use defined baudrate
-	masterConfig.polarity = kSPI_ClockPolarityActiveHigh;	   // CPOL = 1 (Mode 3)
-	masterConfig.phase = kSPI_ClockPhaseSecondEdge;			   // CPHA = 1 (Mode 3)
-	masterConfig.direction = kSPI_MsbFirst;					   // MSB first is standard for MC33xxx
-	masterConfig.outputMode = kSPI_SlaveSelectAutomaticOutput; // Hardware CS control
-	// Ensure SPI0 clock is enabled (might have been disabled by Deinit)
+	masterConfig.baudRate_Bps = SPI_BAUDRATE;			  // Use defined baudrate
+	masterConfig.polarity = kSPI_ClockPolarityActiveHigh; // CPOL = 1 (Mode 3)
+	masterConfig.phase = kSPI_ClockPhaseSecondEdge;		  // CPHA = 1 (Mode 3)
+	masterConfig.direction = kSPI_MsbFirst;				  // MSB first is standard for MC33xxx
+	masterConfig.outputMode = kSPI_SlaveSelectAsGpio;	  // Enable GPIO CS control
+	//  Ensure SPI0 clock is enabled (might have been disabled by Deinit)
 	CLOCK_EnableClock(kCLOCK_Spi0);
 	SPI_MasterInit(SPI_TX, &masterConfig, CLOCK_GetFreq(kCLOCK_BusClk));
 
@@ -339,6 +343,7 @@ static bool SlaveIF_registerHasTagID(uint8_t regAddr)
 	}
 }
 
+
 /**
  * @brief Writes data to a specified MC33771B register via SPI0 using DMA.
  * @details Constructs the 5-byte SPI frame (CRC, Control, Address, Data High, Data Low),
@@ -350,101 +355,215 @@ static bool SlaveIF_registerHasTagID(uint8_t regAddr)
  */
 static bool SlaveIF_writeRegister(uint8_t regAddress, uint16_t data)
 {
-	uint8_t txFrame[BUFFER_SIZE] = {0};
-	uint8_t rxFrame[BUFFER_SIZE] = {0}; // Dummy buffer
+    uint8_t txFrame[BUFFER_SIZE] = {0};
+    uint8_t rxFrame[BUFFER_SIZE] = {0}; // Buffer for echo response
 
-	const uint8_t CID = 0x01;		// Cluster ID
-	const uint8_t Write_CMD = 0x02; // Command = Read
+    const uint8_t Write_CMD = 0x02; // Write command
 
-	uint8_t rc = gRollingCounter & 0x03;
-	gRollingCounter = (gRollingCounter + 1) & 0x03;
-	// Construct read request frame
-	txFrame[1] = (CID << 4) | (rc << 2) | (Write_CMD & 0x03); // Read command (0001) + Cluster ID + RC
-	txFrame[2] = (regAddress & 0x7F) | 0x80;				  // Address + Master bit
-	txFrame[3] = (data >> 8) & 0xFF;						  // Data high byte
-	txFrame[4] = data & 0xFF;								  // Data low byte
-	txFrame[0] = calculateCrc8(&txFrame[1], 4);				  // CRC-8
+    uint8_t rc = gRollingCounter & 0x03;
+    gRollingCounter = (gRollingCounter + 1) & 0x03;
 
-	PRINTF("Step 2: Frame constructed: [%02X, %02X, %02X, %02X, %02X]\n\r\r",
-			txFrame[0], txFrame[1], txFrame[2], txFrame[3], txFrame[4]);
+    // Construct the frame
+    txFrame[1] = (DEFAULT_CID << 4) | (rc << 2) | (Write_CMD & 0x03); // CID + RC + CMD
+    txFrame[2] = (regAddress & 0x7F) | 0x80;                          // Address + Master
+    txFrame[3] = (data >> 8) & 0xFF;                                  // Data high byte
+    txFrame[4] = data & 0xFF;                                         // Data low byte
+    txFrame[0] = calculateCrc8(&txFrame[1], 4);                      // CRC-8
 
-	// Step 3: Initialize spiXfer
-	PRINTF("Step 3: Initializing spiXfer...\n\r\r");
-	spi_transfer_t spiXfer = {
-			.txData = txFrame,
-			.rxData = rxFrame,
-			.dataSize = BUFFER_SIZE};
+#ifdef TRANSFER_INFO
+    PRINTF("[Transfer Info] Frame constructed: [%02X, %02X, %02X, %02X, %02X]\n\r",
+           txFrame[0], txFrame[1], txFrame[2], txFrame[3], txFrame[4]);
+#endif
 
-	// Step 4: Wait until SPI is not busy
-	uint32_t busyTimeout = SPI_TIMEOUT_US;
-	PRINTF("Step 4: Checking SPI status: 0x%08X\n\r\r", SPI_GetStatusFlags(SPI_TX));
-	while ((SPI_GetStatusFlags(SPI_TX) & kSPI_TxBufferEmptyFlag) == 0 && busyTimeout--)
-	{
-	}
-	if (busyTimeout == 0)
-	{
-		PRINTF("SPI Busy Timeout! Cannot start new transfer.\n\r\r");
-		resetSpi0(); // Reset SPI on timeout
-		return false;
-	}
+    // Prepare SPI transfers
+    spi_transfer_t spiTxXfer = {
+        .txData = txFrame,
+        .rxData = NULL,
+        .dataSize = BUFFER_SIZE // Explicitly set to 5 bytes
+    };
+    spi_transfer_t spiRxXfer = {
+        .txData = NULL,
+        .rxData = rxFrame,
+        .dataSize = BUFFER_SIZE // Explicitly set to 5 bytes
+    };
 
-	// Step 5: Start DMA Transfer with retry mechanism
-	uint8_t retryCount = SPI_RETRY_COUNT;
-	status_t status;
-	PRINTF("Step 5: Starting DMA transfer...\n\r\r");
-	do
-	{
-		spiDmaTxCompleted = false;
-		status = SPI_MasterTransferDMA(SPI_TX, &spiDmaTxHandle, &spiXfer);
-		if (status != kStatus_Success)
-		{
-			PRINTF("SPI DMA TX Failed! Status: %d\n\r\r", status);
-			for (volatile int i = 0; i < 10000; i++)
-				; // Delay before retry
-			retryCount--;
-		}
-		else
-		{
-			break;
-		}
-	} while (retryCount > 0);
+#ifdef TRANSFER_INFO
+    PRINTF("[Transfer Info] About to send TX frame: [%02X, %02X, %02X, %02X, %02X]\n\r",
+           txFrame[0], txFrame[1], txFrame[2], txFrame[3], txFrame[4]);
+#endif
 
-	if (status != kStatus_Success)
-	{
-		PRINTF("SPI DMA TX Failed After Retries! Status: %d\n\r\r", status);
-		resetSpi0(); // Reset SPI on failure
-		return false;
-	}
+    // Wait until SPI is not busy
+    uint32_t busyTimeout = SPI_TIMEOUT_US;
 
-	// Step 6: Wait for DMA transfer to complete
-	uint32_t timeout = SPI_TIMEOUT_US; 		//(500000U)
-	PRINTF("Step 6: Waiting for DMA to complete...\n\r\r");
-	while (!spiDmaTxCompleted && timeout--)
-	{
-	}
-	if (!spiDmaTxCompleted)
-	{
-		PRINTF("SPI DMA Write Timeout!\n\r\r");
-		SPI_MasterTransferAbortDMA(SPI_TX, &spiDmaTxHandle); // Abort DMA transfer
-		resetSpi0();										 // Reset SPI on timeout
-		delay_ms(10);
-		return false;
-	}
+#ifdef TRANSFER_INFO
+    PRINTF("[Transfer Info] Checking SPI status: 0x%08X\n\r", SPI_GetStatusFlags(SPI_TX));
+#endif
+    while ((SPI_GetStatusFlags(SPI_TX) & kSPI_TxBufferEmptyFlag) == 0 && busyTimeout--)
+    {
+    }
+    if (busyTimeout == 0)
+    {
+#ifdef TRANSFER_INFO
+        PRINTF("[Transfer Info] SPI Busy Timeout! Cannot start new transfer.\n\r");
+#endif
+        resetSpi0();
+        return false;
+    }
 
-	PRINTF("Step 7: DMA Transfer Completed.\n\r\r");
-	uint8_t receivedRC = (rxFrame[1] >> 2) & 0x03;
-	uint8_t expectedRC = (gRollingCounter - 1) & 0x03; // RC was incremented after frame was built
-	if (receivedRC != rc)
-	{
-		PRINTF("RC mismatch! Expected: %u, Got: %u\n\r", expectedRC, receivedRC);
-		return false;
-	}
-	// Step 8: Add delay between frames (at least 100 us as per MC33664 datasheet)
-	PRINTF("Step 8: Adding delay between frames...\n\r\r");
-	delay_us(100); // Delay ~100 us (adjust based on your clock speed)
+    // Start DMA transfer for TX (non-blocking)
+    spiDmaTxCompleted = false;
 
-	PRINTF("Step 9: Transfer successful.\n\r\r");
-	return true;
+#ifdef TRANSFER_INFO
+    PRINTF("[Transfer Info] Starting TX DMA transfer...\n\r");
+#endif
+    // Lower CS exactly 4 microseconds before starting the SPI transfer
+    //GPIO_WritePinOutput(SPI_CS_GPIO, SPI_CS_PIN, 0); // Ensure CSB is low
+    //delay_us(4); // Delay 4 microseconds between CS LOW and first clock pulse
+
+    #ifdef TRANSFER_INFO
+    PRINTF("[Transfer Info] CS lowered, starting 4 microSec delay...\n\r");
+#endif
+    //delay_us(4); // Delay 4 microseconds between CS LOW and first clock pulse
+    status_t status = SPI_MasterTransferDMA(SPI_TX, &spiDmaTxHandle, &spiTxXfer);
+    if (status != kStatus_Success)
+    {
+#ifdef TRANSFER_INFO
+        PRINTF("[Transfer Info] SPI DMA TX Failed! Status: %d\n\r", status);
+#endif
+        GPIO_WritePinOutput(SPI_CS_GPIO, SPI_CS_PIN, 1); // Ensure CSB is high
+        resetSpi0();
+        return false;
+    }
+
+    // Start DMA transfer for RX (echo response, non-blocking) - Commented out since no slave is connected
+    // spiDmaRxCompleted = false;
+
+    // #ifdef TRANSFER_INFO
+    //     PRINTF("[Transfer Info] Starting RX DMA transfer (expecting echo)...\n\r");
+    // #endif
+    // Commenting out RX DMA transfer since no slave is connected
+    // status = SPI_SlaveTransferDMA(SPI_RX, &spiDmaRxHandle, &spiRxXfer);
+    // if (status != kStatus_Success)
+    // {
+    // #ifdef TRANSFER_INFO
+    //     PRINTF("[Transfer Info] SPI DMA RX Failed! Status: %d\n\r", status);
+    // #endif
+    //     SPI_MasterTransferAbortDMA(SPI_TX, &spiDmaTxHandle);
+    //     GPIO_WritePinOutput(SPI_CS_GPIO, SPI_CS_PIN, 1); // Ensure CSB is high
+    //     resetSpi0();
+    //     return false;
+    // }
+
+    // Wait for TX DMA transfer to complete (non-blocking wait using flag)
+    uint32_t timeout = 1000; // Increased timeout to 1000 microseconds to account for potential delays
+
+#ifdef TRANSFER_INFO
+    PRINTF("[Transfer Info] Waiting for TX DMA to complete (timeout: 1000 microSec)...\n\r");
+#endif
+    while (!spiDmaTxCompleted && timeout--)
+    {
+        // Non-blocking wait: DMA callback will set spiDmaTxCompleted
+    }
+
+    if (!spiDmaTxCompleted)
+    {
+#ifdef TRANSFER_INFO
+        PRINTF("[Transfer Info] SPI DMA TX Timeout! Aborting transfer...\n\r");
+#endif
+        SPI_MasterTransferAbortDMA(SPI_TX, &spiDmaTxHandle);
+        // SPI_SlaveTransferAbortDMA(SPI_RX, &spiDmaRxHandle); // Commented out since RX is disabled
+        GPIO_WritePinOutput(SPI_CS_GPIO, SPI_CS_PIN, 1); // Ensure CSB is high
+        resetSpi0();
+        delay_ms(10);
+        return false;
+    }
+
+#ifdef TRANSFER_INFO
+    PRINTF("[Transfer Info] TX DMA transfer completed successfully (frame duration: ~20.25 microSec).\n\r");
+#endif
+
+#ifdef TRANSFER_INFO
+    PRINTF("[Transfer Info] CS raised immediately after TX (CS LOW time should be ~24.25 microSec).\n\r");
+#endif
+
+    // Wait for RX DMA transfer to complete (non-blocking wait using flag) - Commented out since no slave is connected
+    // timeout = 100; // Timeout of 100 microseconds since slave is not connected
+
+    // #ifdef TRANSFER_INFO
+    //     PRINTF("[Transfer Info] Waiting for RX DMA to complete (echo response, timeout: 100 microSec)...\n\r");
+    // #endif
+    // while (!spiDmaRxCompleted && timeout--)
+    // {
+    //     // Non-blocking wait: DMA callback will set spiDmaRxCompleted
+    // }
+
+    // if (!spiDmaRxCompleted)
+    // {
+    // #ifdef TRANSFER_INFO
+    //     PRINTF("[Transfer Info] SPI DMA RX Timeout! No echo response received (slave may not be connected).\n\r");
+    // #endif
+    //     SPI_MasterTransferAbortDMA(SPI_TX, &spiDmaTxHandle);
+    //     SPI_SlaveTransferAbortDMA(SPI_RX, &spiDmaRxHandle);
+    // #ifdef TRANSFER_INFO
+    //     PRINTF("[Transfer Info] RX timeout occurred, but continuing without reset (testing mode).\n\r");
+    // #endif
+    //     // Add 100 microseconds delay between frames (as per datasheet)
+    // #ifdef TRANSFER_INFO
+    //     PRINTF("[Transfer Info] Adding 100 microSec delay between frames...\n\r");
+    // #endif
+    //     delay_us(100);
+    //     return false; // Still return false since the echo was not received
+    // }
+
+    // #ifdef TRANSFER_INFO
+    //     PRINTF("[Transfer Info] RX DMA transfer completed successfully.\n\r");
+    // #endif
+
+    // Verify the echo response (only if RX succeeded) - Commented out since no slave is connected
+    // uint8_t crcReceived = rxFrame[0];
+    // uint8_t crcCalculated = calculateCrc8(&rxFrame[1], 4);
+    // if (crcReceived != crcCalculated)
+    // {
+    // #ifdef TRANSFER_INFO
+    //     PRINTF("[Transfer Info] Echo CRC Check Failed! Received: %02X, Calculated: %02X\n\r",
+    //            crcReceived, crcCalculated);
+    // #endif
+    //     return false;
+    // }
+
+    // uint8_t receivedRC = (rxFrame[1] >> 2) & 0x03;
+    // uint8_t expectedRC = rc;
+    // if (receivedRC != expectedRC)
+    // {
+    // #ifdef TRANSFER_INFO
+    //     PRINTF("[Transfer Info] Echo RC mismatch! Expected: %u, Got: %u\n\r", expectedRC, receivedRC);
+    // #endif
+    //     return false;
+    // }
+
+    // // Verify that the echo matches the transmitted frame
+    // for (int i = 0; i < BUFFER_SIZE; i++)
+    // {
+    //     if (rxFrame[i] != txFrame[i])
+    //     {
+    // #ifdef TRANSFER_INFO
+    //         PRINTF("[Transfer Info] Echo mismatch at byte %d! Expected: %02X, Got: %02X\n\r",
+    //                i, txFrame[i], rxFrame[i]);
+    // #endif
+    //         return false;
+    //     }
+    // }
+
+    // Add 100 microseconds delay between frames (as per datasheet)
+#ifdef TRANSFER_INFO
+    PRINTF("[Transfer Info] Adding 100 microSec delay between frames...\n\r");
+#endif
+    delay_us(100);
+
+#ifdef TRANSFER_INFO
+    PRINTF("[Transfer Info] Write transfer successful.\n\r");
+#endif
+    return true;
 }
 
 /**
@@ -475,14 +594,14 @@ static uint16_t SlaveIF_readRegister(uint8_t regAddress)
 	txFrame[0] = calculateCrc8(&txFrame[1], 4);				 // CRC-8
 
 	spi_transfer_t spiTxXfer = {
-			.txData = txFrame,
-			.rxData = NULL,
-			.dataSize = BUFFER_SIZE};
+		.txData = txFrame,
+		.rxData = NULL,
+		.dataSize = BUFFER_SIZE};
 
 	spi_transfer_t spiRxXfer = {
-			.txData = NULL,
-			.rxData = rxFrame,
-			.dataSize = BUFFER_SIZE};
+		.txData = NULL,
+		.rxData = rxFrame,
+		.dataSize = BUFFER_SIZE};
 
 	// Send read request (DMA)
 	spiDmaTxCompleted = false;
@@ -494,7 +613,7 @@ static uint16_t SlaveIF_readRegister(uint8_t regAddress)
 	}
 
 	// Wait for DMA transfer to complete
-	uint32_t timeout = 1000000;
+	uint32_t timeout = SPI_TIMEOUT_US;
 	while (!spiDmaTxCompleted && timeout--)
 	{
 	}
@@ -514,7 +633,7 @@ static uint16_t SlaveIF_readRegister(uint8_t regAddress)
 	}
 
 	// Wait for DMA transfer to complete
-	timeout = 1000000;
+	timeout = SPI_TIMEOUT_US;
 	while (!spiDmaRxCompleted && timeout--)
 	{
 	}
@@ -539,7 +658,7 @@ static uint16_t SlaveIF_readRegister(uint8_t regAddress)
 		if (tagIdReceived != (TAGID & 0x0F))
 		{
 			PRINTF("TAG_ID mismatch for 0x%02X! Expected: %X, Got: %X\n\r",
-					regAddress, TAGID, tagIdReceived);
+				   regAddress, TAGID, tagIdReceived);
 			return 0;
 		}
 	}
@@ -758,7 +877,7 @@ static bool SlaveIf_setGlobalOvUvThreshold(float ov_volts, float uv_volts)
 {
 	uint16_t regData = SlaveIf_calculateOvUvThresholdReg(ov_volts, uv_volts);
 	PRINTF("Setting Global OV/UV Threshold (Reg 0x%02X) to: 0x%04X (OV: %.3fV, UV: %.3fV)\n\r",
-			TH_ALL_CT_ADDR, regData, ov_volts, uv_volts);
+		   TH_ALL_CT_ADDR, regData, ov_volts, uv_volts);
 	return SlaveIF_writeRegister(TH_ALL_CT_ADDR, regData);
 }
 /**
@@ -786,7 +905,7 @@ static bool SlaveIf_setCellOvUvThreshold(uint8_t cell_index, float ov_volts, flo
 	uint16_t regData = SlaveIf_calculateOvUvThresholdReg(ov_volts, uv_volts);
 
 	PRINTF("Setting Cell %d OV/UV Threshold (Reg 0x%02X) to: 0x%04X (OV: %.3fV, UV: %.3fV)\n\r",
-			cell_index, regAddress, regData, ov_volts, uv_volts);
+		   cell_index, regAddress, regData, ov_volts, uv_volts);
 	return SlaveIF_writeRegister(regAddress, regData);
 }
 
@@ -814,7 +933,7 @@ static bool SlaveIf_setOverTempThreshold(uint8_t anx_index, float overTemp_inVol
 	uint16_t regData = SlaveIf_calculateOverTempThresholdReg(overTemp_inVolt);
 
 	PRINTF("Setting AN%d OT Threshold (Reg 0x%02X) to: 0x%04X (Input V: %.3fV)\n\r",
-			anx_index, regAddress, regData, overTemp_inVolt);
+		   anx_index, regAddress, regData, overTemp_inVolt);
 	// Mask to ensure only lower 10 bits are considered, although write handles full 16-bit word
 	return SlaveIF_writeRegister(regAddress, (regData & 0x03FF));
 }
@@ -843,7 +962,7 @@ static bool SlaveIf_setUnderTempThreshold(uint8_t anx_index, float underTemp_inV
 	uint16_t regData = SlaveIf_calculateUnderTempThresholdReg(underTemp_inVolt);
 
 	PRINTF("Setting AN%d UT Threshold (Reg 0x%02X) to: 0x%04X (Input V: %.3fV)\n\r",
-			anx_index, regAddress, regData, underTemp_inVolt);
+		   anx_index, regAddress, regData, underTemp_inVolt);
 	// Mask to ensure only lower 10 bits are considered
 	return SlaveIF_writeRegister(regAddress, (regData & 0x03FF));
 }
@@ -863,7 +982,7 @@ static bool SlaveIf_setOverCurrentThreshold(float overCurrent_amps, float shunt_
 	uint16_t regData = SlaveIf_calculateOverCurrentThresholdReg(overCurrent_amps, shunt_resistance_micro_ohms);
 
 	PRINTF("Setting Over current Threshold (Reg 0x%02X) to: 0x%04X (Current: %.3fA, Shunt: %.1fuOhm)\n\r",
-			TH_ISENSE_OC_ADDR, regData, overCurrent_amps, shunt_resistance_micro_ohms);
+		   TH_ISENSE_OC_ADDR, regData, overCurrent_amps, shunt_resistance_micro_ohms);
 	// Mask to ensure only lower 12 bits are considered
 	return SlaveIF_writeRegister(TH_ISENSE_OC_ADDR, (regData & 0x0FFF));
 }
@@ -879,6 +998,7 @@ static bool SlaveIf_setOverCurrentThreshold(float overCurrent_amps, float shunt_
  */
 void SlaveIF_initTransfer(void)
 {
+
 	spi_master_config_t masterConfig;
 	spi_slave_config_t slaveConfig;
 
@@ -901,15 +1021,17 @@ void SlaveIF_initTransfer(void)
 
 	// Enable DMA interrupts in NVIC
 	NVIC_EnableIRQ(DMA0_IRQn);
+	NVIC_EnableIRQ(DMA1_IRQn);
 	NVIC_SetPriority(DMA0_IRQn, 0);
+	NVIC_SetPriority(DMA1_IRQn, 0);
 
 	// --- Configure SPI0 (TX) as master ---
 	SPI_MasterGetDefaultConfig(&masterConfig);
-	masterConfig.baudRate_Bps = SPI_BAUDRATE;				   // 2 Mbps
-	masterConfig.polarity = kSPI_ClockPolarityActiveHigh;	   // CPOL = 1
-	masterConfig.phase = kSPI_ClockPhaseSecondEdge;			   // CPHA = 1
-	masterConfig.direction = kSPI_MsbFirst;					   // MSB first
-	masterConfig.outputMode = kSPI_SlaveSelectAutomaticOutput; // Enable automatic CS control
+	masterConfig.baudRate_Bps = SPI_BAUDRATE;			  // 2 Mbps
+	masterConfig.polarity = kSPI_ClockPolarityActiveHigh; // CPOL = 1
+	masterConfig.phase = kSPI_ClockPhaseSecondEdge;		  // CPHA = 1
+	masterConfig.direction = kSPI_MsbFirst;				  // MSB first
+	masterConfig.outputMode = kSPI_SlaveSelectAsGpio;	  // Enable GPIO CS control
 	CLOCK_EnableClock(kCLOCK_Spi0);
 	SPI_MasterInit(SPI_TX, &masterConfig, CLOCK_GetFreq(kCLOCK_BusClk));
 	SPI_MasterTransferCreateHandleDMA(SPI_TX, &spiDmaTxHandle, spiDmaTxCallback, NULL, &dmaTxHandle, &dmaRxHandle);
@@ -965,23 +1087,23 @@ void SlaveIF_wakeUp(void)
 	PRINTF("Sending Wake-Up Sequence...\n\r\r");
 
 	// Temporarily configure CS pin (PTC4) as GPIO output
-	PORT_SetPinMux(SPI_CS_PORT, SPI_CS_PIN, kPORT_MuxAsGpio);
-	GPIO_PinInit(SPI_CS_GPIO, SPI_CS_PIN, &(gpio_pin_config_t){kGPIO_DigitalOutput, 1});			 // CS pin
+	// PORT_SetPinMux(SPI_CS_PORT, SPI_CS_PIN, kPORT_MuxAsGpio);
+	// GPIO_PinInit(SPI_CS_GPIO, SPI_CS_PIN, &(gpio_pin_config_t){kGPIO_DigitalOutput, 1});			 // CS pin
 
 	/* First Low-to-High Transition for Wake-up */
 	GPIO_WritePinOutput(SPI_CS_GPIO, SPI_CS_PIN, 0); // Ensure CSB is Low
-	delay_us(20);									 // Wait > 15 µs (t_CSSL - CS Setup Low) - Using 20us
+	delay_us(21);									 // Wait > 15 microSec (t_CSSL - CS Setup Low) - Using 20us
 	GPIO_WritePinOutput(SPI_CS_GPIO, SPI_CS_PIN, 1); // Set CSB High
-	delay_us(600);									 // Wait >= 500 µs (t_CSHD - CS Hold High Duration 1) - Using 600us
+	delay_us(600);									 // Wait >= 500 microSec (t_CSHD - CS Hold High Duration 1) - Using 600us
 
 	/* Second Low-to-High Transition for Wake-up */
 	GPIO_WritePinOutput(SPI_CS_GPIO, SPI_CS_PIN, 0); // Set CSB Low
-	delay_us(20);									 // Wait > 15 µs (t_CSSL) - Using 20us
+	delay_us(21);									 // Wait > 15 microSec (t_CSSL) - Using 20us
 	GPIO_WritePinOutput(SPI_CS_GPIO, SPI_CS_PIN, 1); // Set CSB High
-	delay_us(1000);									 // Wait >= 800 µs (t_WUEND - Wake-up End) - Using 1000us					   /* Wait ~1000 µs */
+	delay_us(1000);									 // Wait >= 800 microSec (t_WUEND - Wake-up End) - Using 1000us					   /* Wait ~1000 microSec */
 
 	// Restore CS pin function to SPI peripheral
-	PORT_SetPinMux(SPI_CS_PORT, SPI_CS_PIN, kPORT_MuxAlt2);
+	// PORT_SetPinMux(SPI_CS_PORT, SPI_CS_PIN, kPORT_MuxAlt2);
 
 	PRINTF("Wake-Up Sequence Sent.\n\r\r");
 	delay_ms(10); // Allow time for slave to wake up fully before communication
@@ -1456,7 +1578,7 @@ bool SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerVal
 	data |= (timerValueInHalfMinutes & CB_CFG_DURATION_MASK);
 
 	PRINTF("Configuring Cell %d Balancing (Reg 0x%02X): Enable=%d, Timer=0x%X (%.1f mins)\n\r",
-			cellNumber, regAddress, enable, timerValueInHalfMinutes, (float)timerValueInHalfMinutes * 0.5f);
+		   cellNumber, regAddress, enable, timerValueInHalfMinutes, (float)timerValueInHalfMinutes * 0.5f);
 
 	return SlaveIF_writeRegister(regAddress, data);
 }
@@ -1718,7 +1840,7 @@ float SlaveIF_readCellVoltage(uint8_t cellNumber)
 
 #ifdef SLAVEIF_DEBUG_VOLTAGE
 	PRINTF("Read Cell %d (Reg 0x%02X): Raw=0x%04X, Value=%u -> Voltage=%.4f V\n\r",
-			cellNumber, regAddress, rawData, measurement, voltageInVolts);
+		   cellNumber, regAddress, rawData, measurement, voltageInVolts);
 #endif
 
 	return voltageInVolts;
@@ -1762,7 +1884,7 @@ float SlaveIF_readPackVoltage(void)
 
 #ifdef SLAVEIF_DEBUG_VOLTAGE
 	PRINTF("Read Pack Voltage (Reg 0x%02X): Raw=0x%04X, Value=%u -> Voltage=%.4f V\n\r",
-			regAddress, rawData, measurement, voltageInVolts);
+		   regAddress, rawData, measurement, voltageInVolts);
 #endif
 
 	return voltageInVolts;
@@ -1810,8 +1932,8 @@ float SlaveIF_readCurrent(void)
 
 	// --- 2. Check for Read Errors ---
 	if ((reg_30_data == 0xFFFF && MEAS_ISENSE1_ADDR != 0xFFFF) ||
-			(reg_31_data == 0xFFFF && MEAS_ISENSE2_ADDR != 0xFFFF) ||
-			(adc_cfg_data == 0xFFFF && ADC_CFG_ADDR != 0xFFFF))
+		(reg_31_data == 0xFFFF && MEAS_ISENSE2_ADDR != 0xFFFF) ||
+		(adc_cfg_data == 0xFFFF && ADC_CFG_ADDR != 0xFFFF))
 	{
 		PRINTF("Error: Failed to read one or more registers for current measurement.\n\r\r");
 		return 0;
@@ -1822,7 +1944,7 @@ float SlaveIF_readCurrent(void)
 	{
 #ifdef SLAVEIF_DEBUG_MEAS
 		PRINTF("Error: Current Data Not Ready! MEAS_ISENSE1 ($%02X) = 0x%04X\n\r",
-				MEAS_ISENSE1_ADDR, reg_30_data);
+			   MEAS_ISENSE1_ADDR, reg_30_data);
 #endif
 		return 0; // Indicate data not ready
 	}
@@ -1935,11 +2057,11 @@ float SlaveIF_readCurrent(void)
 #ifdef SLAVEIF_DEBUG_CURRENT
 		PRINTF("DEBUG Current (User 14+4): $30=0x%04X, $31=0x%04X\n\r", reg_30_data, reg_31_data);
 		PRINTF("  Extracted: Sign($30[14])=%d, MSB($30[13:0])=0x%X, LSB($31[3:0])=0x%X\n\r",
-				sign_bit, msb_part_14bit, lsb_part_4bit);
+			   sign_bit, msb_part_14bit, lsb_part_4bit);
 		PRINTF("  Combined: Raw18b=0x%lX (%ld), Signed18b=%ld\n\r",
-				combined_raw_value_18bit, combined_raw_value_18bit, signed_value_18bit);
+			   combined_raw_value_18bit, combined_raw_value_18bit, signed_value_18bit);
 		PRINTF("  ADC Config ($06)=0x%04X -> PGA_GAIN_S=%d (Gain=%.0f)\n\r",
-				adc_cfg_data, pga_gain_s_setting, pga_gain_factor);
+			   adc_cfg_data, pga_gain_s_setting, pga_gain_factor);
 		PRINTF("  Voltages: V_ISENSE(PostPGA)=%.6f V, V_SHUNT(PrePGA)=%.6f V\n\r", V_ISENSE, VIND_pre_pga);
 		PRINTF("  Shunt=%.6f Ohm -> Current=%.4f A\n\r", SHUNT_RESISTANCE_OHMS, current_A);
 #endif

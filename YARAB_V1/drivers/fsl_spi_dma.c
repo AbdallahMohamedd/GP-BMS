@@ -275,6 +275,10 @@ status_t SPI_MasterTransferDMA(SPI_Type *base, spi_dma_handle_t *handle, spi_tra
     handle->transferSize = xfer->dataSize;
     handle->state = kSPI_Busy;
 
+
+    GPIO_WritePinOutput(GPIOC, 4U, 0); // Ensure CSB is low
+
+
     /* Start Rx transfer if needed */
     if (xfer->rxData)
     {

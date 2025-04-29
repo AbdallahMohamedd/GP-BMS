@@ -13,6 +13,7 @@ package_id: MKL25Z128VLK4
 mcu_data: ksdk2_0
 processor_version: 13.0.1
 board: FRDM-KL25Z
+external_user_signals: {}
 pin_labels:
 - {pin_num: '32', pin_signal: PTA12/TPM1_CH0, label: 'J1[8]/D3', identifier: initB}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
@@ -60,6 +61,7 @@ BOARD_InitPins:
   - {pin_num: '61', peripheral: GPIOC, signal: 'GPIO, 4', pin_signal: PTC4/LLWU_P8/SPI0_PCS0/UART1_TX/TPM0_CH3}
   - {pin_num: '53', peripheral: GPIOB, signal: 'GPIO, 18', pin_signal: TSI0_CH11/PTB18/TPM2_CH0}
   - {peripheral: DMA, signal: 'CH, 0', pin_signal: SPI0_Transmit}
+  - {peripheral: DMA, signal: 'CH, 1', pin_signal: SPI1_Receive}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -86,6 +88,8 @@ void BOARD_InitPins(void)
     CLOCK_EnableClock(kCLOCK_PortE);
     /* DMA Channel Source (Slot) 0: SPI0 Transmit */
     DMAMUX_SetSource(DMAMUX0, 0U, (uint8_t)kDmaRequestMux0SPI0Tx);
+    /* DMA Channel Source (Slot) 1: SPI1 Receive */
+    DMAMUX_SetSource(DMAMUX0, 1U, (uint8_t)kDmaRequestMux0SPI1Rx);
 
     /* PORTA1 (pin 27) is configured as UART0_RX */
     PORT_SetPinMux(BOARD_INITPINS_DEBUG_UART_RX_PORT, BOARD_INITPINS_DEBUG_UART_RX_PIN, kPORT_MuxAlt2);

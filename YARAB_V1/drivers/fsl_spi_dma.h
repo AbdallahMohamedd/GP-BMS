@@ -32,7 +32,7 @@
 
 #include "fsl_spi.h"
 #include "fsl_dma.h"
-
+#include "fsl_gpio.h"
 /*!
  * @addtogroup spi_dma_driver
  * @{
