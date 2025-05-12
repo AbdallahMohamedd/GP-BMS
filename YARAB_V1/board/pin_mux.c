@@ -44,24 +44,21 @@ BOARD_InitPins:
 - pin_list:
   - {pin_num: '28', peripheral: UART0, signal: TX, pin_signal: TSI0_CH3/PTA2/UART0_TX/TPM2_CH1}
   - {pin_num: '27', peripheral: UART0, signal: RX, pin_signal: TSI0_CH2/PTA1/UART0_RX/TPM2_CH0}
-  - {pin_num: '64', peripheral: SPI0, signal: SIN, pin_signal: CMP0_IN1/PTC7/SPI0_MISO/SPI0_MOSI}
-  - {pin_num: '63', peripheral: SPI0, signal: SOUT, pin_signal: CMP0_IN0/PTC6/LLWU_P10/SPI0_MOSI/EXTRG_IN/SPI0_MISO}
   - {pin_num: '74', peripheral: GPIOD, signal: 'GPIO, 1', pin_signal: ADC0_SE5b/PTD1/SPI0_SCK/TPM0_CH1}
-  - {pin_num: '66', peripheral: I2C0, signal: SDA, pin_signal: CMP0_IN3/PTC9/I2C0_SDA/TPM0_CH5}
-  - {pin_num: '65', peripheral: I2C0, signal: SCL, pin_signal: CMP0_IN2/PTC8/I2C0_SCL/TPM0_CH4}
   - {pin_num: '54', peripheral: GPIOB, signal: 'GPIO, 19', pin_signal: TSI0_CH12/PTB19/TPM2_CH1}
   - {pin_num: '33', peripheral: TPM1, signal: 'CH, 1', pin_signal: PTA13/TPM1_CH1}
-  - {pin_num: '77', peripheral: SPI1, signal: PCS0_SS, pin_signal: PTD4/LLWU_P14/SPI1_PCS0/UART2_RX/TPM0_CH4}
   - {pin_num: '2', peripheral: SPI1, signal: SIN, pin_signal: PTE1/SPI1_MOSI/UART1_RX/SPI1_MISO/I2C1_SCL}
   - {pin_num: '80', peripheral: SPI1, signal: SOUT, pin_signal: PTD7/SPI1_MISO/UART0_TX/SPI1_MOSI}
   - {pin_num: '1', peripheral: GPIOE, signal: 'GPIO, 0', pin_signal: PTE0/UART1_TX/RTC_CLKOUT/CMP0_OUT/I2C1_SDA}
   - {pin_num: '62', peripheral: SPI0, signal: SCK, pin_signal: PTC5/LLWU_P9/SPI0_SCK/LPTMR0_ALT2/CMP0_OUT}
   - {pin_num: '32', peripheral: GPIOA, signal: 'GPIO, 12', pin_signal: PTA12/TPM1_CH0, identifier: ''}
   - {pin_num: '78', peripheral: SPI1, signal: SCK, pin_signal: ADC0_SE6b/PTD5/SPI1_SCK/UART2_TX/TPM0_CH5}
-  - {pin_num: '61', peripheral: GPIOC, signal: 'GPIO, 4', pin_signal: PTC4/LLWU_P8/SPI0_PCS0/UART1_TX/TPM0_CH3}
   - {pin_num: '53', peripheral: GPIOB, signal: 'GPIO, 18', pin_signal: TSI0_CH11/PTB18/TPM2_CH0}
   - {peripheral: DMA, signal: 'CH, 0', pin_signal: SPI0_Transmit}
   - {peripheral: DMA, signal: 'CH, 1', pin_signal: SPI1_Receive}
+  - {pin_num: '65', peripheral: GPIOC, signal: 'GPIO, 8', pin_signal: CMP0_IN2/PTC8/I2C0_SCL/TPM0_CH4}
+  - {pin_num: '75', peripheral: SPI0, signal: SOUT, pin_signal: PTD2/SPI0_MOSI/UART2_RX/TPM0_CH2/SPI0_MISO}
+  - {pin_num: '49', peripheral: SPI1, signal: PCS0_SS, pin_signal: PTB10/SPI1_PCS0}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -103,35 +100,26 @@ void BOARD_InitPins(void)
     /* PORTA2 (pin 28) is configured as UART0_TX */
     PORT_SetPinMux(BOARD_INITPINS_DEBUG_UART_TX_PORT, BOARD_INITPINS_DEBUG_UART_TX_PIN, kPORT_MuxAlt2);
 
+    /* PORTB10 (pin 49) is configured as SPI1_PCS0 */
+    PORT_SetPinMux(PORTB, 10U, kPORT_MuxAlt2);
+
     /* PORTB18 (pin 53) is configured as PTB18 */
     PORT_SetPinMux(BOARD_INITPINS_LED_RED_PORT, BOARD_INITPINS_LED_RED_PIN, kPORT_MuxAsGpio);
 
     /* PORTB19 (pin 54) is configured as PTB19 */
     PORT_SetPinMux(BOARD_INITPINS_LED_GREEN_PORT, BOARD_INITPINS_LED_GREEN_PIN, kPORT_MuxAsGpio);
 
-    /* PORTC4 (pin 61) is configured as PTC4 */
-    PORT_SetPinMux(PORTC, 4U, kPORT_MuxAsGpio);
-
     /* PORTC5 (pin 62) is configured as SPI0_SCK */
     PORT_SetPinMux(PORTC, 5U, kPORT_MuxAlt2);
 
-    /* PORTC6 (pin 63) is configured as SPI0_MOSI */
-    PORT_SetPinMux(PORTC, 6U, kPORT_MuxAlt2);
-
-    /* PORTC7 (pin 64) is configured as SPI0_MISO */
-    PORT_SetPinMux(PORTC, 7U, kPORT_MuxAlt2);
-
-    /* PORTC8 (pin 65) is configured as I2C0_SCL */
-    PORT_SetPinMux(PORTC, 8U, kPORT_MuxAlt2);
-
-    /* PORTC9 (pin 66) is configured as I2C0_SDA */
-    PORT_SetPinMux(PORTC, 9U, kPORT_MuxAlt2);
+    /* PORTC8 (pin 65) is configured as PTC8 */
+    PORT_SetPinMux(PORTC, 8U, kPORT_MuxAsGpio);
 
     /* PORTD1 (pin 74) is configured as PTD1 */
     PORT_SetPinMux(BOARD_INITPINS_LED_BLUE_PORT, BOARD_INITPINS_LED_BLUE_PIN, kPORT_MuxAsGpio);
 
-    /* PORTD4 (pin 77) is configured as SPI1_PCS0 */
-    PORT_SetPinMux(PORTD, 4U, kPORT_MuxAlt2);
+    /* PORTD2 (pin 75) is configured as SPI0_MOSI */
+    PORT_SetPinMux(PORTD, 2U, kPORT_MuxAlt2);
 
     /* PORTD5 (pin 78) is configured as SPI1_SCK */
     PORT_SetPinMux(PORTD, 5U, kPORT_MuxAlt2);

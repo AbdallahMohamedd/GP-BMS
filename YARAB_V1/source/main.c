@@ -60,7 +60,7 @@ int main(void)
 	/* ==================== 2. GPIO Initialization (LEDs and CS) ==================== */
 	/////////////////////////////////////////////////////////////////////////////////////////////
 	gpio_pin_config_t led_config = {kGPIO_DigitalOutput, 0}; // Output, initial state low
-	GPIO_PinInit(GPIOC, 4U, &(gpio_pin_config_t){kGPIO_DigitalOutput, 1});			 // CS pin
+	GPIO_PinInit(GPIOC, 8U, &(gpio_pin_config_t){kGPIO_DigitalOutput, 1});			 // CS pin
 
 	GPIO_PinInit(GPIOB, 19U, &led_config);									 // Green LED
 	GPIO_PinInit(BOARD_LED_BLUE_GPIO, BOARD_LED_BLUE_GPIO_PIN, &led_config); // Blue LED
@@ -129,7 +129,7 @@ int main(void)
 	DataBase_GetCurrentMeasurementData(&currentData); // Get initial data
 	FuSa_updateFaultData();							  // Update fault status
 	FuSa_getCurrentFaultData(&currentFaults);		  // Get initial fault status
-	// DataMonitor_lcd(59, 100, 0.25, 25.6, 1, 0);         // Update LCD with initial data
+	 //DataMonitor_lcd(59, 100, 0.25, 25.6, 1, 0);         // Update LCD with initial data
 	PRINTF("Initial Data Acquisition Complete.\n\r\r");
 
 	/////////////////////////////////////////////////////////////////////////////////////////////

@@ -63,7 +63,7 @@ static const gpio_pin_config_t intbPinConfig = {
 //=============================================================================
 #define SPI_CS_PORT             PORTC ///< PORT peripheral instance for the SPI Chip Select (CS) pin.
 #define SPI_CS_GPIO             GPIOC ///< GPIO peripheral instance for the SPI CS pin (used during wake-up sequence).
-#define SPI_CS_PIN              (4U)  ///< Pin number within the GPIO peripheral for the SPI CS pin.
+#define SPI_CS_PIN              (8U)  ///< Pin number within the GPIO peripheral for the SPI CS pin.
 // Note: The MUX setting for the CS pin's SPI function (e.g., kPORT_MuxAlt2) is handled in SlaveIF.c
 
 //=============================================================================

@@ -49,22 +49,17 @@
                         <data>true</data>
                      </feature>
                   </dependency>
-                  <dependency resourceType="Peripheral" resourceId="SPI0" description="Peripheral SPI0 is not initialized" problem_level="1" source="Pins:BOARD_InitPins">
-                     <feature name="initialized" evaluation="equal">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
-                  <dependency resourceType="Peripheral" resourceId="I2C0" description="Peripheral I2C0 is not initialized" problem_level="1" source="Pins:BOARD_InitPins">
-                     <feature name="initialized" evaluation="equal">
-                        <data>true</data>
-                     </feature>
-                  </dependency>
                   <dependency resourceType="Peripheral" resourceId="TPM1" description="Peripheral TPM1 is not initialized" problem_level="1" source="Pins:BOARD_InitPins">
                      <feature name="initialized" evaluation="equal">
                         <data>true</data>
                      </feature>
                   </dependency>
                   <dependency resourceType="Peripheral" resourceId="SPI1" description="Peripheral SPI1 is not initialized" problem_level="1" source="Pins:BOARD_InitPins">
+                     <feature name="initialized" evaluation="equal">
+                        <data>true</data>
+                     </feature>
+                  </dependency>
+                  <dependency resourceType="Peripheral" resourceId="SPI0" description="Peripheral SPI0 is not initialized" problem_level="1" source="Pins:BOARD_InitPins">
                      <feature name="initialized" evaluation="equal">
                         <data>true</data>
                      </feature>
@@ -93,14 +88,9 @@
                <pins>
                   <pin peripheral="UART0" signal="TX" pin_num="28" pin_signal="TSI0_CH3/PTA2/UART0_TX/TPM2_CH1"/>
                   <pin peripheral="UART0" signal="RX" pin_num="27" pin_signal="TSI0_CH2/PTA1/UART0_RX/TPM2_CH0"/>
-                  <pin peripheral="SPI0" signal="SIN" pin_num="64" pin_signal="CMP0_IN1/PTC7/SPI0_MISO/SPI0_MOSI"/>
-                  <pin peripheral="SPI0" signal="SOUT" pin_num="63" pin_signal="CMP0_IN0/PTC6/LLWU_P10/SPI0_MOSI/EXTRG_IN/SPI0_MISO"/>
                   <pin peripheral="GPIOD" signal="GPIO, 1" pin_num="74" pin_signal="ADC0_SE5b/PTD1/SPI0_SCK/TPM0_CH1"/>
-                  <pin peripheral="I2C0" signal="SDA" pin_num="66" pin_signal="CMP0_IN3/PTC9/I2C0_SDA/TPM0_CH5"/>
-                  <pin peripheral="I2C0" signal="SCL" pin_num="65" pin_signal="CMP0_IN2/PTC8/I2C0_SCL/TPM0_CH4"/>
                   <pin peripheral="GPIOB" signal="GPIO, 19" pin_num="54" pin_signal="TSI0_CH12/PTB19/TPM2_CH1"/>
                   <pin peripheral="TPM1" signal="CH, 1" pin_num="33" pin_signal="PTA13/TPM1_CH1"/>
-                  <pin peripheral="SPI1" signal="PCS0_SS" pin_num="77" pin_signal="PTD4/LLWU_P14/SPI1_PCS0/UART2_RX/TPM0_CH4"/>
                   <pin peripheral="SPI1" signal="SIN" pin_num="2" pin_signal="PTE1/SPI1_MOSI/UART1_RX/SPI1_MISO/I2C1_SCL"/>
                   <pin peripheral="SPI1" signal="SOUT" pin_num="80" pin_signal="PTD7/SPI1_MISO/UART0_TX/SPI1_MOSI"/>
                   <pin peripheral="GPIOE" signal="GPIO, 0" pin_num="1" pin_signal="PTE0/UART1_TX/RTC_CLKOUT/CMP0_OUT/I2C1_SDA"/>
@@ -111,10 +101,12 @@
                      </pin_features>
                   </pin>
                   <pin peripheral="SPI1" signal="SCK" pin_num="78" pin_signal="ADC0_SE6b/PTD5/SPI1_SCK/UART2_TX/TPM0_CH5"/>
-                  <pin peripheral="GPIOC" signal="GPIO, 4" pin_num="61" pin_signal="PTC4/LLWU_P8/SPI0_PCS0/UART1_TX/TPM0_CH3"/>
                   <pin peripheral="GPIOB" signal="GPIO, 18" pin_num="53" pin_signal="TSI0_CH11/PTB18/TPM2_CH0"/>
                   <pin peripheral="DMA" signal="CH, 0" pin_num="" pin_signal="SPI0_Transmit"/>
                   <pin peripheral="DMA" signal="CH, 1" pin_num="" pin_signal="SPI1_Receive"/>
+                  <pin peripheral="GPIOC" signal="GPIO, 8" pin_num="65" pin_signal="CMP0_IN2/PTC8/I2C0_SCL/TPM0_CH4"/>
+                  <pin peripheral="SPI0" signal="SOUT" pin_num="75" pin_signal="PTD2/SPI0_MOSI/UART2_RX/TPM0_CH2/SPI0_MISO"/>
+                  <pin peripheral="SPI1" signal="PCS0_SS" pin_num="49" pin_signal="PTB10/SPI1_PCS0"/>
                </pins>
             </function>
          </functions_list>
