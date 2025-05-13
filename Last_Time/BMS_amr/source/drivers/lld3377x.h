@@ -98,7 +98,7 @@
 // ----------------------------------------------------------------------------
 #define GLOBAL_CID        	0													//!< CID for global write commands
 // ----------------------------------------------------------------------------
-#define MAX_CLUSTER        15													//!< max. number of clusters 1..15  (CID = 0 reserved for unassigned cluster)
+#define MAX_CLUSTER         2													//!< max. number of clusters 1..15  (CID = 0 reserved for unassigned cluster)
 // ----------------------------------------------------------------------------
 // values from datasheet
 #define WAIT_AFTER_RESET                 5 		 								//!< time [ms] its required to wait after a reset (WAIT_AFTER_RESET)	{VPWR(READY) VPWR to Device Ready for Initialization � � 5.0 ms}
