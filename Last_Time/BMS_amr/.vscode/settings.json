@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "fsl_i2c_cmsis.h": "c",
+    "clock_config.h": "c",
+    "datamonitor.h": "c",
+    "screenif.h": "c"
+  }
+}

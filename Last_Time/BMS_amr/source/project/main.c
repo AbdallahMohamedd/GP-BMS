@@ -46,8 +46,7 @@
 #include "fsl_gpio.h"
 #include "fsl_pit.h"
 #include "fsl_device_registers.h"
-#include "LCD.h"
-// #include "LCD.h"
+#include <COTs/BatteryStatusMonitor/Inc/DataMonitor.h>
 #define SW_IDENT SWIDENT_EVALUATION_SW //!< unique ID for Demo SW <> Eval GUI
 #define SW_VER 4
 #define SW_SUB 0
