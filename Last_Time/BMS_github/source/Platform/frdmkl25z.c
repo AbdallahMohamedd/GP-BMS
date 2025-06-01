@@ -31,7 +31,8 @@
 
 
 // --------------------------------------------------------------------
-#include "source/drivers/lld3377x.h"
+//#include "source/drivers/lld3377x.h"
+#include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
 // --------------------------------------------------------------------
 TYPE_INTERFACE _interface_;														//!< local copy of interface type 
 TYPE_EVB _evb_;																	//!< local copy of evb type

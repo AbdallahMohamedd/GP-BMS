@@ -1,21 +1,29 @@
+/*
+ * SlaveIF.h
+ *
+ *  Created on: Jun 1, 2025
+ *      Author: abdal
+ */
+
+
 // ----------------------------------------------------------------------------
 //  Copyright (c) 2015, NXP Semiconductors.
 //  All rights reserved.
-// 
+//
 //  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-// 
+//
 //  o Redistributions of source code must retain the above copyright notice, this list
 //    of conditions and the following disclaimer.
-// 
+//
 //  o Redistributions in binary form must reproduce the above copyright notice, this
 //    list of conditions and the following disclaimer in the documentation and/or
 //    other materials provided with the distribution.
-// 
+//
 //  o Neither the name of NXP Semiconductors nor the names of its
 //    contributors may be used to endorse or promote products derived from this
 //    software without specific prior written permission.
-// 
+//
 //  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 //  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 //  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -30,66 +38,71 @@
 //! \addtogroup drivers
 // @{
 /*! \brief Low level driver for the MC33771 and MC33772 products.
- * 
+ *
  * This module contains low level routines to access the MC33771, MC33772 and MC33664
  * products and provides the following functionalities:
- * 
+ *
  * - read, write and global write to register functions
  * - CRC computation (lookup-table based)
  * - TPL enable/disable functions
  * - error handling (see below)
  * - handling of TagID and RC rolling counter
  *
- * \note 
+ * \note
  * Handling of TPL and SPI interface to MC3377x is handled within only one function.
- * 
- * 
+ *
+ *
  * <b>TagID and RC counter</b>
- * 
- * The MC3377x provide some means to match a response to a requested e.g. read command 
+ *
+ * The MC3377x provide some means to match a response to a requested e.g. read command
  * by using a (rolling) counter value. Like this is possible to verify that the response is
  * the one from the last sent request and not e.g. from the previous request.
- * 
- * The RC Rolling Counter is used for register accesses where the matching is directly 
+ *
+ * The RC Rolling Counter is used for register accesses where the matching is directly
  * between register access and response.
- * 
- * Some registers, e.g. MEAS_CELL, however need to be matched with the actual triggering 
+ *
+ * Some registers, e.g. MEAS_CELL, however need to be matched with the actual triggering
  * of the measurement itself. Here the request to perform a measurement - start of conversion
- * (SoC) is tagged with an TagID and later reading of e.g. MEAS_CELL registers can be matched 
+ * (SoC) is tagged with an TagID and later reading of e.g. MEAS_CELL registers can be matched
  * with the TagID provided for the SoC.
- *  
+ *
  * \sa \ref lld3377xNewRCValue, \ref lld3377xSetTagID
- * 
- * 
- * <b>Error handling philosophy</b>  
- * 
+ *
+ *
+ * <b>Error handling philosophy</b>
+ *
  * To easier handle and detect, e.g. communication errors, a global error "errLast"
- * is used. In case of an previously detected error further e.g. lld3377xReadRegisters() calls 
+ * is used. In case of an previously detected error further e.g. lld3377xReadRegisters() calls
  * will not executed and return false to indicate unsuccessful execution.
- * 
- * Like this is possible to propagate errors through hierarchical code up to 
+ *
+ * Like this is possible to propagate errors through hierarchical code up to
  * the level where the error shall be handled.
- * 
- * \sa  
+ *
+ * \sa
  * - \ref lld3377xClearError and \ref lld3377xGetError for error handling
  * - \ref _lld3377xSetError() to test error handling (e.g. inject simulated errors) on application level
- * 
+ *
  * <b>Handling of interface (TPL or SPI)</b>
- * 
- * The communication between the pack controller and a MC3377x will be different, 
- * if the MC3377x is directly connected via SPI or accessed using the TPL interface 
+ *
+ * The communication between the pack controller and a MC3377x will be different,
+ * if the MC3377x is directly connected via SPI or accessed using the TPL interface
  * (using MC33664 TPL translator). E.g. will a lld3377xReadRegisters() via SPI interface,
  * require 2 SPI transfers as the SPI MISO data returned is related to the previous SPI transfer.
- *  
+ *
 */
 //! \addtogroup lld3377x
 // @{
 // ----------------------------------------------------------------------------
-#ifndef LLD3377X_H_
-#define LLD3377X_H_
+
+#ifndef COTS_SLAVECONTROLIF_INC_SLAVEIF_H_
+#define COTS_SLAVECONTROLIF_INC_SLAVEIF_H_
 // ----------------------------------------------------------------------------
 #include <COTs/KL25ZUtilize/Inc/KL25ZUtil.h>
 #include <string.h>																// for memcmp()
+#include <stdio.h>
+//#include "source/COTs/BMSDataBase/Inc/database.h"
+#include "Platform/frdmkl25z.h"
+
 #include <tpm1.h>																// for Delay
 #include "MKL25Z4.h"
 #include "spi.h"
@@ -104,24 +117,43 @@
 #define WAIT_AFTER_RESET                 5 		 								//!< time [ms] its required to wait after a reset (WAIT_AFTER_RESET)	{VPWR(READY) VPWR to Device Ready for Initialization � � 5.0 ms}
 #define WAIT_AFTER_WAKEUP                1 				 						//!< time [ms] to wait after wakeup tWAKE-UP\nSleep Mode to Normal Mode Wake-up from Bus communication.
 // ----------------------------------------------------------------------------
-#define SETTLING_TIME      1000													//!< time [us] to wait for RCs to settle  
+#define SETTLING_TIME      1000													//!< time [us] to wait for RCs to settle
 	// threshold must be set below lowest expected value
 	// Uth < Ucell * (Rpd / (2*Rext+Rpd))
 #define SCALE_VCELL         (152.5925E-6)   //[V]
 #define OPEN_THRESHOLD         (u16) ((0.100)/SCALE_VCELL)    					// value for 150mV
 // ----------------------------------------------------------------------------
 // macros to unpack data from array
-#define UNPACK_REGADR(v)   ((u8)  ( (v)[2] & 0x7F))								//!< macros for unpacking Register Address field from received frame 
+#define UNPACK_REGADR(v)   ((u8)  ( (v)[2] & 0x7F))								//!< macros for unpacking Register Address field from received frame
 #define UNPACK_DATA(v)     ((u16) (( (v)[4] << 8) | (v)[3]))  					//!< macros for unpacking Data field from received frame
 #define UNPACK_TAGID(v)    ((u8)  ( (v)[1] & 0x0F))  							//!< macros for unpacking TagID field from received frame
 #define UNPACK_RC(v)       ((u8)  ( ((v)[1] & 0x0C))>>2 )  						//!< macros for unpacking RC field from received frame
 // ----------------------------------------------------------------------------
-#define IS_NULL_RESPONSE(v)  (( (v)[4]==0 )&&( (v)[3]==0 )&&( (v)[2]==0 )&&( (v)[1]==0 ))  //!< macro to check for NULL response\n all fields (except CRC) are 0    
+#define IS_NULL_RESPONSE(v)  (( (v)[4]==0 )&&( (v)[3]==0 )&&( (v)[2]==0 )&&( (v)[1]==0 ))  //!< macro to check for NULL response\n all fields (except CRC) are 0
+// ----------------------------------------------------------------------------
+/*! \brief structure for MC3377x configuration list entry.
+ *
+ * List of register address and register values to be loaded during configuration.
+ *
+ * \note
+ * The last list entry must indicate the end of the list:
+ * \code	{0 , 0 }		// end symbol \endcode
+ *
+ */
+typedef struct{
+	u8 regAdr;																	//!< register address to be written to
+	u16 regValue;																//!< register value to write
+}TYPE_BCC_CONF;
+// ----------------------------------------------------------------------------
+extern const TYPE_BCC_CONF CONF33771SPI[];
+extern const TYPE_BCC_CONF CONF33771TPL[];
+extern const TYPE_BCC_CONF CONF33772SPI[];
+extern const TYPE_BCC_CONF CONF33772TPL[];
 // ----------------------------------------------------------------------------
 //! \brief 128 bit array, where each bit is indicating if a register is using TagID or RC format response \sa \ref bRegIsTagID
-typedef struct { u16 w[8]; }TYPE_TAGIDLIST;									    //!< 128 bit array 
+typedef struct { u16 w[8]; }TYPE_TAGIDLIST;									    //!< 128 bit array
 // ----------------------------------------------------------------------------
-//! \brief structures to handle different chips 
+//! \brief structures to handle different chips
 typedef enum{
 	Chip_Unknown   = 0,															//!< unknown
 	Chip_MC33771A  = 1,															//!< MC33771A  14-channel device
@@ -132,16 +164,16 @@ typedef enum{
 	Chip_MC33772B  = 6,															//!< MC33772B   6-channel device
 }TYPE_CHIP;
 // ----------------------------------------------------------------------------
-//! \brief datatype to hold GUID Global Unique ID. 
+//! \brief datatype to hold GUID Global Unique ID.
 typedef int64_t TYPE_GUID;
 // ----------------------------------------------------------------------------
 //! \brief structure to hold the Cluster information
 typedef struct{
 	TYPE_GUID Guid;																//!< Global Unique ID
-	TYPE_CHIP Chip;																//!< used Chip	
+	TYPE_CHIP Chip;																//!< used Chip
 	u8 FRev;																	//!< Full mask revision
 	u8 MRev;																	//!< Metal mask revision
-	u8 NoCTs;																	//!< Number of Cell Terminals (currently only 6 or 14 is supported) 
+	u8 NoCTs;																	//!< Number of Cell Terminals (currently only 6 or 14 is supported)
 	const u16 *pTagIdList;														//!< pointer to used TagID list
 }LLD_TYPE_CLUSTER;
 // ----------------------------------------------------------------------------
@@ -151,11 +183,11 @@ typedef struct{
 typedef enum {
 	RETURN_OK  			= 0x00, 	         									//!< no error
 	ERR_WrongParam      = 0x06,													//!< Wrong parameter (invalid parameters were passed)
-	
+
 /*! errors related to readback of transmitted data "echo"  - only tpl interface
 	\image html	tplerrtx.png
-*/	
-	ERR_TX				= 0x01,		             								
+*/
+	ERR_TX				= 0x01,
 	ERR_NoResponse		= 0x02,         										//!< no bytes were received
 	ERR_ResponseLen     = 0x03,    												//!< wrong no of bytes received
 	ERR_ResponseCRC		= 0x04,        											//!< CRC of received data is wrong
@@ -163,7 +195,7 @@ typedef enum {
 	ERR_ResponseTagId   = 0x07,													//!< Response Tag ID does not match with provided ID
 	ERR_ResponseRC      = 0x08,													//!< Response Tag ID does not match with provided ID
 	ERR_ResponseAdr     = 0x09,													//!< Response register address is not expected one
-	ERR_WrongInterface  = 0x0A,													//!< wrong / unknown interface 
+	ERR_WrongInterface  = 0x0A,													//!< wrong / unknown interface
 	ERR_Timeout         = 0x0B,													//!< timeout error
 	//	ERROR = 0xFF	                   											//!< general (no further detailed) error code
 }LLD_TYPE_RETURN;
@@ -186,25 +218,25 @@ typedef enum {
 //! \brief enum for SYS_CFG1 register Cyclic Timer setting
 typedef enum {
 	CyclicTimerOff   = 0x0000,													//!< cyclic measurements disabled
-	CyclicTimerCont  = 0x2000,													//!< continuous cyclic measurements 
-	CyclicTimer0s1   = 0x4000,													//!< cyclic measurements 0.1s 
-	CyclicTimer0s2   = 0x6000,													//!< cyclic measurements 0.2s 
-	CyclicTimer1s    = 0x8000,													//!< cyclic measurements 1s 
-	CyclicTimer2s    = 0xA000,													//!< cyclic measurements 2s 
-	CyclicTimer4s    = 0xC000,													//!< cyclic measurements 4s 
-	CyclicTimer8s    = 0xE000													//!< cyclic measurements 8s 
+	CyclicTimerCont  = 0x2000,													//!< continuous cyclic measurements
+	CyclicTimer0s1   = 0x4000,													//!< cyclic measurements 0.1s
+	CyclicTimer0s2   = 0x6000,													//!< cyclic measurements 0.2s
+	CyclicTimer1s    = 0x8000,													//!< cyclic measurements 1s
+	CyclicTimer2s    = 0xA000,													//!< cyclic measurements 2s
+	CyclicTimer4s    = 0xC000,													//!< cyclic measurements 4s
+	CyclicTimer8s    = 0xE000													//!< cyclic measurements 8s
 }LLD_TYPE_CYCLIC_TIMER;
 // ----------------------------------------------------------------------------
 //! \brief enum for SYS_CFG1 register Diagnostic Timeout settings
 typedef enum {
 	DiagTimeoutNone  = 0x0000,													//!< No timeout (not allowed to enter diag mode)
-	DiagTimeout005   = 0x0400,													//!< Diag timeout 0.05s 
-	DiagTimeout01    = 0x0800,													//!< Diag timeout 0.1s 
-	DiagTimeout02    = 0x0C00,													//!< Diag timeout 0.2s 
-	DiagTimeout1     = 0x1000,													//!< Diag timeout 1s 
-	DiagTimeout2     = 0x1400,													//!< Diag timeout 2s 
-	DiagTimeout4     = 0x1800,													//!< Diag timeout 4s 
-	DiagTimeout8     = 0x1C00													//!< Diag timeout 8 s 
+	DiagTimeout005   = 0x0400,													//!< Diag timeout 0.05s
+	DiagTimeout01    = 0x0800,													//!< Diag timeout 0.1s
+	DiagTimeout02    = 0x0C00,													//!< Diag timeout 0.2s
+	DiagTimeout1     = 0x1000,													//!< Diag timeout 1s
+	DiagTimeout2     = 0x1400,													//!< Diag timeout 2s
+	DiagTimeout4     = 0x1800,													//!< Diag timeout 4s
+	DiagTimeout8     = 0x1C00													//!< Diag timeout 8 s
 }LLD_TYPE_DIAG_TIMEOUT;
 // ----------------------------------------------------------------------------
 //! \brief enum for ADC_CFG register PGA_GAIN setting
@@ -263,7 +295,7 @@ typedef enum {
 // ----------------------------------------------------------------------------
 //! \brief enum for memory address accesses (register addresses)
 typedef enum {
-	Reserved      	= 0x00,														//!< 0x00 reserved 			
+	Reserved      	= 0x00,														//!< 0x00 reserved
 	INIT          	= 0x01,														//!< 0x01 device initialisation	   (Global write is forbidden for CID)
 	SYS_CFG_GLOBAL	= 0x02,														//!< 0x02 global system configuration (GLOBAL access only and no ECHO in transformer mode, SPI mode this is operates as a standard write.)
 	SYS_CFG1      	= 0x03,														//!< 0x03 system configuration
@@ -274,7 +306,7 @@ typedef enum {
 	OV_UV_EN        = 0x08,														//!< 0x08 CT measurement selection
 	CELL_OV_FLT 	= 0x09,														//!< 0x09 CT over-voltage fault
 	CELL_UV_FLT 	= 0x0A,														//!< 0x0A CT under-voltage fault
-	//Reserved        0x0B                                                           
+	//Reserved        0x0B
 	CB1_CFG			= 0x0C,														//!< 0x0C CB configuration for cell 1
 	CB2_CFG			= 0x0D,														//!< 0x0D CB configuration for cell 2
 	CB3_CFG			= 0x0E,														//!< 0x0E CB configuration for cell 3
@@ -297,20 +329,20 @@ typedef enum {
 	GPIO_STS 		= 0x1F,														//!< 0x1F GPIO diagnostic
 	AN_OT_UT_FLT 	= 0x20,														//!< 0x20 AN over and undertemp
 	GPIO_SHORT_Anx_OPEN_STS = 0x21, 											//!< 0x21 Short GPIO / Open AN diagnostic
-	I_STATUS		= 0x22, 													//!< 0x22 This register contains PGA DAC value	
+	I_STATUS		= 0x22, 													//!< 0x22 This register contains PGA DAC value
 	COM_STATUS    	= 0x23,     												//!< 0x23 Number of CRC error counted
-	FAULT1_STATUS 	= 0x24,	  													//!< 0x24 Fault status	
-	FAULT2_STATUS 	= 0x25,	  													//!< 0x25 Fault status	
-	FAULT3_STATUS 	= 0x26,	  													//!< 0x26 Fault status	
-	FAULT_MASK1   	= 0x27,	  													//!< 0x27 Fault pin mask	
-	FAULT_MASK2   	= 0x28,	  													//!< 0x28 Fault pin mask	
-	FAULT_MASK3   	= 0x29,	  													//!< 0x29 Fault pin mask	
-	WAKEUP_MASK1  	= 0x2A,	  													//!< 0x2A Wakeup events mask	
-	WAKEUP_MASK2  	= 0x2B,	  													//!< 0x2B Wakeup events mask	
-	WAKEUP_MASK3  	= 0x2C,	  													//!< 0x2C Wakeup events mask	
+	FAULT1_STATUS 	= 0x24,	  													//!< 0x24 Fault status
+	FAULT2_STATUS 	= 0x25,	  													//!< 0x25 Fault status
+	FAULT3_STATUS 	= 0x26,	  													//!< 0x26 Fault status
+	FAULT_MASK1   	= 0x27,	  													//!< 0x27 Fault pin mask
+	FAULT_MASK2   	= 0x28,	  													//!< 0x28 Fault pin mask
+	FAULT_MASK3   	= 0x29,	  													//!< 0x29 Fault pin mask
+	WAKEUP_MASK1  	= 0x2A,	  													//!< 0x2A Wakeup events mask
+	WAKEUP_MASK2  	= 0x2B,	  													//!< 0x2B Wakeup events mask
+	WAKEUP_MASK3  	= 0x2C,	  													//!< 0x2C Wakeup events mask
 	CC_NB_SAMPLES 	= 0x2D,	  													//!< 0x2D Number of samples in coulomb counter
 	COULOUMB_CNT1 	= 0x2E,     												//!< 0x2E..2F Couloumb counter accumulator
-	COULOUMB_CNT2 	= 0x2F, 	                                                     
+	COULOUMB_CNT2 	= 0x2F,
 	MEAS_ISENSE1  	= 0x30,     												//!< 0x30 ISENSE measurement
 	MEAS_ISENSE2  	= 0x31,		    											//!< 0x31 ISENSE measurement
 	MEAS_STACK    	= 0x32,     												//!< 0x32 stack  voltage measurement
@@ -374,8 +406,8 @@ typedef enum {
 	EEPROM_CNTL     = 0x6C,         											//!< 0x6C EEPROM transfere control
 	DED_ENCODE1     = 0x6D,         											//!< 0x6D ECC signature 1
 	DED_ENCODE2     = 0x6E,         											//!< 0x6E ECC signature 2
-	FUSE_MIRROR_DATA= 0x6F,														//!< 0x6F Fuse Mirror data 
-	FUSE_MIRROR_CTRL= 0x70,														//!< 0x70 Fuse Mirror control 
+	FUSE_MIRROR_DATA= 0x6F,														//!< 0x6F Fuse Mirror data
+	FUSE_MIRROR_CTRL= 0x70,														//!< 0x70 Fuse Mirror control
 }LLD_TYPE_REG_NAME;
 // ----------------------------------------------------------------------------
 // local routines
@@ -398,16 +430,22 @@ bool lld3377xTPLEnable(void);
 bool lld3377xTPLDisable(void);
 bool lld3377xWriteGlobalRegister(u8 Register, u16 writeData);
 // ----------------------------------------------------------------------------
-//bool lld3377xNOPRegister(u8 CID, u8 Register, u16 writeData, u16 *readData); 
+//bool lld3377xNOPRegister(u8 CID, u8 Register, u16 writeData, u16 *readData);
 // ----------------------------------------------------------------------------
 // low lever driver error handling routines
 bool _lld3377xSetError(LLD_TYPE_RETURN res);									//!< can be used to simulate errors
 bool lld3377xGetError(LLD_TYPE_RETURN *errorCode);
 void lld3377xClearError(void);
+
+u32 crc8_test(void);
+
+
 // ----------------------------------------------------------------------------
-#endif /* LLD3377X_H_ */
+#endif /* COTS_SLAVECONTROLIF_INC_SLAVEIF_H_ */
 // ----------------------------------------------------------------------------
 // @}
 // @}
 // ----------------------------------------------------------------------------
+
+
 

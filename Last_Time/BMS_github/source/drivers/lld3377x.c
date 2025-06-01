@@ -27,8 +27,9 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
-#include "source/drivers/lld3377x.h"
-#include "source/project/main.h"
+//#include "source/drivers/lld3377x.h"
+#include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
+//#include "source/project/main.h"
 // ----------------------------------------------------------------------------
 volatile const u8 RCVALUELIST[] = {	0x0, 0x1, 0x3, 0x2 };						//!< RC values (in case it should not simply count up)!!!
 // ----------------------------------------------------------------------------

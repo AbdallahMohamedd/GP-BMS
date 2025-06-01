@@ -27,7 +27,7 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // --------------------------------------------------------------------
-#include "mc33771_crc8_test.h"
+#include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
 // ----------------------------------------------------------------------------
 /*! \brief Tests crc pattern from mc33771 datasheet.
  * order of bytes is MSB-> LSB

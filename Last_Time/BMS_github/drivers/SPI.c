@@ -30,7 +30,8 @@
 // ------------------------------------------------------------------
 #include <SPI.h>
 #include <tpm1.h>																// delay
-#include "source/drivers/lld3377x.h"
+//#include "source/drivers/lld3377x.h"
+#include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
 //-----------------------------------------------------------------------------
 // private storage of SPI no
 u8 _RxSPI;																		// stores module number of receive SPI	

@@ -27,7 +27,8 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // --------------------------------------------------------------------
-#include "mc3377x.h"
+//#include "mc3377x.h"
+#include "source/COTs/BMSDataBase/Inc/database.h"
 // ----------------------------------------------------------------------------
 extern const u16 _TAGID_BCC14p2[];
 extern const u16 _TAGID_BCC14[];
@@ -819,5 +820,6 @@ bool MC3377xReadFuseMirror(u8 cid, TYPE_FUSE_DATA *fusedata)  {
 	}
 	return !lld3377xGetError(NULL);
 }
+
 
 

@@ -27,7 +27,7 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // --------------------------------------------------------------------
-#include "ntc.h"
+#include <COTs/NTC/Inc/ntc.h>
 // --------------------------------------------------------------------
 // generated with CalcNTCTable.py
 // NTC 10000Ohm  Beta:3900

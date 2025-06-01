@@ -27,8 +27,10 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ----------------------------------------------------------------------------
-#include "config.h"
-#include "mc3377x.h"           // low level access
+//#include "config.h"
+#include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
+//#include "mc3377x.h"           // low level access
+#include "source/COTs/BMSDataBase/Inc/database.h"
 
 
 #define ADC_CFG_DEFAULT     (PGA_GAIN_AUTO |ADC1_A_14bit|ADC1_B_14bit|ADC2_16bit)				// reset status

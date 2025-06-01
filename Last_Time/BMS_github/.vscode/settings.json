@@ -3,6 +3,9 @@
     "fsl_i2c_cmsis.h": "c",
     "clock_config.h": "c",
     "datamonitor.h": "c",
-    "screenif.h": "c"
+    "screenif.h": "c",
+    "frdmkl25z.h": "c",
+    "mkl25z4.h": "c",
+    "spi.h": "c"
   }
 }
