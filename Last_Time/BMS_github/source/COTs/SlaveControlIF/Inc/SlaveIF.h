@@ -411,6 +411,11 @@ typedef enum {
 }LLD_TYPE_REG_NAME;
 // ----------------------------------------------------------------------------
 // local routines
+void SPICSB(u8 u8Level);
+u8 IntbPinStatus(void);
+void TplEnable(u8 bEnable);
+
+
 u8 lld3377xCrcCalc(u8 *data, u16 length);
 void lld3377xPackFrame(u8 *pu8Buf, u16 data, u8 addr, u8 CID, u8 cmd);
 u8 lld3377xNewRCValue(void);

@@ -6,6 +6,8 @@
     "screenif.h": "c",
     "frdmkl25z.h": "c",
     "mkl25z4.h": "c",
-    "spi.h": "c"
+    "spi.h": "c",
+    "slaveif.h": "c",
+    "board.h": "c"
   }
 }

@@ -32,7 +32,7 @@
 #include "board.h"
 #include "fsl_debug_console.h"
 #include "fsl_common.h"
-
+#include "SPI.h"
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -55,3 +55,117 @@ void BOARD_InitDebugConsole(void)
     uartClkSrcFreq = BOARD_DEBUG_UART_CLK_FREQ;
     DbgConsole_Init(BOARD_DEBUG_UART_BASEADDR, BOARD_DEBUG_UART_BAUDRATE, BOARD_DEBUG_UART_TYPE, uartClkSrcFreq);
 }
+
+void InitHW(void)  {
+	
+	// ----------------------------------
+	// system and clock setup
+	// ----------------------------------
+	// port setup
+	SIM_SCGC5 |= SIM_SCGC5_PORTA_MASK;			// enable port A clock
+	SIM_SCGC5 |= SIM_SCGC5_PORTB_MASK;			// enable port B clock
+	SIM_SCGC5 |= SIM_SCGC5_PORTC_MASK;			// enable port C clock
+	SIM_SCGC5 |= SIM_SCGC5_PORTD_MASK;			// enable port D clock
+	SIM_SCGC5 |= SIM_SCGC5_PORTE_MASK;			// enable port E clock
+	
+	// uart 0 hw setup
+	SIM_SOPT2 |= SIM_SOPT2_UART0SRC(1);      							// uart clock is MCGFLLCLK (=2 bus clock)
+	SIM_SOPT2 |= SIM_SOPT2_TPMSRC(1);      								// TPM  clock is MCGFLLCLK (=2 bus clock)
+    SIM_SCGC4 |= SIM_SCGC4_UART0_MASK;									// enable uart 0 clock
+    PORTA_PCR1 = PORT_PCR_MUX(2)|PORT_PCR_DSE_MASK;
+    PORTA_PCR2 = PORT_PCR_MUX(2)|PORT_PCR_DSE_MASK;
+
+    // Timer setup
+//	SIM_SCGC6 |= SIM_SCGC6_TPM0_MASK; 			// enable clock for TPM0
+	SIM_SCGC6 |= SIM_SCGC6_TPM1_MASK; 			// enable clock for TPM1
+    SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;            // enable pit clock
+
+	// ----------------------------------
+	// PIT
+	// ----------------------------------
+	// PIT channel 0
+	PIT_MCR |= PIT_MCR_FRZ_MASK;										// freeze PIT in debug
+	PIT_MCR &= ~PIT_MCR_MDIS_MASK;										// enable clocking
+	PIT_LDVAL0 = BUSFREQ/2;												// timer ch0 start value every 0.5 seconds
+	PIT_TCTRL0 |= PIT_TCTRL_TEN_MASK;									// enable timer ch0
+}
+
+// ----------------------------------------------------------------------------
+/*! \brief Initializes the FRDM-KL25Z board RGB LED
+
+Attention the PTD1 (blue LED) might be shared with the SPI0_SCK signal!
+Therefore call InitBoardLED() prior to InitInterface()!
+ */
+void InitBoardLED(void)
+{
+
+	// ----------------------------------
+	// RGB LED setup
+	// ----------------------------------
+	// port B
+	PORTB_PCR18 = PORT_PCR_MUX(1); // alt1 = GPIO
+	// ptb18 red (RGB LED)
+	GPIOB_PDDR |= BIT(18); // output
+	LED_RED_Off();
+	// ptb19 green (RGB LED)
+	PORTB_PCR19 = PORT_PCR_MUX(1); // alt1 = GPIO
+	GPIOB_PDDR |= BIT(19);		   // output
+	LED_GREEN_Off();
+
+	//	// ptd1 red blue (RGB LED)
+	PORTD_PCR1 = PORT_PCR_MUX(1); // alt1 = GPIO
+	GPIOD_PDDR |= BIT(1);		  // output
+	LED_BLUE_Off();
+}
+
+
+// --------------------------------------------------------------------
+/*! \brief Sets the RGB LED on the FRDM-KL25Z board
+ *
+ * @param color  Color to set (TYPE_LEDcolor)
+ */
+void LEDHandler(TYPE_LEDcolor color)  {
+
+	switch(color)  {
+
+		case GreenToggle:
+			LED_GREEN_Toggle();
+			LED_BLUE_Off();
+			LED_RED_Off();
+			break;
+
+		case Green:
+			LED_GREEN_On();
+			LED_BLUE_Off();
+			LED_RED_Off();
+			break;
+
+		case Orange:
+			LED_RED_On();
+			LED_GREEN_On();
+			LED_BLUE_Off();
+			break;
+
+		case Blue:
+			LED_BLUE_On();
+			LED_RED_Off();
+			LED_GREEN_Off();
+			break;
+
+		case Red:
+			LED_BLUE_Off();
+			LED_RED_On();
+			LED_GREEN_Off();
+			break;
+
+		case Off:
+		default :
+			LED_GREEN_Off();
+			LED_BLUE_Off();
+			LED_RED_Off();
+			break;
+	}
+
+}
+
+

@@ -41,7 +41,7 @@
 
 // ----------------------------------------------------------------------------
 #include "source/Platform/swident.h"
-#include "board.h"
+//#include "board.h"
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
@@ -140,7 +140,6 @@ int main(void)
 	//	crc8_test();																// test patterns for CRC calculus
 	I2C_init();
 	ScreenIF_Init(4);
-	//I2C0_Init(); Not used
 	ScreenIF_Clear();
 	DataMonitor_lcd(50, 50, 2, 25, 1, 0); // Abdullah
 

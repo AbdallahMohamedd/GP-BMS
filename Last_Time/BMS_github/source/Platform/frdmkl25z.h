@@ -40,46 +40,9 @@
 #include <COTs/KL25ZUtilize/Inc/KL25ZUtil.h>
 #include <SPI.h>
 #include "MKL25Z4.h"
-// ----------------------------------------------------------------------------
-//#define SYSFREQ         (48e6)
-#define BUSFREQ           (48e6/2)												//!< bus frequence in Hz
-// ----------------------------------------------------------------------------
-// ptb18 red LED (RGB LED) 
-#define LED_RED_On()    	(GPIOB_PCOR = BIT(18))            					
-#define LED_RED_Off()   	(GPIOB_PSOR = BIT(18))            	
-#define LED_RED_Toggle()  	(GPIOB_PTOR = BIT(18))            	
 
-#define LED_GREEN_On()  	(GPIOB_PCOR = BIT(19))     			
-#define LED_GREEN_Off() 	(GPIOB_PSOR = BIT(19))    			
-#define LED_GREEN_Toggle() 	(GPIOB_PTOR = BIT(19))            	
 
-#define LED_BLUE_On() 		(GPIOD_PCOR = BIT(1))     			
-#define LED_BLUE_Off()  	(GPIOD_PSOR = BIT(1))    		
-#define LED_BLUE_Toggle()  	(GPIOD_PTOR = BIT(1))    		
-// ----------------------------------------------------------------------------
-//! \brief enum for RGB LED (on FRDM-KL25Z board) control  
-typedef enum {
-	Off    , 
-	Green  ,
-	Red    ,
-	Blue   ,
-	Orange ,
-	GreenToggle
-}TYPE_LEDcolor;
-// ----------------------------------------------------------------------------
-//! \brief structures to hold different interface configurations
-typedef enum{
-	IntUnknown = 0,																//!< unknown
-	IntSPI = 1,																	//!< direct connection \ref secspisetup
-	IntTPL = 2																	//!< \ref sectplsetup
-}TYPE_INTERFACE;
-// ----------------------------------------------------------------------------
-//! \brief structures to hold different SPI<>EVB interface configurations
-typedef enum{
-	EVB_Unknown   = 0,
-	EVB_Type1     = 1,															//!< type 1 EVB \ref pageevb
-	EVB_TypeArd   = 2,															//!< type arduino EVB \ref pageevb
-}TYPE_EVB;
+
 
 // ----------------------------------------------------------------------------
 // status pins 
@@ -87,20 +50,16 @@ typedef enum{
 #define SETSTAT1(v)		if(v) GPIOB_PSOR = BIT(1); else GPIOB_PCOR = BIT(1)
 #define SETSTAT1Tog()	    ( GPIOB_PTOR = BIT(1))
 // ----------------------------------------------------------------------------
-void LEDHandler(TYPE_LEDcolor color);
-void InitHW(void);
 void InitBoardClock(void);
-void InitBoardLED(void);
+//void InitBoardLED(void);-->board.c
 void InitInterface(TYPE_INTERFACE interface, TYPE_EVB evb);
 void DeInitInterface(void);
 u8 FaultPinStatus(void);
-void TplEnable(u8 bEnable);
-u8 IntbPinStatus(void);
-void SPICSB(u8 u8Level);
+//void TplEnable(u8 bEnable); --> to slaveif.h
+//u8 IntbPinStatus(void);  --> to slaveif.h
+//void SPICSB(u8 u8Level); --> to slaveif.h
 void initFIMode(u8 u8enabledDisabled);	
-void I2C0_Init(void);
-void I2C0_Write(uint8_t slaveAddr, uint8_t data);
-void I2C0_InitPins(void);
+
 
 // ----------------------------------------------------------------------------
 #endif /* FRDMKL25Z_H_ */
