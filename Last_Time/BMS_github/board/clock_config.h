@@ -101,5 +101,10 @@ void BOARD_BootClockVLPR(void);
 }
 #endif /* __cplusplus*/
 
+void InitBoardClock(void);
+
+
+
+
 #endif /* _CLOCK_CONFIG_H_ */
 

@@ -42,7 +42,9 @@
 // ----------------------------------------------------------------------------
 #include <COTs/KL25ZUtilize/Inc/KL25ZUtil.h>
 #include <MKL25Z4.h>
-#include <Platform/frdmkl25z.h>
+//#include <Platform/frdmkl25z.h>
+//#include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
+
 // ----------------------------------------------------------------------------
 // predefined delays for 48MHz bus, prescaler 16
 #define DELAY_1us				(   1*3)										//!< used for readability

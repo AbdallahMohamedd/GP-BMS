@@ -88,6 +88,67 @@ void InitHW(void)  {
 	PIT_MCR &= ~PIT_MCR_MDIS_MASK;										// enable clocking
 	PIT_LDVAL0 = BUSFREQ/2;												// timer ch0 start value every 0.5 seconds
 	PIT_TCTRL0 |= PIT_TCTRL_TEN_MASK;									// enable timer ch0
+	SIM_SCGC4 |= SIM_SCGC4_SPI0_MASK; // enable SPI0 clock
+	SIM_SCGC4 |= SIM_SCGC4_SPI1_MASK; // enable SPI1 clock
+
+	PORTD_PCR4 = PORT_PCR_MUX(1);
+	GPIOD_PDDR &= ~BIT(4);
+
+	PORTA_PCR12 = PORT_PCR_MUX(1);
+	GPIOA_PDDR &= ~BIT(12);
+
+	PORTE_PCR0 = PORT_PCR_MUX(1);
+	GPIOE_PDDR |= BIT(0);
+	GPIOE_PCOR = BIT(0);
+
+	PORTC_PCR8 = PORT_PCR_MUX(1);
+	GPIOC_PDDR |= BIT(8);
+	GPIOC_PSOR = BIT(8);
+
+	PORTC_PCR5 = PORT_PCR_MUX(2);
+	PORTD_PCR2 = PORT_PCR_MUX(2);
+
+	PORTB_PCR10 = PORT_PCR_MUX(2);
+	PORTB_PCR11 = PORT_PCR_MUX(2);
+	PORTD_PCR7 = PORT_PCR_MUX(5);
+
+	PORTC_PCR10 = PORT_PCR_MUX(1);
+	GPIOC_PDDR |= BIT(10);
+	GPIOC_PCOR = BIT(10);
+	PORTC_PCR11 = PORT_PCR_MUX(1);
+	GPIOC_PDDR |= BIT(11);
+	GPIOC_PCOR = BIT(11);
+	PORTC_PCR12 = PORT_PCR_MUX(1);
+	GPIOC_PDDR |= BIT(12);
+	GPIOC_PCOR = BIT(12);
+	PORTC_PCR13 = PORT_PCR_MUX(1);
+	GPIOC_PDDR |= BIT(13);
+	GPIOC_PCOR = BIT(13);
+
+	PORTC_PCR0 = PORT_PCR_MUX(1);
+	GPIOC_PDDR |= BIT(0);
+	GPIOC_PCOR = BIT(0);
+	PORTC_PCR3 = PORT_PCR_MUX(1);
+	GPIOC_PDDR |= BIT(3);
+	GPIOC_PCOR = BIT(3);
+	PORTC_PCR4 = PORT_PCR_MUX(1);
+	GPIOC_PDDR |= BIT(4);
+	GPIOC_PCOR = BIT(4);
+	PORTC_PCR6 = PORT_PCR_MUX(1);
+	GPIOC_PDDR |= BIT(6);
+	GPIOC_PCOR = BIT(6);
+	PORTC_PCR7 = PORT_PCR_MUX(1);
+	GPIOC_PDDR |= BIT(7);
+	GPIOC_PCOR = BIT(7);
+
+	SPITxInit(0); // SPI0 used to transmit (polling)
+	SPIRxInit(1); // SPI1 used to receive (interrupt driven)
+	NVICEnIrq(SPI1_IRQ);
+	SPIRxEnable();
+	SPITxEnable();
+
+
+	InitBoardLED();
 }
 
 // ----------------------------------------------------------------------------

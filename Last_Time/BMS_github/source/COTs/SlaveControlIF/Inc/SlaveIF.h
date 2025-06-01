@@ -101,11 +101,13 @@
 #include <string.h>																// for memcmp()
 #include <stdio.h>
 //#include "source/COTs/BMSDataBase/Inc/database.h"
-#include "Platform/frdmkl25z.h"
-
+//#include "Platform/frdmkl25z.h"
+#include "source/COTs/NTC/Inc/ntc.h"
 #include <tpm1.h>																// for Delay
 #include "MKL25Z4.h"
 #include "spi.h"
+
+
 // ----------------------------------------------------------------------------
 #define MSGLEN				5													//!< no. of bytes in a message (5*8byte = 40bit)
 // ----------------------------------------------------------------------------
@@ -145,10 +147,9 @@ typedef struct{
 	u16 regValue;																//!< register value to write
 }TYPE_BCC_CONF;
 // ----------------------------------------------------------------------------
-extern const TYPE_BCC_CONF CONF33771SPI[];
-extern const TYPE_BCC_CONF CONF33771TPL[];
-extern const TYPE_BCC_CONF CONF33772SPI[];
-extern const TYPE_BCC_CONF CONF33772TPL[];
+extern TYPE_INTERFACE _interface;   //!< local copy of interface type
+extern TYPE_EVB _evb;				//!< local copy of evb type
+
 // ----------------------------------------------------------------------------
 //! \brief 128 bit array, where each bit is indicating if a register is using TagID or RC format response \sa \ref bRegIsTagID
 typedef struct { u16 w[8]; }TYPE_TAGIDLIST;									    //!< 128 bit array
@@ -409,12 +410,22 @@ typedef enum {
 	FUSE_MIRROR_DATA= 0x6F,														//!< 0x6F Fuse Mirror data
 	FUSE_MIRROR_CTRL= 0x70,														//!< 0x70 Fuse Mirror control
 }LLD_TYPE_REG_NAME;
+
+
+
+#define ADC_CFG_DEFAULT     (PGA_GAIN_AUTO |ADC1_A_14bit|ADC1_B_14bit|ADC2_16bit)				// reset status
+#define ADC_CFG_SETTING     (PGA_GAIN_AUTO |ADC1_A_16bit|ADC1_B_16bit|ADC2_16bit)
+#define FACTOR_THRESHOLD (256.0 / 5.0)																		   //!< resolution [V/lsb]  of thresholds
+#define TH_OVUV_VALUE(ov, uv) ((u16)(((u8)(ov * FACTOR_THRESHOLD) << 8) | ((u8)(uv * FACTOR_THRESHOLD) << 0))) //!< macro to handle /  translate OV and UV thresholds
+
+
 // ----------------------------------------------------------------------------
 // local routines
 void SPICSB(u8 u8Level);
 u8 IntbPinStatus(void);
 void TplEnable(u8 bEnable);
-
+u8 FaultPinStatus(void);
+void initFIMode(u8 u8enabledDisabled);
 
 u8 lld3377xCrcCalc(u8 *data, u16 length);
 void lld3377xPackFrame(u8 *pu8Buf, u16 data, u8 addr, u8 CID, u8 cmd);

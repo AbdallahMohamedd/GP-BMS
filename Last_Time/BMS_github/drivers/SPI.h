@@ -103,7 +103,7 @@
 // ----------------------------------------------------------------------------
 #include <COTs/KL25ZUtilize/Inc/KL25ZUtil.h>
 #include <MKL25Z4.h>
-#include "Platform/frdmkl25z.h"
+//#include "Platform/frdmkl25z.h"
 // ----------------------------------------------------------------------------
 // Single-SPI functions
 void SPIInit(u8 spiNo);

@@ -8,6 +8,13 @@
     "mkl25z4.h": "c",
     "spi.h": "c",
     "slaveif.h": "c",
-    "board.h": "c"
+    "board.h": "c",
+    "kl25zutil.h": "c",
+    "fsl_device_registers.h": "c",
+    "fsl_pit.h": "c",
+    "fsl_clock.h": "c",
+    "database.h": "c",
+    "pin_mux.h": "c",
+    "peripherals.h": "c"
   }
 }

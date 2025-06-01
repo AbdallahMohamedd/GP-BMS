@@ -49,7 +49,7 @@
 #include <COTs/KL25ZUtilize/Inc/KL25ZUtil.h>
 #include "MKL25Z4.h"
 #include <stdio.h>
-#include "frdmkl25z.h"
+//#include "frdmkl25z.h"
 // ----------------------------------------------------------------------------
 #include "MKL25Z4_features.h"			//for NVM driver
 #include "source/cpu/MKL25Z4_extension.h"			//for CACHE disable

@@ -30,17 +30,17 @@
 // for documentation and change log see \docu\documentation.html
 // ----------------------------------------------------------------------------
 //#include "main.h"
-
+// --- Needed library --- //
+#include "stdio.h"
+#include "string.h"
+#include "fsl_debug_console.h"
 // ----------------------------------------------------------------------------
 #include "Platform/pcconf.h"
-//#include "config.h"
-//#include "source/drivers/lld3377x.h"
 #include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
 #include "source/COTs/BMSDataBase/Inc/database.h"
-#include "source/Platform/commids.h"
 
 // ----------------------------------------------------------------------------
-#include "source/Platform/swident.h"
+//#include "source/Platform/swident.h"
 //#include "board.h"
 #include "peripherals.h"
 #include "pin_mux.h"
@@ -50,19 +50,17 @@
 #include "fsl_pit.h"
 #include "fsl_device_registers.h"
 #include <COTs/BatteryStatusMonitor/Inc/DataMonitor.h>
-#define SW_IDENT SWIDENT_EVALUATION_SW //!< unique ID for Demo SW <> Eval GUI
 #define SW_VER 4
 #define SW_SUB 0
 void BMSEnableISense(u8 cidex);
-
-// ----------------------------------------------------------------------------
-#define SW_ID (u32)(SW_IDENT << 16) | (SW_VER << 8) | (SW_SUB) //!< software identification (for GUI)
 // ----------------------------------------------------------------------------
 // globals vars
 u8 gu4CIDSelected;
 static TYPE_PC_CONFIG pcconf;
 static u32 msTick;
 static u32 u32msCntDown;
+extern const TYPE_BCC_CONF CONF33771TPL[];
+
 // ----------------------------------------------------------------------------
 /*! \brief Default Pack Controller Configuration
  *
@@ -87,6 +85,8 @@ TYPE_PC_CONFIG const defPCConfig = {
 #define StopOnError() \
 		{                 \
 		}
+TYPE_INTERFACE _interface = IntTPL; //!< local copy of interface type
+TYPE_EVB _evb = EVB_TypeArd;				//!< local copy of evb type
 // ----------------------------------------------------------------------------
 int main(void)
 {
@@ -110,18 +110,18 @@ int main(void)
 	}
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
-	BOARD_InitBootPeripherals();
+	//BOARD_InitBootPeripherals();
 
-	InitBoardClock();
+	//InitBoardClock();
 	InitHW();
-	InitBoardLED();
-	//PRINTF("Board Initialized.\n\r\r");
+	//InitBoardLED();
+	PRINTF("Board Initialized.\n\r\r");
 	bms.Interface = pcconf.IntType;
 	bms.EVB = pcconf.EvbType;
 	bms.NoClusters = pcconf.NoCluster;
 	bms.CIDcurrent = pcconf.CIDcurrent;
 	bms.Status = BMS_Init;
-	InitInterface(bms.Interface, bms.EVB);
+
 
 	// PIT set lower prio by setting higher value
 	NVICSetIrqPrio(SPI0_IRQ, IP_PRIO_1);

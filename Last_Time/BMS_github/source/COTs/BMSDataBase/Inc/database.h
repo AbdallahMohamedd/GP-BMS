@@ -17,9 +17,6 @@
 #include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
 
 // ----------------------------------------------------------------------------
-#define FACTOR_THRESHOLD   (256.0/5.0)											//!< resolution [V/lsb]  of thresholds
-#define TH_OVUV_VALUE(ov, uv)   ((u16)(((u8)(ov*FACTOR_THRESHOLD)<<8) | ((u8)(uv*FACTOR_THRESHOLD)<<0))) //!< macro to handle /  translate OV and UV thresholds
-// ----------------------------------------------------------------------------
 #define NO_CLUSTER  	(15u)													//!< macro for readability
 #define NO_CELLS       	(14u)	                                                //!< macro for readability
 #define NO_AN           (7u)                                                    //!< macro for readability
