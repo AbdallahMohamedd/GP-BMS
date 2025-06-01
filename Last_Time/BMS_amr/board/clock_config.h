@@ -97,6 +97,11 @@ extern "C" {
  */
 void BOARD_BootClockVLPR(void);
 
+
+
+void InitBoardClock(void);
+
+
 #if defined(__cplusplus)
 }
 #endif /* __cplusplus*/

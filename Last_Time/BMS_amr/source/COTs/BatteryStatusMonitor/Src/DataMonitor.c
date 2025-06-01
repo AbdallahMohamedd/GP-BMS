@@ -126,7 +126,7 @@ void DataMonitor_Mode_disp(uint8_t mode){
     }
 }
 void DataMonitor_lcd(uint8_t soc,uint8_t soh,float current,float temp,uint8_t mode,uint8_t fault){
-	  ScreenIF_Init(4);
+	  //ScreenIF_Init(4);
 	  ScreenIF_Clear();
 	  DataMonitor_soc_disp(soc);
 	  DataMonitor_soh_disp(soh);

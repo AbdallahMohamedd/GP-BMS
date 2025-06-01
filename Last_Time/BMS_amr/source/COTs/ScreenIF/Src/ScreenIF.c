@@ -69,7 +69,7 @@ void I2C_init(void){
 
     /*enable DMA0 IRQ and set the priority*/
     NVIC_EnableIRQ(DMA0_IRQn);
-    NVIC_SetPriority(DMA0_IRQn, 1);
+    NVIC_SetPriority(DMA0_IRQn, 4);
 
     /*Init I2C*/
     I2C_MASTER.Initialize(I2C_MasterSignalEvent_t);

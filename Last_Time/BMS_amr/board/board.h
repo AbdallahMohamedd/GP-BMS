@@ -33,7 +33,7 @@
 
 #include "clock_config.h"
 #include "fsl_gpio.h"
-
+#include "source/COTs/KL25ZUtilize/Inc/KL25ZUtil.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -57,6 +57,11 @@
 #define BOARD_TSI_ELECTRODE_1 9U
 #define BOARD_TSI_ELECTRODE_2 10U
 
+
+// ----------------------------------------------------------------------------
+#define BUSFREQ           (48e6/2)												//!< bus frequence in Hz
+//#define SYSFREQ         (48e6)
+
 /* Board led color mapping */
 #define LOGIC_LED_ON 0U
 #define LOGIC_LED_OFF 1U
@@ -71,34 +76,34 @@
 #define BOARD_LED_BLUE_GPIO_PIN 1U
 
 #define LED_RED_INIT(output)                                                 \
-    GPIO_WritePinOutput(BOARD_LED_RED_GPIO, BOARD_LED_RED_GPIO_PIN, output); \
-    BOARD_LED_RED_GPIO->PDDR |= (1U << BOARD_LED_RED_GPIO_PIN) /*!< Enable target LED_RED */
-#define LED_RED_ON() \
-    GPIO_ClearPinsOutput(BOARD_LED_RED_GPIO, 1U << BOARD_LED_RED_GPIO_PIN) /*!< Turn on target LED_RED */
-#define LED_RED_OFF() \
-    GPIO_SetPinsOutput(BOARD_LED_RED_GPIO, 1U << BOARD_LED_RED_GPIO_PIN) /*!< Turn off target LED_RED */
-#define LED_RED_TOGGLE() \
-    GPIO_TogglePinsOutput(BOARD_LED_RED_GPIO, 1U << BOARD_LED_RED_GPIO_PIN) /*!< Toggle on target LED_RED */
+		GPIO_WritePinOutput(BOARD_LED_RED_GPIO, BOARD_LED_RED_GPIO_PIN, output); \
+		BOARD_LED_RED_GPIO->PDDR |= (1U << BOARD_LED_RED_GPIO_PIN) /*!< Enable target LED_RED */
+#define LED_RED_On() \
+		GPIO_ClearPinsOutput(BOARD_LED_RED_GPIO, 1U << BOARD_LED_RED_GPIO_PIN) /*!< Turn on target LED_RED */
+#define LED_RED_Off() \
+		GPIO_SetPinsOutput(BOARD_LED_RED_GPIO, 1U << BOARD_LED_RED_GPIO_PIN) /*!< Turn off target LED_RED */
+#define LED_RED_Toggle() \
+		GPIO_TogglePinsOutput(BOARD_LED_RED_GPIO, 1U << BOARD_LED_RED_GPIO_PIN) /*!< Toggle on target LED_RED */
 
 #define LED_GREEN_INIT(output)                                                   \
-    GPIO_WritePinOutput(BOARD_LED_GREEN_GPIO, BOARD_LED_GREEN_GPIO_PIN, output); \
-    BOARD_LED_GREEN_GPIO->PDDR |= (1U << BOARD_LED_GREEN_GPIO_PIN) /*!< Enable target LED_GREEN */
-#define LED_GREEN_ON() \
-    GPIO_ClearPinsOutput(BOARD_LED_GREEN_GPIO, 1U << BOARD_LED_GREEN_GPIO_PIN) /*!< Turn on target LED_GREEN */
-#define LED_GREEN_OFF() \
-    GPIO_SetPinsOutput(BOARD_LED_GREEN_GPIO, 1U << BOARD_LED_GREEN_GPIO_PIN) /*!< Turn off target LED_GREEN */
-#define LED_GREEN_TOGGLE() \
-    GPIO_TogglePinsOutput(BOARD_LED_GREEN_GPIO, 1U << BOARD_LED_GREEN_GPIO_PIN) /*!< Toggle on target LED_GREEN */
+		GPIO_WritePinOutput(BOARD_LED_GREEN_GPIO, BOARD_LED_GREEN_GPIO_PIN, output); \
+		BOARD_LED_GREEN_GPIO->PDDR |= (1U << BOARD_LED_GREEN_GPIO_PIN) /*!< Enable target LED_GREEN */
+#define LED_GREEN_On() \
+		GPIO_ClearPinsOutput(BOARD_LED_GREEN_GPIO, 1U << BOARD_LED_GREEN_GPIO_PIN) /*!< Turn on target LED_GREEN */
+#define LED_GREEN_Off() \
+		GPIO_SetPinsOutput(BOARD_LED_GREEN_GPIO, 1U << BOARD_LED_GREEN_GPIO_PIN) /*!< Turn off target LED_GREEN */
+#define LED_GREEN_Toggle() \
+		GPIO_TogglePinsOutput(BOARD_LED_GREEN_GPIO, 1U << BOARD_LED_GREEN_GPIO_PIN) /*!< Toggle on target LED_GREEN */
 
 #define LED_BLUE_INIT(output)                                                  \
-    GPIO_WritePinOutput(BOARD_LED_BLUE_GPIO, BOARD_LED_BLUE_GPIO_PIN, output); \
-    BOARD_LED_BLUE_GPIO->PDDR |= (1U << BOARD_LED_BLUE_GPIO_PIN) /*!< Enable target LED_BLUE */
-#define LED_BLUE_ON() \
-    GPIO_ClearPinsOutput(BOARD_LED_BLUE_GPIO, 1U << BOARD_LED_BLUE_GPIO_PIN) /*!< Turn on target LED_BLUE */
-#define LED_BLUE_OFF() \
-    GPIO_SetPinsOutput(BOARD_LED_BLUE_GPIO, 1U << BOARD_LED_BLUE_GPIO_PIN) /*!< Turn off target LED_BLUE */
-#define LED_BLUE_TOGGLE() \
-    GPIO_TogglePinsOutput(BOARD_LED_BLUE_GPIO, 1U << BOARD_LED_BLUE_GPIO_PIN) /*!< Toggle on target LED_BLUE */
+		GPIO_WritePinOutput(BOARD_LED_BLUE_GPIO, BOARD_LED_BLUE_GPIO_PIN, output); \
+		BOARD_LED_BLUE_GPIO->PDDR |= (1U << BOARD_LED_BLUE_GPIO_PIN) /*!< Enable target LED_BLUE */
+#define LED_BLUE_On() \
+		GPIO_ClearPinsOutput(BOARD_LED_BLUE_GPIO, 1U << BOARD_LED_BLUE_GPIO_PIN) /*!< Turn on target LED_BLUE */
+#define LED_BLUE_Off() \
+		GPIO_SetPinsOutput(BOARD_LED_BLUE_GPIO, 1U << BOARD_LED_BLUE_GPIO_PIN) /*!< Turn off target LED_BLUE */
+#define LED_BLUE_Toggle() \
+		GPIO_TogglePinsOutput(BOARD_LED_BLUE_GPIO, 1U << BOARD_LED_BLUE_GPIO_PIN) /*!< Toggle on target LED_BLUE */
 
 #define BOARD_ACCEL_I2C_BASEADDR I2C0
 
@@ -123,11 +128,24 @@
 extern "C" {
 #endif /* __cplusplus */
 
+
+//-----------------------------------------------------------------------------
+//! \brief enum for RGB LED (on FRDM-KL25Z board) control
+typedef enum {
+	Off    ,
+	Green  ,
+	Red    ,
+	Blue   ,
+	Orange ,
+	GreenToggle
+}TYPE_LEDcolor;
 /*******************************************************************************
  * API
  ******************************************************************************/
-
+void InitHW(void);
 void BOARD_InitDebugConsole(void);
+void InitBoardLED(void);
+void LEDHandler(TYPE_LEDcolor color);
 
 #if defined(__cplusplus)
 }

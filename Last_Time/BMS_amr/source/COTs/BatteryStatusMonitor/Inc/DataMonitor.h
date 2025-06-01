@@ -7,7 +7,7 @@
 
 #ifndef TEAM_TEAM_INC_LCD_H_
 #define TEAM_TEAM_INC_LCD_H_
-
+#include "source/COTs/ScreenIF/Inc/ScreenIF.h"
 /* ============== Display SOC APIS =============== */
 /**
  * @brief Receives SOC and Displays it on the LCD
