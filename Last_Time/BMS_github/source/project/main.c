@@ -111,6 +111,7 @@ int main(void)
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
 	//BOARD_InitBootPeripherals();
+	BOARD_InitDebugConsole(); // Initialize debug console for PRINTF
 
 	//InitBoardClock();
 	InitHW();
@@ -137,7 +138,6 @@ int main(void)
 
 	DelayInit();
 
-	//	crc8_test();																// test patterns for CRC calculus
 	I2C_init();
 	ScreenIF_Init(4);
 	ScreenIF_Clear();

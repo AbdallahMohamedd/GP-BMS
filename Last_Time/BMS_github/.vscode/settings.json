@@ -15,6 +15,7 @@
     "fsl_clock.h": "c",
     "database.h": "c",
     "pin_mux.h": "c",
-    "peripherals.h": "c"
+    "peripherals.h": "c",
+    "slaveif_cfg.h": "c"
   }
 }
