@@ -7,6 +7,7 @@
 
 #ifndef TEAM_TEAM_INC_LCD_H_
 #define TEAM_TEAM_INC_LCD_H_
+#include <COTs/DebugInfoManager/Inc/debugInfo.h>
 #include <COTs/ScreenIF/Inc/ScreenIF.h>
 #include "stdio.h"
 /* ============== Display SOC APIS =============== */

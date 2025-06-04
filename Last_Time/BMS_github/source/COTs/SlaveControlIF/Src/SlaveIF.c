@@ -20,14 +20,6 @@
 #include "source/COTs/SlaveControlIF/Inc/SlaveIF_Cfg.h"
 
 //=============================================================================
-// Debug Macros
-//=============================================================================
-// #define SLAVEIF_DEBUG_INIT    ///< Enable SlaveIF Initialization step prints
-// #define SLAVEIF_DEBUG_COMM    ///< Enable SlaveIF SPI frame construction/reception prints
-// #define SLAVEIF_DEBUG_CONFIG  ///< Enable SlaveIF Configuration step prints
-// #define SLAVEIF_DEBUG_FAULT   ///< Enable SlaveIF Fault status reading prints
-
-//=============================================================================
 // Constant Definitions
 //=============================================================================
 /**
@@ -288,7 +280,7 @@ uint8_t IntbPinStatus(void)
  * @details Sets the CSB pin to high (non-zero) or low (zero) for Arduino-type EVB.
  * @param u8Level 0 for low, non-zero for high.
  */
-void SPICSB(uint8_t u8Level)
+void slaveIF_SPISC(uint8_t u8Level)
 {
     if ((_interface == IntSPI) && (_evb == EVB_TypeArd))
     {
@@ -530,13 +522,13 @@ bool lld3377xWakeUp(void)
         return false; // only execute if no errors are pending
     if (*P_interface_ == IntTPL)
     {
-        SPICSB(0);
+        slaveIF_SPISC(0);
         Delay(DELAY_22us);
-        SPICSB(1);
+        slaveIF_SPISC(1);
         Delay(DELAY_600us);
-        SPICSB(0);
+        slaveIF_SPISC(0);
         Delay(DELAY_22us);
-        SPICSB(1);
+        slaveIF_SPISC(1);
         Delayms(WAIT_AFTER_WAKEUP);
 #ifdef SLAVEIF_DEBUG_INIT
         printf("SlaveIF: TPL wake-up sequence completed\n");

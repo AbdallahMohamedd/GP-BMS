@@ -10,9 +10,9 @@
 
 
 /* Command */
+#include <COTs/DebugInfoManager/Inc/debugInfo.h>
 #include <tpm1.h>
 #include "COTS/ScreenIF/Inc/ScreenIF_Cfg.h"
-//#include <COTS/DebugInfoManager/Inc/DebugInfo.h>
 
 #define LCD_CLEARDISPLAY 0x01
 #define LCD_RETURNHOME 0x02

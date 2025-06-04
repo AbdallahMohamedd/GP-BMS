@@ -7,11 +7,7 @@
 
 #ifndef COTS_BMSDATABASE_INC_DATABASE_H_
 #define COTS_BMSDATABASE_INC_DATABASE_H_
-#include <COTs/KL25ZUtilize/Inc/KL25ZUtil.h>
-#include <MKL25Z4.h>
-//#include "config.h"
-//#include "source/drivers/lld3377x.h"           // low level access
-#include <string.h>																// for memcmp
+#include <COTs/DebugInfoManager/Inc/debugInfo.h>										// for memcmp
 #include <tpm1.h>													// for Delay
 #include <COTs/NTC/Inc/ntc.h>																// table for NTC resistor characteristics
 #include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
@@ -58,7 +54,7 @@ digraph G {
 
  */
 typedef enum {
-//	BMS_Unknown 	= 0,														//!< used by GUI
+	//	BMS_Unknown 	= 0,														//!< used by GUI
 	BMS_Init  		= 1,														//!< init phase is assigning CID
 	BMS_Config		= 2,														//!< config phase applies initial loading of registers
 	BMS_Running    	= 3,														//!< bms is running

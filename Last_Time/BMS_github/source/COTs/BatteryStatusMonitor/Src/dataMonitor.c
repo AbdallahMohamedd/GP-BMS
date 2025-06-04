@@ -4,7 +4,7 @@
  *	Component:   LCD driver
  *	File: 		 LCD.c
  */
-#include <COTS/BatteryStatusMonitor/Inc/DataMonitor.h>
+#include <COTs/BatteryStatusMonitor/Inc/dataMonitor.h>
 
 /*................................AMR,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,*/
 void floatToString(float num, char *str, int precision) {
@@ -105,7 +105,7 @@ void DataMonitor_Fault_disp(uint8_t fault){
 void DataMonitor_Temp_disp(float temp)
 {
     char Buffer[16];
-    ScreenIF_SetCursor(8,1);
+    //ScreenIF_SetCursor(8,1);
     ScreenIF_PrintStr("T:");
     floatToString(temp,Buffer,2);
     ScreenIF_PrintStr(Buffer);

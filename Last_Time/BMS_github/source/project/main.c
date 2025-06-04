@@ -1,47 +1,6 @@
-// --------------------------------------------------------------------
-//  Copyright (c) 2015, NXP Semiconductors.
-//  All rights reserved.
-//
-//  Redistribution and use in source and binary forms, with or without modification,
-//  are permitted provided that the following conditions are met:
-//
-//  o Redistributions of source code must retain the above copyright notice, this list
-//    of conditions and the following disclaimer.
-//
-//  o Redistributions in binary form must reproduce the above copyright notice, this
-//    list of conditions and the following disclaimer in the documentation and/or
-//    other materials provided with the distribution.
-//
-//  o Neither the name of NXP Semiconductors nor the names of its
-//    contributors may be used to endorse or promote products derived from this
-//    software without specific prior written permission.
-//
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-//  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-//  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-//  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-//  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-//  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-//  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-//  ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-//  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-//  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// ----------------------------------------------------------------------------
-// for documentation and change log see \docu\documentation.html
-// ----------------------------------------------------------------------------
-//#include "main.h"
 // --- Needed library --- //
-#include "stdio.h"
-#include "string.h"
-#include "fsl_debug_console.h"
-// ----------------------------------------------------------------------------
-#include "Platform/pcconf.h"
-#include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
-#include "source/COTs/BMSDataBase/Inc/database.h"
-
-// ----------------------------------------------------------------------------
-//#include "source/Platform/swident.h"
-//#include "board.h"
+#include <COTs/BatteryStatusMonitor/Inc/dataMonitor.h>
+#include <COTs/DebugInfoManager/Inc/debugInfo.h>
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
@@ -49,7 +8,12 @@
 #include "fsl_gpio.h"
 #include "fsl_pit.h"
 #include "fsl_device_registers.h"
-#include <COTs/BatteryStatusMonitor/Inc/DataMonitor.h>
+// ----------------------------------------------------------------------------
+#include "Platform/pcconf.h"
+#include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
+#include "source/COTs/BMSDataBase/Inc/database.h"
+// ----------------------------------------------------------------------------
+
 #define SW_VER 4
 #define SW_SUB 0
 void BMSEnableISense(u8 cidex);
@@ -69,7 +33,6 @@ extern const TYPE_BCC_CONF CONF33771TPL[];
  */
 TYPE_PC_CONFIG const defPCConfig = {
 		PC_CONFIG_VALID,
-		//! \todo its not allowed to have an unknown EVB or unknown INT selected, otherwise SPI accesses will crash!!!.
 		IntTPL,
 		EVB_TypeArd,
 		1,					   // no of clusters
@@ -80,8 +43,6 @@ TYPE_PC_CONFIG const defPCConfig = {
 		0					   // test features
 };
 // ----------------------------------------------------------------------------
-// this is for SW debugging only!!!
-// #define StopOnError()		while(1) DONOTHING();
 #define StopOnError() \
 		{                 \
 		}
@@ -110,12 +71,9 @@ int main(void)
 	}
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
-	//BOARD_InitBootPeripherals();
 	BOARD_InitDebugConsole(); // Initialize debug console for PRINTF
 
-	//InitBoardClock();
 	InitHW();
-	//InitBoardLED();
 	PRINTF("Board Initialized.\n\r\r");
 	bms.Interface = pcconf.IntType;
 	bms.EVB = pcconf.EvbType;
@@ -141,7 +99,7 @@ int main(void)
 	I2C_init();
 	ScreenIF_Init(4);
 	ScreenIF_Clear();
-	DataMonitor_lcd(50, 50, 2, 25, 1, 0); // Abdullah
+	//DataMonitor_lcd(50, 50, 2, 25, 1, 0); // Abdullah
 
 	lld3377xInitDriver(&(bms.Interface));
 	lld3377xInitCluster(&(cluster[0])); // just tag id is needed for lld3377xReadRegisters()
@@ -289,11 +247,11 @@ int main(void)
 				//					if(bms->Interface==IntSPI)  {
 				//						// SPI-Ard only
 				//						SPIEnable();
-				//						SPICSB(1);
+				//						slaveIF_SPISC(1);
 				//					}
 				//					if(bms->Interface==IntTPL)  {
 				//						// SPI-Ard only
-				//						SPICSB(0);
+				//						slaveIF_SPISC(0);
 				//						SPITxEnable();
 				//						SPIRxEnable();
 				//					}
@@ -325,6 +283,24 @@ int main(void)
 				// DebugPrintMeasurements(1, cluster[0].NoCTs, &(rawResults[0])); // output values to host PC
 				u16 TeamStackVoltage = rawResults[0].u16StackVoltage;
 				DataMonitor_lcd((TeamStackVoltage * 2.44141 * 0.001), 90, 55, 52, 1, 0);
+				//uint16_t temp1 = rawResults[0].u16ANVoltage[1];
+				//DataMonitor_lcd((NTCRaw2Celsius(temp1)), 90, 55, 52, 1, 0 );
+//				ScreenIF_Clear();
+//				ScreenIF_SetCursor(0,0);
+//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[0]));
+//				ScreenIF_SetCursor(0,1);
+//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[1]));
+//				ScreenIF_SetCursor(0,2);
+//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[2]));
+//				ScreenIF_SetCursor(10,3);
+//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[3]));
+//				ScreenIF_SetCursor(10,0);
+//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[4]));
+//				ScreenIF_SetCursor(10,1);
+//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[5]));
+//				ScreenIF_SetCursor(10,2);
+//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[6]));
+
 				//DataMonitor_soc_disp(22);
 				// calculate average current based on coulombcounter
 				//				ccCount[1] = rawResults[cid-1].u16CCSamples;

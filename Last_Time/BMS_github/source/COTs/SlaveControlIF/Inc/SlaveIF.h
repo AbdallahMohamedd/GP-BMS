@@ -18,13 +18,9 @@
 //=============================================================================
 // Includes
 //=============================================================================
-#include <COTs/KL25ZUtilize/Inc/KL25ZUtil.h>
-#include <string.h>	 // For memcmp()
-#include <stdbool.h> // For boolean type
-#include <stdio.h>
-#include "tpm1.h"										// For delay functions
-#include "MKL25Z4.h"									// For MCU-specific definitions
-#include "spi.h"										// For SPI types and functions
+#include <COTs/DebugInfoManager/Inc/debugInfo.h>
+#include "tpm1.h"	 // For delay functions
+#include "spi.h"	 // For SPI types and functions
 
 //=============================================================================
 // External Variables
@@ -284,72 +280,72 @@ typedef enum
 	WAKEUP_MASK3 = 0x2C,			//!< 0x2C Wakeup events mask
 	CC_NB_SAMPLES = 0x2D,			//!< 0x2D Number of samples in coulomb counter
 	COULOUMB_CNT1 = 0x2E,			//!< 0x2E..2F Couloumb counter accumulator
-	COULOUMB_CNT2 = 0x2F,
-	MEAS_ISENSE1 = 0x30,		//!< 0x30 ISENSE measurement
-	MEAS_ISENSE2 = 0x31,		//!< 0x31 ISENSE measurement
-	MEAS_STACK = 0x32,			//!< 0x32 stack  voltage measurement
-	MEAS_CELL14 = 0x33,			//!< 0x33 cell14 voltage measurement
-	MEAS_CELL13 = 0x34,			//!< 0x34 cell13 voltage measurement
-	MEAS_CELL12 = 0x35,			//!< 0x35 cell12 voltage measurement
-	MEAS_CELL11 = 0x36,			//!< 0x36 cell11 voltage measurement
-	MEAS_CELL10 = 0x37,			//!< 0x37 cell10 voltage measurement
-	MEAS_CELL9 = 0x38,			//!< 0x38 cell9  voltage measurement
-	MEAS_CELL8 = 0x39,			//!< 0x39 cell8  voltage measurement
-	MEAS_CELL7 = 0x3A,			//!< 0x3A cell7  voltage measurement
-	MEAS_CELL6 = 0x3B,			//!< 0x3B cell6  voltage measurement
-	MEAS_CELL5 = 0x3C,			//!< 0x3C cell5  voltage measurement
-	MEAS_CELL4 = 0x3D,			//!< 0x3D cell4  voltage measurement
-	MEAS_CELL3 = 0x3E,			//!< 0x3E cell3  voltage measurement
-	MEAS_CELL2 = 0x3F,			//!< 0x3F cell2  voltage measurement
-	MEAS_CELL1 = 0x40,			//!< 0x40 cell1  voltage measurement
-	MEAS_AN6 = 0x41,			//!< 0x41 AN6 voltage measurement
-	MEAS_AN5 = 0x42,			//!< 0x42 AN5 voltage measurement
-	MEAS_AN4 = 0x43,			//!< 0x43 AN4 voltage measurement
-	MEAS_AN3 = 0x44,			//!< 0x44 AN3 voltage measurement
-	MEAS_AN2 = 0x45,			//!< 0x45 AN2 voltage measurement
-	MEAS_AN1 = 0x46,			//!< 0x46 AN1 voltage measurement
-	MEAS_AN0 = 0x47,			//!< 0x47 AN0 voltage measurement
-	MEAS_IC_TEMP = 0x48,		//!< 0x48 IC temperature measurement
-	MEAS_VBG_DIAG_ADC1A = 0x49, //!< 0x49 ADCIA Band Gap Reference measurement
-	MEAS_VBG_DIAG_ADC1B = 0x4A, //!< 0x4A ADCIB Band Gap Reference measurement
-	TH_ALL_CT = 0x4B,			//!< 0x4B CTx over and undervoltage threshold
-	TH_CT14 = 0x4C,				//!< 0x4C CT14 over and undervoltage threshold
-	TH_CT13 = 0x4D,				//!< 0x4D CT13 over and undervoltage threshold
-	TH_CT12 = 0x4E,				//!< 0x4E CT12 over and undervoltage threshold
-	TH_CT11 = 0x4F,				//!< 0x4F CT11 over and undervoltage threshold
-	TH_CT10 = 0x50,				//!< 0x50 CT10 over and undervoltage threshold
-	TH_CT9 = 0x51,				//!< 0x51 CT9 over and undervoltage threshold
-	TH_CT8 = 0x52,				//!< 0x52 CT8 over and undervoltage threshold
-	TH_CT7 = 0x53,				//!< 0x53 CT7 over and undervoltage threshold
-	TH_CT6 = 0x54,				//!< 0x54 CT6 over and undervoltage threshold
-	TH_CT5 = 0x55,				//!< 0x55 CT5 over and undervoltage threshold
-	TH_CT4 = 0x56,				//!< 0x56 CT4 over and undervoltage threshold
-	TH_CT3 = 0x57,				//!< 0x57 CT3 over and undervoltage threshold
-	TH_CT2 = 0x58,				//!< 0x58 CT2 over and undervoltage threshold
-	TH_CT1 = 0x59,				//!< 0x59 CT1 over and undervoltage threshold
-	TH_AN6_OT = 0x5A,			//!< 0x5A AN6 overtemp threshold
-	TH_AN5_OT = 0x5B,			//!< 0x5B AN5 overtemp threshold
-	TH_AN4_OT = 0x5C,			//!< 0x5C AN4 overtemp threshold
-	TH_AN3_OT = 0x5D,			//!< 0x5D AN3 overtemp threshold
-	TH_AN2_OT = 0x5E,			//!< 0x5E AN2 overtemp threshold
-	TH_AN1_OT = 0x5F,			//!< 0x5F AN1 overtemp threshold
-	TH_AN0_OT = 0x60,			//!< 0x60 AN0 overtemp threshold
-	TH_AN6_UT = 0x61,			//!< 0x61 AN6 undertemp threshold
-	TH_AN5_UT = 0x62,			//!< 0x62 AN5 undertemp threshold
-	TH_AN4_UT = 0x63,			//!< 0x63 AN4 undertemp threshold
-	TH_AN3_UT = 0x64,			//!< 0x64 AN3 undertemp threshold
-	TH_AN2_UT = 0x65,			//!< 0x65 AN2 undertemp threshold
-	TH_AN1_UT = 0x66,			//!< 0x66 AN1 undertemp threshold
-	TH_AN0_UT = 0x67,			//!< 0x67 AN0 undertemp threshold
-	TH_ISENSE_OC = 0x68,		//!< 0x68 ISENSE over current threshold
-	TH_COULOMB_H = 0x69,		//!< 0x69 Over Coulomb counter threshold registers�TH_COULOMB_CNT
-	TH_COULOMB_L = 0x6A,		//!< 0x6A Over Coulomb counter threshold registers�TH_COULOMB_CNT
-	SILICON_REV = 0x6B,			//!< 0x6B silicon revision
-	EEPROM_CNTL = 0x6C,			//!< 0x6C EEPROM transfere control
-	DED_ENCODE1 = 0x6D,			//!< 0x6D ECC signature 1
-	DED_ENCODE2 = 0x6E,			//!< 0x6E ECC signature 2
-	FUSE_MIRROR_DATA = 0x6F,	//!< 0x6F Fuse Mirror data
-	FUSE_MIRROR_CTRL = 0x70,	//!< 0x70 Fuse Mirror control
+	COULOUMB_CNT2 = 0x2F,			//!< 0x2E..2F Couloumb counter accumulator
+	MEAS_ISENSE1 = 0x30,			//!< 0x30 ISENSE measurement
+	MEAS_ISENSE2 = 0x31,			//!< 0x31 ISENSE measurement
+	MEAS_STACK = 0x32,				//!< 0x32 stack  voltage measurement
+	MEAS_CELL14 = 0x33,				//!< 0x33 cell14 voltage measurement
+	MEAS_CELL13 = 0x34,				//!< 0x34 cell13 voltage measurement
+	MEAS_CELL12 = 0x35,				//!< 0x35 cell12 voltage measurement
+	MEAS_CELL11 = 0x36,				//!< 0x36 cell11 voltage measurement
+	MEAS_CELL10 = 0x37,				//!< 0x37 cell10 voltage measurement
+	MEAS_CELL9 = 0x38,				//!< 0x38 cell9  voltage measurement
+	MEAS_CELL8 = 0x39,				//!< 0x39 cell8  voltage measurement
+	MEAS_CELL7 = 0x3A,				//!< 0x3A cell7  voltage measurement
+	MEAS_CELL6 = 0x3B,				//!< 0x3B cell6  voltage measurement
+	MEAS_CELL5 = 0x3C,				//!< 0x3C cell5  voltage measurement
+	MEAS_CELL4 = 0x3D,				//!< 0x3D cell4  voltage measurement
+	MEAS_CELL3 = 0x3E,				//!< 0x3E cell3  voltage measurement
+	MEAS_CELL2 = 0x3F,				//!< 0x3F cell2  voltage measurement
+	MEAS_CELL1 = 0x40,				//!< 0x40 cell1  voltage measurement
+	MEAS_AN6 = 0x41,				//!< 0x41 AN6 voltage measurement
+	MEAS_AN5 = 0x42,				//!< 0x42 AN5 voltage measurement
+	MEAS_AN4 = 0x43,				//!< 0x43 AN4 voltage measurement
+	MEAS_AN3 = 0x44,				//!< 0x44 AN3 voltage measurement
+	MEAS_AN2 = 0x45,				//!< 0x45 AN2 voltage measurement
+	MEAS_AN1 = 0x46,				//!< 0x46 AN1 voltage measurement
+	MEAS_AN0 = 0x47,				//!< 0x47 AN0 voltage measurement
+	MEAS_IC_TEMP = 0x48,			//!< 0x48 IC temperature measurement
+	MEAS_VBG_DIAG_ADC1A = 0x49,		//!< 0x49 ADCIA Band Gap Reference measurement
+	MEAS_VBG_DIAG_ADC1B = 0x4A,		//!< 0x4A ADCIB Band Gap Reference measurement
+	TH_ALL_CT = 0x4B,				//!< 0x4B CTx over and undervoltage threshold
+	TH_CT14 = 0x4C,					//!< 0x4C CT14 over and undervoltage threshold
+	TH_CT13 = 0x4D,					//!< 0x4D CT13 over and undervoltage threshold
+	TH_CT12 = 0x4E,					//!< 0x4E CT12 over and undervoltage threshold
+	TH_CT11 = 0x4F,					//!< 0x4F CT11 over and undervoltage threshold
+	TH_CT10 = 0x50,					//!< 0x50 CT10 over and undervoltage threshold
+	TH_CT9 = 0x51,					//!< 0x51 CT9 over and undervoltage threshold
+	TH_CT8 = 0x52,					//!< 0x52 CT8 over and undervoltage threshold
+	TH_CT7 = 0x53,					//!< 0x53 CT7 over and undervoltage threshold
+	TH_CT6 = 0x54,					//!< 0x54 CT6 over and undervoltage threshold
+	TH_CT5 = 0x55,					//!< 0x55 CT5 over and undervoltage threshold
+	TH_CT4 = 0x56,					//!< 0x56 CT4 over and undervoltage threshold
+	TH_CT3 = 0x57,					//!< 0x57 CT3 over and undervoltage threshold
+	TH_CT2 = 0x58,					//!< 0x58 CT2 over and undervoltage threshold
+	TH_CT1 = 0x59,					//!< 0x59 CT1 over and undervoltage threshold
+	TH_AN6_OT = 0x5A,				//!< 0x5A AN6 overtemp threshold
+	TH_AN5_OT = 0x5B,				//!< 0x5B AN5 overtemp threshold
+	TH_AN4_OT = 0x5C,				//!< 0x5C AN4 overtemp threshold
+	TH_AN3_OT = 0x5D,				//!< 0x5D AN3 overtemp threshold
+	TH_AN2_OT = 0x5E,				//!< 0x5E AN2 overtemp threshold
+	TH_AN1_OT = 0x5F,				//!< 0x5F AN1 overtemp threshold
+	TH_AN0_OT = 0x60,				//!< 0x60 AN0 overtemp threshold
+	TH_AN6_UT = 0x61,				//!< 0x61 AN6 undertemp threshold
+	TH_AN5_UT = 0x62,				//!< 0x62 AN5 undertemp threshold
+	TH_AN4_UT = 0x63,				//!< 0x63 AN4 undertemp threshold
+	TH_AN3_UT = 0x64,				//!< 0x64 AN3 undertemp threshold
+	TH_AN2_UT = 0x65,				//!< 0x65 AN2 undertemp threshold
+	TH_AN1_UT = 0x66,				//!< 0x66 AN1 undertemp threshold
+	TH_AN0_UT = 0x67,				//!< 0x67 AN0 undertemp threshold
+	TH_ISENSE_OC = 0x68,			//!< 0x68 ISENSE over current threshold
+	TH_COULOMB_H = 0x69,			//!< 0x69 Over Coulomb counter threshold registers TH_COULOMB_CNT
+	TH_COULOMB_L = 0x6A,			//!< 0x6A Over Coulomb counter threshold registers TH_COULOMB_CNT
+	SILICON_REV = 0x6B,				//!< 0x6B silicon revision
+	EEPROM_CNTL = 0x6C,				//!< 0x6C EEPROM transfere control
+	DED_ENCODE1 = 0x6D,				//!< 0x6D ECC signature 1
+	DED_ENCODE2 = 0x6E,				//!< 0x6E ECC signature 2
+	FUSE_MIRROR_DATA = 0x6F,		//!< 0x6F Fuse Mirror data
+	FUSE_MIRROR_CTRL = 0x70,		//!< 0x70 Fuse Mirror control
 } LLD_TYPE_REG_NAME;
 
 // ----------------------------------------------------------------------------
@@ -364,7 +360,7 @@ typedef int64_t TYPE_GUID;
  * @details Sets the CSB pin to high (non-zero) or low (zero) for Arduino-type EVB.
  * @param u8Level 0 for low, non-zero for high.
  */
-void SPICSB(uint8_t u8Level);
+void slaveIF_SPISC(uint8_t u8Level);
 
 /**
  * @brief Reads the status of the INTB pin.
@@ -386,7 +382,6 @@ void TplEnable(uint8_t bEnable);
  * @return uint8_t 1 if Fault, 0 if no Fault.
  */
 uint8_t FaultPinStatus(void);
-
 
 /**
  * @brief Calculates the CRC8 for a data array.
