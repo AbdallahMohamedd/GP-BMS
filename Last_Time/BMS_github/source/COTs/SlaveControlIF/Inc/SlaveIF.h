@@ -19,8 +19,8 @@
 // Includes
 //=============================================================================
 #include <COTs/DebugInfoManager/Inc/debugInfo.h>
-#include "tpm1.h"	 // For delay functions
-#include "spi.h"	 // For SPI types and functions
+#include "tpm1.h" // For delay functions
+#include "spi.h"  // For SPI types and functions
 
 //=============================================================================
 // External Variables
@@ -440,7 +440,7 @@ bool lld3377xInitCluster(LLD_TYPE_CLUSTER *cluster);
  * @details Issues a wake-up sequence via CSB toggle and waits for response.
  * @return bool True if successful, false on error.
  */
-bool lld3377xWakeUp(void);
+bool slaveIF_wakeUp(void);
 
 /**
  * @brief Reads registers from MC3377x.

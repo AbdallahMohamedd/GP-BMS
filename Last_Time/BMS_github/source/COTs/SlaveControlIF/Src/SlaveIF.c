@@ -516,7 +516,7 @@ bool lld3377xSetTagID(uint8_t CID, uint8_t NewTagId)
  * @details Issues a wake-up sequence via CSB toggle and waits for response.
  * @return bool True if successful, false on error.
  */
-bool lld3377xWakeUp(void)
+bool slaveIF_wakeUp(void)
 {
     if (lld3377xGetError(NULL))
         return false; // only execute if no errors are pending

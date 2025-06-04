@@ -45,6 +45,7 @@
 #ifndef PCCONF_H_
 #define PCCONF_H_
 // ----------------------------------------------------------------------------
+#include <cpu/MKL25Z4_extension.h>			//for CACHE disable
 #include <C90TFS/drvsrc/include/SSD_FTFx.h>
 #include <COTs/KL25ZUtilize/Inc/KL25ZUtil.h>
 #include "MKL25Z4.h"
@@ -52,7 +53,6 @@
 //#include "frdmkl25z.h"
 // ----------------------------------------------------------------------------
 #include "MKL25Z4_features.h"			//for NVM driver
-#include "source/cpu/MKL25Z4_extension.h"			//for CACHE disable
 // ----------------------------------------------------------------------------
 typedef enum {
 	MODE_NORMAL_OPERATION =	0,			 										//!< normal operation

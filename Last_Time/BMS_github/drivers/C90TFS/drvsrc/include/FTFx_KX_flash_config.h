@@ -47,10 +47,10 @@
 #ifndef _FTFx_KX_flash_config_H_
 #define _FTFx_KX_flash_config_H_
 
+#include <cpu/MKL25Z4_extension.h>
 #include <C90TFS/drvsrc/include/SSD_FTFx_Common.h>
 #include "MKL25Z4.h"
 #include "MKL25Z4_features.h"
-#include "source/cpu/MKL25Z4_extension.h"
 
 /*!
  * @addtogroup c90tfs_flash_driver

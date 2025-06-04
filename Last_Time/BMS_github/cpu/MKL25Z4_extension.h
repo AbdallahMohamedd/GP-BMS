@@ -84,8 +84,8 @@
 #ifndef __MKL25Z4_EXTENSION_H__
 #define __MKL25Z4_EXTENSION_H__
 
+#include <cpu/fsl_bitaccess.h>
 #include "MKL25Z4.h"
-#include "fsl_bitaccess.h"
 
 /*
  * MKL25Z4 ADC
