@@ -1,6 +1,7 @@
 // --- Needed library --- //
 #include <COTs/BatteryStatusMonitor/Inc/dataMonitor.h>
 #include <COTs/DebugInfoManager/Inc/debugInfo.h>
+#include "COTs/TempControlManager/Inc/pwm.h"
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
@@ -13,7 +14,28 @@
 #include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
 #include "source/COTs/BMSDataBase/Inc/database.h"
 // ----------------------------------------------------------------------------
+#define CELL_BATTERY_CAPACITY_AH 1.5
+#define CELL_OCV_FULL            4.2
+#define CELL_OCV_EMPTY           3.0
 
+#define PACK_BATTERY_CAPACITY_AH 21.0
+#define PACK_OCV_FULL            58.8
+#define PACK_OCV_EMPTY           42.0
+
+static float SOC;
+
+/*
+@ brief calculation of SOC using OCV method at startup and before connection of load
+@ param volage voltage reading of battery
+ */
+float initialSOC(float voltage);
+
+/*
+@ brief calculation of SOC using coloumb counting at runtime and after connection of load
+@ param currentA current drawn by the load in Amps
+@ param deltaTimeH difference in time between current and previous SOC estimation
+ */
+float calculateSOC(float currentA, float voltage, u32 current_time);
 #define SW_VER 4
 #define SW_SUB 0
 void BMSEnableISense(u8 cidex);
@@ -22,6 +44,7 @@ void BMSEnableISense(u8 cidex);
 u8 gu4CIDSelected;
 static TYPE_PC_CONFIG pcconf;
 static u32 msTick;
+static u32 prev_time;
 static u32 u32msCntDown;
 extern const TYPE_BCC_CONF CONF33771TPL[];
 
@@ -32,20 +55,20 @@ extern const TYPE_BCC_CONF CONF33771TPL[];
  * in the Flash and loaded from Flash afterwards.
  */
 TYPE_PC_CONFIG const defPCConfig = {
-	PC_CONFIG_VALID,
-	IntTPL,
-	EVB_TypeArd,
-	1,					   // no of clusters
-	6,					   // no of cells
-	MODE_NORMAL_OPERATION, // mode
-	0,					   // all CIDs measures the current
-	0,					   // measurement period 1 = 100ms
-	0					   // test features
+		PC_CONFIG_VALID,
+		IntTPL,
+		EVB_TypeArd,
+		1,					   // no of clusters
+		6,					   // no of cells
+		MODE_NORMAL_OPERATION, // mode
+		0,					   // all CIDs measures the current
+		0,					   // measurement period 1 = 100ms
+		0					   // test features
 };
 // ----------------------------------------------------------------------------
 #define StopOnError() \
-	{                 \
-	}
+		{                 \
+		}
 TYPE_INTERFACE _interface = IntTPL; //!< local copy of interface type
 TYPE_EVB _evb = EVB_TypeArd;		//!< local copy of evb type
 // ----------------------------------------------------------------------------
@@ -72,8 +95,26 @@ int main(void)
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
 	BOARD_InitDebugConsole(); // Initialize debug console for PRINTF
-
 	InitHW();
+
+	//TPM0_CH1_PWM_Init();
+	PWM_Fan1_Init();
+	PWM_Fan2_Init();
+
+	//PWM_Init();
+	DelayInit();
+
+	I2C_init();
+	ScreenIF_Init(4);
+	ScreenIF_Clear();
+	//	GPIO_PinInit(GPIOC, 2U, &(gpio_pin_config_t){kGPIO_DigitalOutput, 0}); // Blue LED
+	//
+	//	GPIO_WritePinOutput(GPIOC, 2U, 0);
+	//	Delayms(3*500);
+	//		GPIO_WritePinOutput(GPIOC, 2U, 1);
+	//PWM_Init(64, 1499);
+	//PWM_Start(50);
+	//	PWM_SetDutyCycle(50);
 	PRINTF("Board Initialized.\n\r\r");
 	bms.Interface = pcconf.IntType;
 	bms.EVB = pcconf.EvbType;
@@ -92,12 +133,8 @@ int main(void)
 	NVICEnIrq(PIT_IRQ);
 
 	LED_RED_On();
+	SOC = initialSOC(49); //Abdullah
 
-	DelayInit();
-
-	I2C_init();
-	ScreenIF_Init(4);
-	ScreenIF_Clear();
 	// DataMonitor_lcd(50, 50, 2, 25, 1, 0); // Abdullah
 
 	lld3377xInitDriver(&(bms.Interface));
@@ -106,231 +143,259 @@ int main(void)
 	u4TagID = 1;
 	gu4CIDSelected = 1;
 	cidRoundRobin = 1;
+	uint8_t yarab = 0;
 
 	for
-		EVER
+	EVER
+	{
+		//		if(yarab >= 100)
+		//		{
+		//			yarab = 0;
+		//			PRINTF("RESET FAN \r\r\n");
+		//		}
+		//
+		//		TPM0_CH1_SetDutyCycle(yarab);
+		//		PRINTF("RUNNING FAN WITH: %d\r\r\n",yarab );
+		//		yarab = yarab+3;
+
+
+		PWM_Fan1_SetDuty(40);
+		PWM_Fan2_SetDuty(80);
+		PRINTF("RUNNING FAN 1 WITH: %d\r\r\n",40 );
+		PRINTF("RUNNING FAN 2 WITH: %d\r\r\n",80 );
+
+		u4TagID++;
+		u4TagID %= 16;
+
+		switch (bms.Status)
 		{
-			u4TagID++;
-			u4TagID %= 16;
 
-			switch (bms.Status)
+		case BMS_Idle:
+			bms.Status = BMS_Init;
+			break;
+
+		case BMS_Init:
+			LEDHandler(Off);
+			lld3377xTPLEnable();
+			slaveIF_wakeUp();
+			lld3377xWriteGlobalRegister(SYS_CFG1, 0x9011); // global reset
+
+			for (cid = 1; cid <= bms.NoClusters; cid++)
 			{
-
-			case BMS_Idle:
-				bms.Status = BMS_Init;
-				break;
-
-			case BMS_Init:
-				LEDHandler(Off);
-				lld3377xTPLEnable();
-				slaveIF_wakeUp();
-				lld3377xWriteGlobalRegister(SYS_CFG1, 0x9011); // global reset
-
-				for (cid = 1; cid <= bms.NoClusters; cid++)
-				{
-					cluster[cid - 1].Chip = Chip_Unknown;
-					cluster[cid - 1].Guid = 0L;
-					cluster[cid - 1].FRev = 0;
-					cluster[cid - 1].MRev = 0;
-					cluster[cid - 1].NoCTs = 0;
-				}
-
-				if (BMSInit(bms.NoClusters))
-				{
-					for (cid = 1; cid <= bms.NoClusters; cid++)
-					{
-						lld3377xClearError();
-						MC3377xGetSiliconRevision(cid, &(cluster[cid - 1])); // the sequence / order is required
-						MC3377xGetSiliconType(cid, &(cluster[cid - 1]));	 // the sequence / order is required
-					}
-					bms.Status = BMS_Config;
-				}
-				break;
-
-			case BMS_Config:
-				lld3377xClearError();
-				LEDHandler(Off);
-				for (cid = 1; cid <= bms.NoClusters; cid++)
-				{
-					MC3377xConfig(cid, CONF33771TPL);
-				}
-
-				lld3377xClearError();
-				//				BMSEnableISense(bms.CIDcurrent);
-
-				if (lld3377xGetError(NULL))
-				{
-					bms.Status = BMS_Error; // something failed
-					u32msCntDown = 1000;
-				}
-				else
-				{
-					bms.Status = BMS_Running;
-				}
-				break;
-
-			case BMS_Running:
-				//! \todo how to start conversion? Global versus local? (global might overwrite ADC_CFG content)
-				// chosen to start ADCs individual, to not change ADC_CFG register
-				// in a normal system a global write to all MC3377x would be used
-				timeStamp = msTick;
-
-				lld3377xClearError();
-
-				for (cid = 1; cid <= bms.NoClusters; cid++)
-				{
-					MC3377xADCStartConversion(cid, u4TagID);
-				}
-				Delay(DELAY_325us);
-				while (MC3377xADCIsConverting(gu4CIDSelected))
-					DONOTHING(); // wait till ready
-
-				// all cids are measured and status is requested
-				for (cid = 1; cid <= bms.NoClusters; cid++)
-				{
-					if (!MC3377xGetRawMeasurements(cid, u4TagID, cluster[cid - 1].NoCTs, &(rawResults[cid - 1])))
-					{
-						// PRINTF("MC3377xGetRawMeasurements failed for CID %d\n", cid);
-						bms.Status = BMS_Error; // error handling
-						u32msCntDown = 1000;
-						StopOnError();
-					}
-					if (!MC3377xGetStatus(cid, &(StatusBits[cid - 1])))
-					{
-						bms.Status = BMS_Error; // error handling
-						u32msCntDown = 1000;
-						StopOnError();
-					}
-				}
-
-				if (FaultPinStatus())
-				{ // check FAULT pin status (after measurement, before Diagnostics)
-
-					LEDHandler(Orange);
-				}
-				else
-				{
-					LEDHandler(Green);
-				}
-
-				// for debugging (output to GUI)
-				// only for the selected ID Status, Config and Thresholds are handled
-				if (!MC3377xGetStatus(gu4CIDSelected, &(StatusBits[gu4CIDSelected - 1])))
-				{
-					bms.Status = BMS_Error; // error handling
-					u32msCntDown = 1000;
-					StopOnError();
-				}
-
-				if (!MC3377xGetThresholds(gu4CIDSelected, cluster[gu4CIDSelected - 1].NoCTs, &(Thresholds[gu4CIDSelected - 1])))
-				{
-					bms.Status = BMS_Error; // error handling
-					u32msCntDown = 1000;
-					StopOnError();
-				}
-
-				// for debugging (output to GUI)
-				if (!MC3377xGetConfig(gu4CIDSelected, cluster[gu4CIDSelected - 1].NoCTs, &(ConfigBits[gu4CIDSelected - 1])))
-				{
-					bms.Status = BMS_Error; // error handling
-					u32msCntDown = 1000;
-					StopOnError();
-				}
-				break;
-
-			case BMS_Sleeping:
-				LEDHandler(Blue);
-				if (MC3377xCheck4Wakeup(bms.Interface))
-				{
-					bms.Status = BMS_Running;
-					//					if(bms->Interface==IntSPI)  {
-					//						// SPI-Ard only
-					//						SPIEnable();
-					//						slaveIF_SPISC(1);
-					//					}
-					//					if(bms->Interface==IntTPL)  {
-					//						// SPI-Ard only
-					//						slaveIF_SPISC(0);
-					//						SPITxEnable();
-					//						SPIRxEnable();
-					//					}
-				}
-				break;
-
-			case BMS_Error:
-				LEDHandler(Red);
-				if (u32msCntDown == 0)
-				{
-					bms.Status = BMS_Init; // error handling
-				}
-				break;
+				cluster[cid - 1].Chip = Chip_Unknown;
+				cluster[cid - 1].Guid = 0L;
+				cluster[cid - 1].FRev = 0;
+				cluster[cid - 1].MRev = 0;
+				cluster[cid - 1].NoCTs = 0;
 			}
 
-			// output cluster details
-			cid = cidRoundRobin;
-
-			cidRoundRobin++;
-			if (cidRoundRobin > bms.NoClusters)
-				cidRoundRobin = 1;
-
-			if (bms.Status == BMS_Running)
+			if (BMSInit(bms.NoClusters))
 			{
-				// all cids are measured
 				for (cid = 1; cid <= bms.NoClusters; cid++)
 				{
-					// DebugPrintMeasurements(cid, cluster[cid-1].NoCTs, &(rawResults[cid-1]));						// output values to host PC
-					//  DebugPrintMeasurements(1, cluster[0].NoCTs, &(rawResults[0])); // output values to host PC
-					u16 TeamStackVoltage = rawResults[0].u16StackVoltage;
-					// DataMonitor_lcd((TeamStackVoltage * 2.44141 * 0.001), 90, 55, 52, 1, 0);
-					// uint16_t temp1 = rawResults[0].u16ANVoltage[1];
-					// DataMonitor_lcd((NTCRaw2Celsius(temp1)), 90, 55, 52, 1, 0 );
-					ScreenIF_Clear();
-					ScreenIF_SetCursor(0, 0);
-					DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[0]));
-					ScreenIF_SetCursor(0, 1);
-					DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[1]));
-					ScreenIF_SetCursor(0, 2);
-					DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[2]));
-					ScreenIF_SetCursor(10, 3);
-					DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[3]));
-					ScreenIF_SetCursor(10, 0);
-					DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[4]));
-					ScreenIF_SetCursor(10, 1);
-					DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[5]));
-					ScreenIF_SetCursor(10, 2);
-					DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[6]));
-
-					// DataMonitor_soc_disp(22);
-					//  calculate average current based on coulombcounter
-					//				ccCount[1] = rawResults[cid-1].u16CCSamples;
-					//				ccValue[1] = rawResults[cid-1].s32CCCounter;
-					//				rawEval.s32AvCurrent = (ccValue[1]-ccValue[0])/(ccCount[1]-ccCount[0]);
-					//				rawEval.s32AvCurrent = (ccValue[1]-ccValue[0]);
-					//				rawEval.u16Samples = ccCount[1]-ccCount[0];
-					//! \todo IDs must be moved!!!!
-					//				SendIdxData32(cid, ID_BASE_EVALS, rawEvals->s32AvCurrent);
-					//				SendIdxData16(cid, ID_BASE_EVALS+1, rawEvals->u16Samples);
-					//				ccCount[0] = ccCount[1];
-					//				ccValue[0] = ccValue[1];
-
-					// for the selected CID perform evaluation of fault
-					bBCCFault = FALSE;
-					u16EvalFault = StatusBits[cid - 1].u16Fault1 & ~ConfigBits[cid - 1].u16FaultMask1;
-					if (u16EvalFault)
-						bBCCFault = TRUE;
-
-					u16EvalFault = StatusBits[cid - 1].u16Fault2 & ~ConfigBits[cid - 1].u16FaultMask2;
-					if (u16EvalFault)
-						bBCCFault = TRUE;
-
-					u16EvalFault = StatusBits[cid - 1].u16Fault3 & ~ConfigBits[cid - 1].u16FaultMask3;
-					if (u16EvalFault)
-						bBCCFault = TRUE;
-
-					// this message is used for dataloging!!!
+					lld3377xClearError();
+					MC3377xGetSiliconRevision(cid, &(cluster[cid - 1])); // the sequence / order is required
+					MC3377xGetSiliconType(cid, &(cluster[cid - 1]));	 // the sequence / order is required
 				}
+				bms.Status = BMS_Config;
+			}
+			break;
+
+		case BMS_Config:
+			lld3377xClearError();
+			LEDHandler(Off);
+			for (cid = 1; cid <= bms.NoClusters; cid++)
+			{
+				MC3377xConfig(cid, CONF33771TPL);
+			}
+
+			lld3377xClearError();
+			//				BMSEnableISense(bms.CIDcurrent);
+
+			if (lld3377xGetError(NULL))
+			{
+				bms.Status = BMS_Error; // something failed
+				u32msCntDown = 1000;
+			}
+			else
+			{
+				bms.Status = BMS_Running;
+			}
+			break;
+
+		case BMS_Running:
+			//! \todo how to start conversion? Global versus local? (global might overwrite ADC_CFG content)
+			// chosen to start ADCs individual, to not change ADC_CFG register
+			// in a normal system a global write to all MC3377x would be used
+			timeStamp = msTick;
+
+			lld3377xClearError();
+
+			for (cid = 1; cid <= bms.NoClusters; cid++)
+			{
+				MC3377xADCStartConversion(cid, u4TagID);
+			}
+			Delay(DELAY_325us);
+			while (MC3377xADCIsConverting(gu4CIDSelected))
+				DONOTHING(); // wait till ready
+
+			// all cids are measured and status is requested
+			for (cid = 1; cid <= bms.NoClusters; cid++)
+			{
+				if (!MC3377xGetRawMeasurements(cid, u4TagID, cluster[cid - 1].NoCTs, &(rawResults[cid - 1])))
+				{
+					// PRINTF("MC3377xGetRawMeasurements failed for CID %d\n", cid);
+					bms.Status = BMS_Error; // error handling
+					u32msCntDown = 1000;
+					StopOnError();
+				}
+				if (!MC3377xGetStatus(cid, &(StatusBits[cid - 1])))
+				{
+					bms.Status = BMS_Error; // error handling
+					u32msCntDown = 1000;
+					StopOnError();
+				}
+			}
+
+			if (FaultPinStatus())
+			{ // check FAULT pin status (after measurement, before Diagnostics)
+
+				LEDHandler(Orange);
+			}
+			else
+			{
+				LEDHandler(Green);
+			}
+
+			// for debugging (output to GUI)
+			// only for the selected ID Status, Config and Thresholds are handled
+			if (!MC3377xGetStatus(gu4CIDSelected, &(StatusBits[gu4CIDSelected - 1])))
+			{
+				bms.Status = BMS_Error; // error handling
+				u32msCntDown = 1000;
+				StopOnError();
+			}
+
+			if (!MC3377xGetThresholds(gu4CIDSelected, cluster[gu4CIDSelected - 1].NoCTs, &(Thresholds[gu4CIDSelected - 1])))
+			{
+				bms.Status = BMS_Error; // error handling
+				u32msCntDown = 1000;
+				StopOnError();
+			}
+
+			// for debugging (output to GUI)
+			if (!MC3377xGetConfig(gu4CIDSelected, cluster[gu4CIDSelected - 1].NoCTs, &(ConfigBits[gu4CIDSelected - 1])))
+			{
+				bms.Status = BMS_Error; // error handling
+				u32msCntDown = 1000;
+				StopOnError();
+			}
+			break;
+
+		case BMS_Sleeping:
+			LEDHandler(Blue);
+			if (MC3377xCheck4Wakeup(bms.Interface))
+			{
+				bms.Status = BMS_Running;
+				//					if(bms->Interface==IntSPI)  {
+				//						// SPI-Ard only
+				//						SPIEnable();
+				//						slaveIF_SPISC(1);
+				//					}
+				//					if(bms->Interface==IntTPL)  {
+				//						// SPI-Ard only
+				//						slaveIF_SPISC(0);
+				//						SPITxEnable();
+				//						SPIRxEnable();
+				//					}
+			}
+			break;
+
+		case BMS_Error:
+			LEDHandler(Red);
+			if (u32msCntDown == 0)
+			{
+				bms.Status = BMS_Init; // error handling
+			}
+			break;
+		}
+
+		// output cluster details
+		cid = cidRoundRobin;
+
+		cidRoundRobin++;
+		if (cidRoundRobin > bms.NoClusters)
+			cidRoundRobin = 1;
+
+		if (bms.Status == BMS_Running)
+		{
+			// all cids are measured
+			for (cid = 1; cid <= bms.NoClusters; cid++)
+			{
+				// DebugPrintMeasurements(cid, cluster[cid-1].NoCTs, &(rawResults[cid-1]));						// output values to host PC
+				//  DebugPrintMeasurements(1, cluster[0].NoCTs, &(rawResults[0])); // output values to host PC
+				u16 TeamStackVoltage = rawResults[0].u16StackVoltage;
+				ScreenIF_SetCursor(0,0);
+				u8 SOCPack = calculateSOC(rawResults[0].s32Current, TeamStackVoltage, msTick);
+				DataMonitor_soc_disp(SOCPack);
+				yarab ++;
+				if (yarab == 10)
+				{
+				    ScreenIF_SetCursor(0,3);
+				    DataMonitor_soh_disp(TeamStackVoltage * 2.44141 * 0.001);
+				}
+				if (yarab == 100)
+					yarab = 0;
+				// DataMonitor_lcd((TeamStackVoltage * 2.44141 * 0.001), 90, 55, 52, 1, 0);
+				// uint16_t temp1 = rawResults[0].u16ANVoltage[1];
+				// DataMonitor_lcd((NTCRaw2Celsius(temp1)), 90, 55, 52, 1, 0 );
+				//				ScreenIF_Clear();
+				//				ScreenIF_SetCursor(0, 0);
+				//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[0]));
+				//				ScreenIF_SetCursor(0, 1);
+				//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[1]));
+				//				ScreenIF_SetCursor(0, 2);
+				//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[2]));
+				//				ScreenIF_SetCursor(10, 3);
+				//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[3]));
+				//				ScreenIF_SetCursor(10, 0);
+				//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[4]));
+				//				ScreenIF_SetCursor(10, 1);
+				//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[5]));
+				//				ScreenIF_SetCursor(10, 2);
+				//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[6]));
+
+				// DataMonitor_soc_disp(22);
+				//  calculate average current based on coulombcounter
+				//				ccCount[1] = rawResults[cid-1].u16CCSamples;
+				//				ccValue[1] = rawResults[cid-1].s32CCCounter;
+				//				rawEval.s32AvCurrent = (ccValue[1]-ccValue[0])/(ccCount[1]-ccCount[0]);
+				//				rawEval.s32AvCurrent = (ccValue[1]-ccValue[0]);
+				//				rawEval.u16Samples = ccCount[1]-ccCount[0];
+				//! \todo IDs must be moved!!!!
+				//				SendIdxData32(cid, ID_BASE_EVALS, rawEvals->s32AvCurrent);
+				//				SendIdxData16(cid, ID_BASE_EVALS+1, rawEvals->u16Samples);
+				//				ccCount[0] = ccCount[1];
+				//				ccValue[0] = ccValue[1];
+
+				// for the selected CID perform evaluation of fault
+				bBCCFault = FALSE;
+				u16EvalFault = StatusBits[cid - 1].u16Fault1 & ~ConfigBits[cid - 1].u16FaultMask1;
+				if (u16EvalFault)
+					bBCCFault = TRUE;
+
+				u16EvalFault = StatusBits[cid - 1].u16Fault2 & ~ConfigBits[cid - 1].u16FaultMask2;
+				if (u16EvalFault)
+					bBCCFault = TRUE;
+
+				u16EvalFault = StatusBits[cid - 1].u16Fault3 & ~ConfigBits[cid - 1].u16FaultMask3;
+				if (u16EvalFault)
+					bBCCFault = TRUE;
+
+				// this message is used for dataloging!!!
 			}
 		}
+	}
 	return 0;
 }
 
@@ -401,3 +466,51 @@ u16 gu16Len;
 // ----------------------------------------------------------------------------
 #define MAX_NO_OF_CTx 14 // CT1..14
 #define NO_OF_ANx 7		 // AN0..6
+
+float initialSOC(float voltage)
+{
+	if (voltage > 10)
+	{
+		if (voltage >= PACK_OCV_FULL)
+			return 100.0;
+		else if (voltage <= PACK_OCV_EMPTY)
+			return 0.0;
+		else
+			return ((voltage - PACK_OCV_EMPTY) / (PACK_OCV_FULL - PACK_OCV_EMPTY)) * 100.0;
+	}
+	else
+	{
+		if (voltage >= CELL_OCV_FULL)
+			return 100.0;
+		else if (voltage <= CELL_OCV_EMPTY)
+			return 0.0;
+		else
+			return ((voltage - CELL_OCV_EMPTY) / (CELL_OCV_FULL - CELL_OCV_EMPTY)) * 100.0;
+	}
+}
+
+// Coulomb counting SOC update
+float calculateSOC(float currentA, float voltage, u32 current_time)
+{
+
+	float capacityAh;
+
+	if (voltage > 10)
+	{
+		capacityAh = PACK_BATTERY_CAPACITY_AH;
+	}
+	else
+	{
+		capacityAh = CELL_BATTERY_CAPACITY_AH;
+	}
+
+	float deltaSOC = (currentA / capacityAh) * (current_time - prev_time) * 100.0;
+	SOC += deltaSOC;
+	prev_time = current_time;
+	if (SOC > 100.0)
+		SOC = 100.0;
+	else if (SOC < 0.0)
+		SOC = 0.0;
+
+	return SOC;
+}

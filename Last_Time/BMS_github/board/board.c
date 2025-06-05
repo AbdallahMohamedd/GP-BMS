@@ -76,7 +76,11 @@ void InitHW(void)  {
     PORTA_PCR2 = PORT_PCR_MUX(2)|PORT_PCR_DSE_MASK;
 
     // Timer setup
-//	SIM_SCGC6 |= SIM_SCGC6_TPM0_MASK; 			// enable clock for TPM0
+	SIM_SCGC6 |= SIM_SCGC6_TPM0_MASK; 			// enable clock for TPM0
+	// TPM clock source: use PLLFLL (48MHz)
+	SIM->SOPT2 |= SIM_SOPT2_PLLFLLSEL_MASK;
+	SIM->SOPT2 &= ~SIM_SOPT2_TPMSRC_MASK;
+	SIM->SOPT2 |= SIM_SOPT2_TPMSRC(1); // MCGPLLCLK
 	SIM_SCGC6 |= SIM_SCGC6_TPM1_MASK; 			// enable clock for TPM1
     SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;            // enable pit clock
 

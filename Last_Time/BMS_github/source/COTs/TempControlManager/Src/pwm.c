@@ -1,56 +1,59 @@
-/*
- *	Graduation Project, Battery Management System
- *	Eng.: 	    Abdelrahman Mohamed
- *	Component:   PWM driver
- *	File: 		 PWM.h
- */
+#include <source/COTs/TempControlManager/Inc/pwm.h>
 
 
-#include <COTS/TempControlManager/Inc/PWM.h>
+#define TPM_CLK_FREQ 48000000U
+#define PWM_FREQ_HZ 1000U
 
-#define PWM_PORT PORTA
-#define PWM_PIN  13  // PTA13 (TPM1_CH1)
-#define TPM_MODULE TPM1
-#define TPM_CHANNEL 1
+static void CommonTPM0_Setup(void) {
+    // Enable clock to TPM0 and PORTC once only
+    SIM->SCGC6 |= SIM_SCGC6_TPM0_MASK;
+    SIM->SCGC5 |= SIM_SCGC5_PORTC_MASK;
 
-void PWM_Init(uint8_t prescaler, uint16_t period) {
-    // Enable clock to PORTA and TPM1
-    SIM->SCGC5 |= SIM_SCGC5_PORTA_MASK;
-    SIM->SCGC6 |= SIM_SCGC6_TPM1_MASK;
+    // Set TPM clock source to PLLFLL (48 MHz)
+    SIM->SOPT2 |= SIM_SOPT2_PLLFLLSEL_MASK;
+    SIM->SOPT2 &= ~SIM_SOPT2_TPMSRC_MASK;
+    SIM->SOPT2 |= SIM_SOPT2_TPMSRC(1); // Use PLLFLLCLK
 
-    // Configure PTA13 as TPM1_CH1 (PWM output)
-    PWM_PORT->PCR[PWM_PIN] = PORT_PCR_MUX(3);
-
-    // Select MCGIRCLK (4 MHz) as TPM clock source
-    SIM->SOPT2 |= SIM_SOPT2_TPMSRC(3);
-
-    // Disable TPM1 while configuring
-    TPM_MODULE->SC = 0;
-
-    // Set Prescaler
-    TPM_MODULE->SC |= TPM_SC_PS(prescaler);
-
-    // Set MOD value (determines PWM period)
-    TPM_MODULE->MOD = period - 1;
-
-    // Configure TPM1 Channel 1 for edge-aligned PWM, high-true pulses
-    TPM_MODULE->CONTROLS[TPM_CHANNEL].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK;
+    // Stop TPM0 for config
+    TPM0->SC = 0;
+    TPM0->MOD = (TPM_CLK_FREQ / PWM_FREQ_HZ) - 1; // 47999 for 1kHz
+    TPM0->SC |= TPM_SC_PS(0); // Prescaler = 1
 }
 
-void PWM_Start(uint8_t duty_cycle) {
-    // Set duty cycle
-    TPM_MODULE->CONTROLS[TPM_CHANNEL].CnV = (TPM_MODULE->MOD * duty_cycle) / 100;
+// ================= FAN 1: PTC2 → TPM0_CH1 =================
+void PWM_Fan1_Init(void) {
+    CommonTPM0_Setup();
 
-    // Enable TPM1 in up-counting mode
-    TPM_MODULE->SC |= TPM_SC_CMOD(1);
+    // Set PTC2 to ALT4 (TPM0_CH1)
+    PORTC->PCR[2] &= ~PORT_PCR_MUX_MASK;
+    PORTC->PCR[2] |= PORT_PCR_MUX(4);
+
+    TPM0->CONTROLS[1].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // High-true PWM
+    TPM0->CONTROLS[1].CnV = 0; // Start with 0% duty
+
+    TPM0->SC |= TPM_SC_CMOD(1); // Start counter
 }
 
-void PWM_SetDutyCycle(uint8_t duty_cycle) {
-    // Adjust duty cycle dynamically
-    TPM_MODULE->CONTROLS[TPM_CHANNEL].CnV = (TPM_MODULE->MOD * duty_cycle) / 100;
+void PWM_Fan1_SetDuty(uint8_t duty) {
+    if (duty > 100) duty = 100;
+    TPM0->CONTROLS[1].CnV = ((TPM0->MOD + 1) * duty) / 100;
 }
 
-void PWM_Stop(void) {
-    // Disable TPM1
-    TPM_MODULE->SC &= ~TPM_SC_CMOD_MASK;
+// ================= FAN 2: PTC1 → TPM0_CH0 =================
+void PWM_Fan2_Init(void) {
+    CommonTPM0_Setup();
+
+    // Set PTC1 to ALT4 (TPM0_CH0)
+    PORTC->PCR[1] &= ~PORT_PCR_MUX_MASK;
+    PORTC->PCR[1] |= PORT_PCR_MUX(4);
+
+    TPM0->CONTROLS[0].CnSC = TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK; // High-true PWM
+    TPM0->CONTROLS[0].CnV = 0; // Start with 0% duty
+
+    TPM0->SC |= TPM_SC_CMOD(1); // Start counter
+}
+
+void PWM_Fan2_SetDuty(uint8_t duty) {
+    if (duty > 100) duty = 100;
+    TPM0->CONTROLS[0].CnV = ((TPM0->MOD + 1) * duty) / 100;
 }

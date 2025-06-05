@@ -60,7 +60,7 @@ void floatToString(float num, char *str, int precision) {
 }
 void DataMonitor_soc_disp(uint8_t soc){
     char Buffer[16];
-    ScreenIF_SetCursor(0,0);
+    //ScreenIF_SetCursor(0,0);
     ScreenIF_PrintStr("SOC:");
     sprintf(Buffer, "%d", soc);
     ScreenIF_PrintStr(Buffer);
@@ -68,7 +68,7 @@ void DataMonitor_soc_disp(uint8_t soc){
 }
 void DataMonitor_soh_disp(uint8_t soh){
     char Buffer[16];
-    ScreenIF_SetCursor(11,0);
+    //ScreenIF_SetCursor(11,0);
     ScreenIF_PrintStr("SOH:");
     sprintf(Buffer, "%d", soh);
     ScreenIF_PrintStr(Buffer);
