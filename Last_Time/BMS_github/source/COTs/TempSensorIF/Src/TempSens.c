@@ -27,7 +27,7 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 //  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // --------------------------------------------------------------------
-#include <COTs/NTC/Inc/ntc.h>
+#include <COTs/TempSensorIF/Inc/TempSens.h>
 #include <math.h>
 // --------------------------------------------------------------------
 // generated with CalcNTCTable.py

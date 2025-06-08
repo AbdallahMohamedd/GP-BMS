@@ -18,8 +18,8 @@
 //=============================================================================
 // Includes
 //=============================================================================
+#include <COTs/TempSensorIF/Inc/TempSens.h> // For NTC temperature definitions
 #include "stdint.h"                  // For standard integer types
-#include "source/COTs/NTC/Inc/ntc.h" // For NTC temperature definitions
 
 //=============================================================================
 // Timing Constants

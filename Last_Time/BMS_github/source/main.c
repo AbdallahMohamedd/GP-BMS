@@ -1,7 +1,7 @@
 // --- Needed library --- //
 #include <COTs/BatteryStatusMonitor/Inc/dataMonitor.h>
 #include <COTs/DebugInfoManager/Inc/debugInfo.h>
-#include "COTs/TempControlManager/Inc/pwm.h"
+#include <COTs/FanControlManager/Inc/FanCtrl.h>
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
@@ -112,8 +112,8 @@ int main(void)
 	InitHW();
 
 	// TPM0_CH1_PWM_Init();
-	PWM_Fan1_Init();
-	PWM_Fan2_Init();
+	fanCtrl_fan1Init();
+	fanCtrl_fan2Init();
 
 	// PWM_Init();
 	DelayInit();
@@ -176,10 +176,10 @@ int main(void)
 			//		PRINTF("RUNNING FAN WITH: %d\r\r\n",yarab );
 			//		yarab = yarab+3;
 
-			// PWM_Fan1_SetDuty(40);
-			// PWM_Fan2_SetDuty(80);
-			// PRINTF("RUNNING FAN 1 WITH: %d\r\r\n", 40);
-			// PRINTF("RUNNING FAN 2 WITH: %d\r\r\n", 80);
+				fanCtrl_fan1SetDuty(40);
+			 fanCtrl_fan2SetDuty(80);
+			 //PRINTF("RUNNING FAN 1 WITH: %d\r\r\n", 40);
+			 //PRINTF("RUNNING FAN 2 WITH: %d\r\r\n", 80);
 
 			u4TagID++;
 			u4TagID %= 16;

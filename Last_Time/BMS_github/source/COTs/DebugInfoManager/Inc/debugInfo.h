@@ -81,7 +81,15 @@
 // #define DATAMONITOR_DEBUG_FAULT      ///< Enable DataMonitor fault status display debug prints
 // #define DATAMONITOR_DEBUG_TEMP       ///< Enable DataMonitor temperature display debug prints
 // #define DATAMONITOR_DEBUG_MODE       ///< Enable DataMonitor operating mode display debug prints
- #define DATAMONITOR_DEBUG_DATA       ///< Enable DataMonitor all parameters display debug prints
+// #define DATAMONITOR_DEBUG_DATA       ///< Enable DataMonitor all parameters display debug prints
+
+// #define SCREENIF_DEBUG_INIT    ///< Enable ScreenIF initialization and setup debug prints
+// #define SCREENIF_DEBUG_I2C     ///< Enable ScreenIF I2C communication debug prints
+// #define SCREENIF_DEBUG_CMD     ///< Enable ScreenIF LCD command execution debug prints
+// #define SCREENIF_DEBUG_DATA    ///< Enable ScreenIF data (character/string) display debug prints
+
+ #define FANCTRL_DEBUG_INIT    ///< Enable FanCtrl initialization debug prints
+ #define FANCTRL_DEBUG_PWM     ///< Enable FanCtrl PWM duty cycle debug prints
 //=============================================================================
 // Public Function Declarations
 //=============================================================================

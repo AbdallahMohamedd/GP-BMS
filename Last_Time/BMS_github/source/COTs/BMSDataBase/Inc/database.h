@@ -8,8 +8,8 @@
 #ifndef COTS_BMSDATABASE_INC_DATABASE_H_
 #define COTS_BMSDATABASE_INC_DATABASE_H_
 #include <COTs/DebugInfoManager/Inc/debugInfo.h>										// for memcmp
+#include <COTs/TempSensorIF/Inc/TempSens.h>																// table for NTC resistor characteristics
 #include <tpm1.h>													// for Delay
-#include <COTs/NTC/Inc/ntc.h>																// table for NTC resistor characteristics
 #include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
 
 // ----------------------------------------------------------------------------
