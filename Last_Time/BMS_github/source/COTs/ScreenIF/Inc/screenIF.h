@@ -17,8 +17,8 @@
 //=============================================================================
 // Includes
 //=============================================================================
+#include <COTs/ScreenIF/Inc/screenIF_Cfg.h>
 #include "COTs/DebugInfoManager/Inc/debugInfo.h"
-#include "COTS/ScreenIF/Inc/ScreenIF_Cfg.h"
 
 //=============================================================================
 // Command Definitions

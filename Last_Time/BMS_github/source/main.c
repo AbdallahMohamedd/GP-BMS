@@ -1,7 +1,7 @@
 // --- Needed library --- //
 #include <COTs/BatteryStatusMonitor/Inc/dataMonitor.h>
 #include <COTs/DebugInfoManager/Inc/debugInfo.h>
-#include <COTs/FanControlManager/Inc/FanCtrl.h>
+#include <COTs/FanControlManager/Inc/fanCtrl.h>
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
