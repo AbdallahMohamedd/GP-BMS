@@ -20,7 +20,7 @@
 //=============================================================================
 #include <COTs/DebugInfoManager/Inc/debugInfo.h>
 #include "tpm1.h" // For delay functions
-#include "spi.h"  // For SPI types and functions
+#include "spi.h"  // For SPI types and functions  
 
 //=============================================================================
 // External Variables
