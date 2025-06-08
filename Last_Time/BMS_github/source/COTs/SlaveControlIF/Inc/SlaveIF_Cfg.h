@@ -1,15 +1,15 @@
 /**
- * @file SlaveIF_Cfg.h
- * @brief Configuration header for the Slave Interface (SlaveIF) driver.
+ * @file        SlaveIF_Cfg.h
+ * @brief       Configuration header for the Slave Interface (SlaveIF) driver.
  *
- * @details This file contains hardware-specific configurations for the SlaveIF module,
- *          including timing values, ADC settings, TagID lists, and configuration arrays
- *          for MC33771x/MC33772x devices. Adjust these values based on your specific
- *          hardware and application requirements.
+ * @details     This file contains hardware-specific configurations for the SlaveIF module,
+ *              including timing values, ADC settings, TagID lists, and configuration arrays
+ *              for MC33771x/MC33772x devices. Adjust these values based on your specific
+ *              hardware and application requirements.
  *
- * @note Project: Graduation Project - Battery Management System
- * @note Engineer: Abdullah Mohamed
- * @note Component: Slave_Control_IF driver
+ * @note        Project: Graduation Project - Battery Management System
+ * @note        Engineer: Abdullah Mohamed
+ * @note        Component: Slave_Control_IF driver
  */
 
 #ifndef SLAVE_IF_CFG_H
@@ -19,71 +19,70 @@
 // Includes
 //=============================================================================
 #include <COTs/TempSensorIF/Inc/TempSens.h> // For NTC temperature definitions
-#include "stdint.h"                  // For standard integer types
 
 //=============================================================================
 // Timing Constants
 //=============================================================================
 /**
- * @brief Time to wait after a reset.
- * @details Time in milliseconds required for the device to be ready after a reset.
- * @note Reference: MC33771B Datasheet, VPWR(READY) to Device Ready (5 ms).
+ * @brief       Time to wait after a reset.
+ * @details     Time in milliseconds required for the device to be ready after a reset.
+ * @note        Reference: MC33771B Datasheet, VPWR(READY) to Device Ready (5 ms).
  */
-#define WAIT_AFTER_RESET (5U) //!< Time [ms] to wait after reset.
+#define WAIT_AFTER_RESET (5U)       //!< Time [ms] to wait after reset.
 
 /**
- * @brief Time to wait after wakeup.
- * @details Time in milliseconds to transition from Sleep Mode to Normal Mode.
- * @note Reference: MC33771B Datasheet, tWAKE-UP (1 ms).
+ * @brief       Time to wait after wakeup.
+ * @details     Time in milliseconds to transition from Sleep Mode to Normal Mode.
+ * @note        Reference: MC33771B Datasheet, tWAKE-UP (1 ms).
  */
-#define WAIT_AFTER_WAKEUP (1U) //!< Time [ms] to wait after wakeup.
+#define WAIT_AFTER_WAKEUP (1U)      //!< Time [ms] to wait after wakeup.
 
 /**
- * @brief Settling time for RCs.
- * @details Time in microseconds to wait for RC components to stabilize.
+ * @brief       Settling time for RCs.
+ * @details     Time in microseconds to wait for RC components to stabilize.
  */
-#define SETTLING_TIME (1000U) //!< Time [us] for RC settling.
+#define SETTLING_TIME (1000U)       //!< Time [us] for RC settling.
 
 //=============================================================================
 // ADC and Threshold Constants
 //=============================================================================
 /**
- * @brief Voltage scaling factor for cell measurements.
- * @details Conversion factor for cell voltage in Volts.
- * @note Unit: Volts.
+ * @brief       Voltage scaling factor for cell measurements.
+ * @details     Conversion factor for cell voltage in Volts.
+ * @note        Unit: Volts.
  */
-#define SCALE_VCELL (152.5925E-6) //!< Voltage scaling factor [V].
+#define SCALE_VCELL (152.5925E-6)   //!< Voltage scaling factor [V].
 
 /**
- * @brief Open circuit threshold value.
- * @details Threshold for detecting open circuit, calculated as 150mV / SCALE_VCELL.
+ * @brief       Open circuit threshold value.
+ * @details     Threshold for detecting open circuit, calculated as 150mV / SCALE_VCELL.
  */
-#define OPEN_THRESHOLD ((uint16_t)(0.100 / SCALE_VCELL)) //!< Threshold for 150mV.
+#define OPEN_THRESHOLD ((uint16_t)(0.100 / SCALE_VCELL))                            //!< Threshold for 150mV.
 
 /**
- * @brief Default ADC configuration.
- * @details Combines PGA gain and ADC resolution settings for reset state.
+ * @brief       Default ADC configuration.
+ * @details     Combines PGA gain and ADC resolution settings for reset state.
  */
-#define ADC_CFG_DEFAULT (PGA_GAIN_AUTO | ADC1_A_14bit | ADC1_B_14bit | ADC2_16bit) //!< Default ADC settings.
+#define ADC_CFG_DEFAULT (PGA_GAIN_AUTO | ADC1_A_14bit | ADC1_B_14bit | ADC2_16bit)  //!< Default ADC settings.
 
 /**
- * @brief Custom ADC configuration.
- * @details Sets PGA gain to auto and all ADCs to 16-bit resolution.
+ * @brief       Custom ADC configuration.
+ * @details     Sets PGA gain to auto and all ADCs to 16-bit resolution.
  */
-#define ADC_CFG_SETTING (PGA_GAIN_AUTO | ADC1_A_16bit | ADC1_B_16bit | ADC2_16bit) //!< Custom ADC settings.
+#define ADC_CFG_SETTING (PGA_GAIN_AUTO | ADC1_A_16bit | ADC1_B_16bit | ADC2_16bit)  //!< Custom ADC settings.
 
 /**
- * @brief Resolution factor for thresholds.
- * @details Conversion factor for over/under voltage thresholds in Volts/LSB.
+ * @brief       Resolution factor for thresholds.
+ * @details     Conversion factor for over/under voltage thresholds in Volts/LSB.
  */
-#define FACTOR_THRESHOLD (256.0 / 5.0) //!< Resolution [V/LSB] for thresholds.
+#define FACTOR_THRESHOLD (256.0 / 5.0)                                              //!< Resolution [V/LSB] for thresholds.
 
 /**
- * @brief Macro to calculate OV/UV threshold values.
- * @details Combines overvoltage (ov) and undervoltage (uv) thresholds into a 16-bit value.
- * @param ov Overvoltage threshold in Volts.
- * @param uv Undervoltage threshold in Volts.
- * @return uint16_t Combined threshold value.
+ * @brief       Macro to calculate OV/UV threshold values.
+ * @details     Combines overvoltage (ov) and undervoltage (uv) thresholds into a 16-bit value.
+ * @param       ov Overvoltage threshold in Volts.
+ * @param       uv Undervoltage threshold in Volts.
+ * @return      uint16_t Combined threshold value.
  */
 #define TH_OVUV_VALUE(ov, uv) ((uint16_t)(((uint8_t)(ov * FACTOR_THRESHOLD) << 8) | ((uint8_t)(uv * FACTOR_THRESHOLD) << 0)))
 
@@ -91,7 +90,7 @@
 // Static Variables
 //=============================================================================
 /**
- * @brief CRC table for polynomial 0x2F.
+ * @brief       CRC table for polynomial 0x2F.
  */
 static const uint8_t crc_table[256] = {
     0x00, 0x2f, 0x5e, 0x71, 0xbc, 0x93, 0xe2, 0xcd, 0x57, 0x78, 0x09, 0x26, 0xeb, 0xc4, 0xb5, 0x9a,

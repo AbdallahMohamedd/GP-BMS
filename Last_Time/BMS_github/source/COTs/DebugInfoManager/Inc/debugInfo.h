@@ -26,6 +26,7 @@
 //=============================================================================
 #include "source/COTs/KL25ZUtilize/Inc/KL25ZUtil.h"
 #include <MKL25Z4.h>
+#include "stdint.h"                  		// For standard integer types
 #include <string.h>
 #include <math.h>
 #include "stdio.h"
@@ -92,7 +93,7 @@
 // #define FANCTRL_DEBUG_INIT    ///< Enable FanCtrl initialization debug prints
 // #define FANCTRL_DEBUG_PWM     ///< Enable FanCtrl PWM duty cycle debug prints
 
-#define TEMPSENSORIF_DEBUG_CONVERT    ///< Enable TempSensorIF temperature conversion debug prints
+//#define TEMPSENSORIF_DEBUG_CONVERT    ///< Enable TempSensorIF temperature conversion debug prints
 //=============================================================================
 // Public Function Declarations
 //=============================================================================

@@ -56,7 +56,7 @@ void BOARD_InitDebugConsole(void)
     DbgConsole_Init(BOARD_DEBUG_UART_BASEADDR, BOARD_DEBUG_UART_BAUDRATE, BOARD_DEBUG_UART_TYPE, uartClkSrcFreq);
 }
 
-void InitHW(void)  {
+void Board_InitHW(void)  {
 	
 	// ----------------------------------
 	// system and clock setup
@@ -69,9 +69,9 @@ void InitHW(void)  {
 	SIM_SCGC5 |= SIM_SCGC5_PORTE_MASK;			// enable port E clock
 	
 	// uart 0 hw setup
-	SIM_SOPT2 |= SIM_SOPT2_UART0SRC(1);      							// uart clock is MCGFLLCLK (=2 bus clock)
-	SIM_SOPT2 |= SIM_SOPT2_TPMSRC(1);      								// TPM  clock is MCGFLLCLK (=2 bus clock)
-    SIM_SCGC4 |= SIM_SCGC4_UART0_MASK;									// enable uart 0 clock
+	SIM_SOPT2 |= SIM_SOPT2_UART0SRC(1);      	// uart clock is MCGFLLCLK (=2 bus clock)
+	SIM_SOPT2 |= SIM_SOPT2_TPMSRC(1);      		// TPM  clock is MCGFLLCLK (=2 bus clock)
+    SIM_SCGC4 |= SIM_SCGC4_UART0_MASK;			// enable uart 0 clock
     PORTA_PCR1 = PORT_PCR_MUX(2)|PORT_PCR_DSE_MASK;
     PORTA_PCR2 = PORT_PCR_MUX(2)|PORT_PCR_DSE_MASK;
 
@@ -80,7 +80,7 @@ void InitHW(void)  {
 	// TPM clock source: use PLLFLL (48MHz)
 	SIM->SOPT2 |= SIM_SOPT2_PLLFLLSEL_MASK;
 	SIM->SOPT2 &= ~SIM_SOPT2_TPMSRC_MASK;
-	SIM->SOPT2 |= SIM_SOPT2_TPMSRC(1); // MCGPLLCLK
+	SIM->SOPT2 |= SIM_SOPT2_TPMSRC(1); 			// MCGPLLCLK
 	SIM_SCGC6 |= SIM_SCGC6_TPM1_MASK; 			// enable clock for TPM1
     SIM_SCGC6 |= SIM_SCGC6_PIT_MASK;            // enable pit clock
 

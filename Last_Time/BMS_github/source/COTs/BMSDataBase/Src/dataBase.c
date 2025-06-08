@@ -41,7 +41,7 @@ extern const u16 _TAGID_BCC6[];
  * Initialises the BMS system with NoOfNodes.
  *
  * <b>For all nodes</b>
- * - Clear errors (\ref lld3377xClearError)
+ * - Clear errors (\ref slaveIF_clearError)
  * - Send wakeup
  * - Check if unassigned node present
  * 		- Assigns CID (starting with 1, counting up)
@@ -65,25 +65,25 @@ bool BMSInit(u8 NoOfNodes)
 
 	for (cid = 1; cid <= NoOfNodes; cid++)
 	{
-		lld3377xClearError();
+		slaveIF_clearError();
 		slaveIF_wakeUp(); // send wakeup in case next device is in idle mode
-		if (lld3377xReadRegisters(CIDunassiged, INIT, 1, NULL))
-		{															   // check if somebody is there / read Init register
-			lld3377xWriteRegister(CIDunassiged, INIT, (u16)cid, NULL); // assign CID
+		if (slaveIF_readReg(CIDunassiged, INIT, 1, NULL))
+		{														  // check if somebody is there / read Init register
+			slaveIF_writeReg(CIDunassiged, INIT, (u16)cid, NULL); // assign CID
 			if (cid < NoOfNodes)
-			{														 // all nodes except last one
-				lld3377xWriteRegister(cid, INIT, INIT_BUS_SW, NULL); // close switch	(except last node)
+			{													// all nodes except last one
+				slaveIF_writeReg(cid, INIT, INIT_BUS_SW, NULL); // close switch	(except last node)
 			}
 			else
 			{
-				lld3377xWriteRegister(cid, INIT, 0x0000, NULL); // open switch	(last node)
+				slaveIF_writeReg(cid, INIT, 0x0000, NULL); // open switch	(last node)
 			}
 		}
 	}
-	return !lld3377xGetError(NULL);
+	return !slaveIF_getError(NULL);
 }
 // ----------------------------------------------------------------------------
-/*! \brief Performs basic MC3377x configuration.
+/*! \brief Performs basic MC33771B configuration.
  *
  * Loads the configuration list conf into the node cid registers.
  *
@@ -97,20 +97,20 @@ bool BMSInit(u8 NoOfNodes)
  * A list entry with register address equal to 0 terminates the list.
  *
  */
-bool MC3377xConfig(u8 cid, const TYPE_BCC_CONF conf[])
+bool MC3377xConfig(u8 cid, const SsysConf_t conf[])
 {
 	u16 n;
 
 	if (CheckCID(cid))
-		return _lld3377xSetError(ERR_WrongParam);
+		return slaveIF_setError(ERR_WrongParam);
 
 	n = 0;
 	while (conf[n].regAdr != 0)
 	{
-		lld3377xWriteRegister(cid, conf[n].regAdr, conf[n].regValue, NULL);
+		slaveIF_writeReg(cid, conf[n].regAdr, conf[n].regValue, NULL);
 		n++;
 	}
-	return !lld3377xGetError(NULL);
+	return !slaveIF_getError(NULL);
 }
 // ----------------------------------------------------------------------------
 /*! \brief starts a ADC conversion (set SOC bit in ADC_CFG register),
@@ -127,23 +127,23 @@ bool MC3377xADCStartConversion(u8 cid, u8 tagID)
 	u16 adcCfg;
 
 	if (CheckCID(cid))
-		return _lld3377xSetError(ERR_WrongParam);
+		return slaveIF_setError(ERR_WrongParam);
 
 	if (tagID > 15)
-		return _lld3377xSetError(ERR_WrongParam);
+		return slaveIF_setError(ERR_WrongParam);
 
-	lld3377xReadRegisters(cid, ADC_CFG, 1, &adcCfg);
+	slaveIF_readReg(cid, ADC_CFG, 1, &adcCfg);
 	adcCfg = adcCfg | ADC_CFG_SOC;				// set start of conversion
 	adcCfg = (adcCfg & 0x0FFF) | (tagID << 12); // set TagId
-	lld3377xWriteRegister(cid, ADC_CFG, adcCfg, NULL);
+	slaveIF_writeReg(cid, ADC_CFG, adcCfg, NULL);
 
-	if (lld3377xGetError(NULL))
+	if (slaveIF_getError(NULL))
 	{
 		return false;
 	}
 	else
 	{
-		lld3377xSetTagID(cid, tagID);
+		slaveIF_setTagID(cid, tagID);
 		return true;
 	}
 }
@@ -168,9 +168,9 @@ bool MC3377xADCIsConverting(u8 cid)
 	u16 adcCfg;
 
 	if (CheckCID(cid))
-		return _lld3377xSetError(ERR_WrongParam);
+		return slaveIF_setError(ERR_WrongParam);
 
-	if (lld3377xReadRegisters(cid, ADC_CFG, 1, &adcCfg))
+	if (slaveIF_readReg(cid, ADC_CFG, 1, &adcCfg))
 	{
 		return adcCfg & ADC_CFG_SOC;
 	}
@@ -201,7 +201,7 @@ bool MC3377xGetRawMeasurements(u8 cid, u8 tagId, u8 NoCTs, TYPE_MEAS_RESULTS_RAW
 	u32 u19Current;
 
 	// -----  burst read data  -----
-	if (lld3377xReadRegisters(cid, MEAS_ISENSE1, 0x3, &rdData[0]))
+	if (slaveIF_readReg(cid, MEAS_ISENSE1, 0x3, &rdData[0]))
 	{																			// read register 0x30..0x32
 		u19Current = ((rdData[0] & 0x7FFF) << 4) | ((rdData[1] & 0x000F) << 0); // -----  MEAS_ISENSE  -----
 		// -----  sign extend to s32  -----
@@ -217,7 +217,7 @@ bool MC3377xGetRawMeasurements(u8 cid, u8 tagId, u8 NoCTs, TYPE_MEAS_RESULTS_RAW
 	}
 
 	// -----  MEAS_CELL[14..1]  -----
-	if (lld3377xReadRegisters(cid, MEAS_CELL1 - NoCTs + 1, NoCTs, &rdData[0]))
+	if (slaveIF_readReg(cid, MEAS_CELL1 - NoCTs + 1, NoCTs, &rdData[0]))
 	{
 		u8Idx = NoCTs;
 		while (u8Idx)
@@ -227,7 +227,7 @@ bool MC3377xGetRawMeasurements(u8 cid, u8 tagId, u8 NoCTs, TYPE_MEAS_RESULTS_RAW
 		}
 	}
 	// -----  MEAS_AN[6..0]  -----
-	if (lld3377xReadRegisters(cid, MEAS_AN6, 0x7, &rdData[0]))
+	if (slaveIF_readReg(cid, MEAS_AN6, 0x7, &rdData[0]))
 	{
 		u8Idx = 7;
 		while (u8Idx)
@@ -237,7 +237,7 @@ bool MC3377xGetRawMeasurements(u8 cid, u8 tagId, u8 NoCTs, TYPE_MEAS_RESULTS_RAW
 		}
 	}
 
-	if (lld3377xReadRegisters(cid, MEAS_IC_TEMP, 0x3, &rdData[0]))
+	if (slaveIF_readReg(cid, MEAS_IC_TEMP, 0x3, &rdData[0]))
 	{
 		RawMeasResults->u16ICTemp = rdData[0] & 0x7FFF;	  // MEAS_IC_TEMP
 		RawMeasResults->u16VbgADC1A = rdData[1] & 0x7FFF; // MEAS_VBGxx
@@ -245,13 +245,13 @@ bool MC3377xGetRawMeasurements(u8 cid, u8 tagId, u8 NoCTs, TYPE_MEAS_RESULTS_RAW
 	}
 
 	// -----  burst read data  -----
-	if (lld3377xReadRegisters(cid, CC_NB_SAMPLES, 3, &rdData[0]))
+	if (slaveIF_readReg(cid, CC_NB_SAMPLES, 3, &rdData[0]))
 	{ // read register 0x2D..0x2F
 		RawMeasResults->u16CCSamples = rdData[0];
 		RawMeasResults->s32CCCounter = (s32)((rdData[1] << 16) | rdData[2]);
 	}
 
-	return !lld3377xGetError(NULL);
+	return !slaveIF_getError(NULL);
 }
 // ------------------------------------------------------------------
 /*! \brief Reads the General Universal ID (GUID)
@@ -304,7 +304,7 @@ bool MC3377xGetRawMeasurements(u8 cid, u8 tagId, u8 NoCTs, TYPE_MEAS_RESULTS_RAW
  * In case of not successful execution Guid is set to = 0x0000_0000
  *
  */
-bool MC3377xGetGUID(u8 cid, LLD_TYPE_CLUSTER *pCluster)
+bool MC3377xGetGUID(u8 cid, SclusterInfo_t *pCluster)
 {
 	u16 rdData[3];
 	u8 u8Adr;
@@ -312,10 +312,10 @@ bool MC3377xGetGUID(u8 cid, LLD_TYPE_CLUSTER *pCluster)
 	pCluster->Guid = 0L;
 
 	if (CheckCID(cid))
-		return _lld3377xSetError(ERR_WrongParam);
+		return slaveIF_setError(ERR_WrongParam);
 	if (pCluster->Chip == Chip_Unknown)
 
-		return _lld3377xSetError(ERR_WrongParam);
+		return slaveIF_setError(ERR_WrongParam);
 
 	switch (pCluster->Chip)
 	{
@@ -329,10 +329,10 @@ bool MC3377xGetGUID(u8 cid, LLD_TYPE_CLUSTER *pCluster)
 
 		for (u8Adr = 0x17; u8Adr <= 0x19; u8Adr++)
 		{
-			lld3377xWriteRegister(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
-			lld3377xReadRegisters(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x17]);
+			slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
+			slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x17]);
 		}
-		if (lld3377xGetError(NULL))
+		if (slaveIF_getError(NULL))
 		{
 			pCluster->Guid = 0L;
 			return false;
@@ -352,10 +352,10 @@ bool MC3377xGetGUID(u8 cid, LLD_TYPE_CLUSTER *pCluster)
 		//		 |  (16 bit)      |  (16 bit)      |  (5 bit)       |
 		for (u8Adr = 0x18; u8Adr <= 0x1A; u8Adr++)
 		{
-			lld3377xWriteRegister(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
-			lld3377xReadRegisters(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x18]);
+			slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
+			slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x18]);
 		}
-		if (lld3377xGetError(NULL))
+		if (slaveIF_getError(NULL))
 		{
 			pCluster->Guid = 0L;
 			return false;
@@ -377,10 +377,10 @@ bool MC3377xGetGUID(u8 cid, LLD_TYPE_CLUSTER *pCluster)
 
 		for (u8Adr = 0x13; u8Adr <= 0x15; u8Adr++)
 		{
-			lld3377xWriteRegister(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
-			lld3377xReadRegisters(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x13]);
+			slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
+			slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x13]);
 		}
-		if (lld3377xGetError(NULL))
+		if (slaveIF_getError(NULL))
 		{
 			pCluster->Guid = 0L;
 			return false;
@@ -400,10 +400,10 @@ bool MC3377xGetGUID(u8 cid, LLD_TYPE_CLUSTER *pCluster)
 		//		 |  (16 bit)      |  (16 bit)      |  (5 bit)       |
 		for (u8Adr = 0x10; u8Adr <= 0x12; u8Adr++)
 		{
-			lld3377xWriteRegister(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
-			lld3377xReadRegisters(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x10]);
+			slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
+			slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x10]);
 		}
-		if (lld3377xGetError(NULL))
+		if (slaveIF_getError(NULL))
 		{
 			pCluster->Guid = 0L;
 			return false;
@@ -417,16 +417,16 @@ bool MC3377xGetGUID(u8 cid, LLD_TYPE_CLUSTER *pCluster)
 
 	case Chip_Unknown:
 	default:
-		return _lld3377xSetError(ERR_WrongParam);
+		return slaveIF_setError(ERR_WrongParam);
 		break;
 	}
 
 	for (u8Adr = 0x17; u8Adr <= 0x19; u8Adr++)
 	{
-		lld3377xWriteRegister(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
-		lld3377xReadRegisters(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x17]);
+		slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
+		slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x17]);
 	}
-	if (lld3377xGetError(NULL))
+	if (slaveIF_getError(NULL))
 	{
 		pCluster->Guid = 0L;
 		return false;
@@ -451,7 +451,7 @@ bool MC3377xGetGUID(u8 cid, LLD_TYPE_CLUSTER *pCluster)
  * \remarks
  * In case of not successful execution Frev and Mrev will be set to 0
  */
-bool MC3377xGetSiliconRevision(u8 cid, LLD_TYPE_CLUSTER *pCluster)
+bool MC3377xGetSiliconRevision(u8 cid, SclusterInfo_t *pCluster)
 {
 	u16 rdData;
 
@@ -459,14 +459,14 @@ bool MC3377xGetSiliconRevision(u8 cid, LLD_TYPE_CLUSTER *pCluster)
 	pCluster->MRev = 0;
 
 	if (cid > 15)
-		return _lld3377xSetError(ERR_WrongParam);
+		return slaveIF_setError(ERR_WrongParam);
 
-	if (lld3377xReadRegisters(cid, SILICON_REV, 1, &rdData))
+	if (slaveIF_readReg(cid, SILICON_REV, 1, &rdData))
 	{
 		pCluster->FRev = (u8)(rdData >> 3) & 0x07;
 		pCluster->MRev = (u8)(rdData >> 0) & 0x07;
 	}
-	return !lld3377xGetError(NULL);
+	return !slaveIF_getError(NULL);
 }
 // ----------------------------------------------------------------------------
 /*! \brief Reads the silicon type of the cid.
@@ -505,9 +505,9 @@ bool MC3377xGetSiliconRevision(u8 cid, LLD_TYPE_CLUSTER *pCluster)
  * | MC33771 |       6.1           |        3.2         |
  *
  */
-bool MC3377xGetSiliconType(u8 cid, LLD_TYPE_CLUSTER *pCluster)
+bool MC3377xGetSiliconType(u8 cid, SclusterInfo_t *pCluster)
 {
-	LLD_TYPE_RETURN res;
+	TypeReturn_t res;
 	u16 rdData, bakData;
 	bool bcc14;
 	bool revA;
@@ -520,35 +520,35 @@ bool MC3377xGetSiliconType(u8 cid, LLD_TYPE_CLUSTER *pCluster)
 	if (cid == 0)
 	{
 		// works with CID-00 => reset state
-		lld3377xReadRegisters(cid, OV_UV_EN, 1, &rdData);
+		slaveIF_readReg(cid, OV_UV_EN, 1, &rdData);
 		bcc14 = (rdData == 0x3FFF); // 14cells 0x3FFF  ; 6cells  0x003F
-		lld3377xReadRegisters(cid, SYS_CFG2, 1, &rdData);
+		slaveIF_readReg(cid, SYS_CFG2, 1, &rdData);
 		revA = (rdData & 0x4000); // bit14=1 => Rev A
 	}
 	else
 	{
 		if (CheckCID(cid))
-			return _lld3377xSetError(ERR_WrongParam);
+			return slaveIF_setError(ERR_WrongParam);
 		// assigned CID => need to test
-		if (lld3377xReadRegisters(cid, OV_UV_EN, 1, &bakData))
+		if (slaveIF_readReg(cid, OV_UV_EN, 1, &bakData))
 		{ // to keep state
-			lld3377xWriteRegister(cid, OV_UV_EN, 0x3FFF, NULL);
-			lld3377xReadRegisters(cid, OV_UV_EN, 1, &rdData);	 // now check
-			lld3377xWriteRegister(cid, OV_UV_EN, bakData, NULL); // restore
+			slaveIF_writeReg(cid, OV_UV_EN, 0x3FFF, NULL);
+			slaveIF_readReg(cid, OV_UV_EN, 1, &rdData);		// now check
+			slaveIF_writeReg(cid, OV_UV_EN, bakData, NULL); // restore
 			bcc14 = (rdData == 0x3FFF);
 		}
-		if (lld3377xReadRegisters(cid, INIT, 1, &bakData))
-		{																  // to keep state
-			lld3377xWriteRegister(cid, INIT, bakData | (1UL << 5), NULL); // attempt to set Bit5
-			lld3377xReadRegisters(cid, INIT, 1, &rdData);				  // now check
-			lld3377xWriteRegister(cid, INIT, bakData, NULL);			  // restore
-			revA = (rdData & (1UL << 5)) == 0;							  // bit5=0 => Rev A
+		if (slaveIF_readReg(cid, INIT, 1, &bakData))
+		{															 // to keep state
+			slaveIF_writeReg(cid, INIT, bakData | (1UL << 5), NULL); // attempt to set Bit5
+			slaveIF_readReg(cid, INIT, 1, &rdData);					 // now check
+			slaveIF_writeReg(cid, INIT, bakData, NULL);				 // restore
+			revA = (rdData & (1UL << 5)) == 0;						 // bit5=0 => Rev A
 		}
 	}
 
 	pCluster->pTagIdList = NULL;
 
-	if (!lld3377xGetError(&res))
+	if (!slaveIF_getError(&res))
 	{
 		if (bcc14)
 		{
@@ -621,7 +621,7 @@ bool MC3377xGetSiliconType(u8 cid, LLD_TYPE_CLUSTER *pCluster)
 			}
 		}
 	}
-	return !lld3377xGetError(NULL);
+	return !slaveIF_getError(NULL);
 }
 // ----------------------------------------------------------------------------
 /*! \brief reads the status registers and return them in Status
@@ -640,12 +640,12 @@ bool MC3377xGetStatus(u8 cid, TYPE_STATUS *Status)
 	u16 rdData[13];
 
 	// burst read data
-	if (lld3377xReadRegisters(cid, CELL_OV_FLT, 2, &rdData[0]))
+	if (slaveIF_readReg(cid, CELL_OV_FLT, 2, &rdData[0]))
 	{
 		Status->u16CellOV = rdData[0];
 		Status->u16CellUV = rdData[1];
 	}
-	if (lld3377xReadRegisters(cid, CB_OPEN_FLT, 13, &rdData[0]))
+	if (slaveIF_readReg(cid, CB_OPEN_FLT, 13, &rdData[0]))
 	{
 		Status->u16CBOpen = rdData[0];
 		Status->u16CBShort = rdData[1];
@@ -660,12 +660,12 @@ bool MC3377xGetStatus(u8 cid, TYPE_STATUS *Status)
 		Status->u16Fault2 = rdData[11];
 		Status->u16Fault3 = rdData[12];
 	}
-	if (lld3377xReadRegisters(cid, MEAS_ISENSE2, 1, &rdData[0]))
+	if (slaveIF_readReg(cid, MEAS_ISENSE2, 1, &rdData[0]))
 	{
 		Status->u16MeasIsense2 = rdData[0];
 	}
 
-	return !lld3377xGetError(NULL);
+	return !slaveIF_getError(NULL);
 }
 // ----------------------------------------------------------------------------
 /*! \brief reads the threshold registers and return them in Threshold
@@ -686,13 +686,13 @@ bool MC3377xGetThresholds(u8 cid, u8 NoCTs, TYPE_THRESHOLDS *Threshold)
 	u8 u8Idx;
 
 	// -----  TH_ALL_OV_UV  -----
-	if (lld3377xReadRegisters(cid, TH_ALL_CT, 1, &rdData[0]))
+	if (slaveIF_readReg(cid, TH_ALL_CT, 1, &rdData[0]))
 	{
 		Threshold->u8ThAllOv = (u8)(rdData[0] >> 8);
 		Threshold->u8ThAllUv = (u8)(rdData[0] >> 0);
 	}
 	// -----  TH_CT[14..1]_OV_UV  -----
-	if (lld3377xReadRegisters(cid, TH_CT1 - NoCTs + 1, NoCTs, &rdData[0]))
+	if (slaveIF_readReg(cid, TH_CT1 - NoCTs + 1, NoCTs, &rdData[0]))
 	{
 		u8Idx = NoCTs;
 		while (u8Idx)
@@ -703,7 +703,7 @@ bool MC3377xGetThresholds(u8 cid, u8 NoCTs, TYPE_THRESHOLDS *Threshold)
 		}
 	}
 	// -----  TH_ANxOT[6..0] -----
-	if (lld3377xReadRegisters(cid, TH_AN6_OT, 7, &rdData[0]))
+	if (slaveIF_readReg(cid, TH_AN6_OT, 7, &rdData[0]))
 	{
 		u8Idx = 7;
 		while (u8Idx)
@@ -713,7 +713,7 @@ bool MC3377xGetThresholds(u8 cid, u8 NoCTs, TYPE_THRESHOLDS *Threshold)
 		}
 	}
 	// -----  TH_ANxUT[6..0]-----
-	if (lld3377xReadRegisters(cid, TH_AN6_UT, 7, &rdData[0]))
+	if (slaveIF_readReg(cid, TH_AN6_UT, 7, &rdData[0]))
 	{
 		u8Idx = 7;
 		while (u8Idx)
@@ -723,12 +723,12 @@ bool MC3377xGetThresholds(u8 cid, u8 NoCTs, TYPE_THRESHOLDS *Threshold)
 		}
 	}
 	// -----  TH_ISENSE_OC, TH_COULOMB)CNT -----
-	if (lld3377xReadRegisters(cid, TH_ISENSE_OC, 3, &rdData[0]))
+	if (slaveIF_readReg(cid, TH_ISENSE_OC, 3, &rdData[0]))
 	{
 		Threshold->u12ThIsenseOC = rdData[0];
 		Threshold->u32ThCoulombCnt = ((u32)rdData[1] << 16) | ((u32)rdData[2] << 0);
 	}
-	return !lld3377xGetError(NULL);
+	return !slaveIF_getError(NULL);
 }
 // ----------------------------------------------------------------------------
 /*! \brief reads the configuration registers and return them in Config
@@ -749,7 +749,7 @@ bool MC3377xGetConfig(u8 cid, u8 NoCTs, TYPE_CONFIG *Config)
 	u8 u8Idx;
 
 	// burst read data
-	if (lld3377xReadRegisters(cid, INIT, 0xF, &rdData[0]))
+	if (slaveIF_readReg(cid, INIT, 0xF, &rdData[0]))
 	{
 		Config->u16Init = rdData[0];
 		Config->u16SysCfgGlobal = rdData[1];
@@ -761,14 +761,14 @@ bool MC3377xGetConfig(u8 cid, u8 NoCTs, TYPE_CONFIG *Config)
 		Config->u16OvUvEn = rdData[7];
 	}
 	// burst read data
-	if (lld3377xReadRegisters(cid, GPIO_CFG1, 3, &rdData[0]))
+	if (slaveIF_readReg(cid, GPIO_CFG1, 3, &rdData[0]))
 	{
 		Config->u16GPIOCfg1 = rdData[0];
 		Config->u16GPIOCfg2 = rdData[1];
 		Config->u16GPIOSts = rdData[2];
 	}
 	// burst read data
-	if (lld3377xReadRegisters(cid, FAULT_MASK1, 6, &rdData[0]))
+	if (slaveIF_readReg(cid, FAULT_MASK1, 6, &rdData[0]))
 	{
 		Config->u16FaultMask1 = rdData[0];
 		Config->u16FaultMask2 = rdData[1];
@@ -777,14 +777,14 @@ bool MC3377xGetConfig(u8 cid, u8 NoCTs, TYPE_CONFIG *Config)
 		Config->u16WakeupMask2 = rdData[4];
 		Config->u16WakeupMask3 = rdData[5];
 	}
-	if (lld3377xReadRegisters(cid, CB1_CFG, NoCTs, &rdData[0]))
+	if (slaveIF_readReg(cid, CB1_CFG, NoCTs, &rdData[0]))
 	{
 		for (u8Idx = 0; u8Idx < NoCTs; u8Idx++)
 		{
 			Config->u16CBCfg[u8Idx] = rdData[u8Idx];
 		}
 	}
-	return !lld3377xGetError(NULL);
+	return !slaveIF_getError(NULL);
 }
 // ----------------------------------------------------------------------------
 /*! \brief Transitions to sleep mode.
@@ -809,20 +809,20 @@ bool MC3377xSleepMode(TYPE_INTERFACE interface)
 
 	if (interface == IntSPI)
 	{
-		return lld3377xWriteRegister(CIDassiged, SYS_CFG_GLOBAL, SYS_CFG_GLOBAL_GO2SLEEP, NULL); // sleep command
+		return slaveIF_writeReg(CIDassiged, SYS_CFG_GLOBAL, SYS_CFG_GLOBAL_GO2SLEEP, NULL); // sleep command
 	}
 	else if (interface == IntTPL)
 	{
-		if (lld3377xWriteGlobalRegister(SYS_CFG_GLOBAL, SYS_CFG_GLOBAL_GO2SLEEP))
-		{						  // sleep command (must be global write for TPL)
-			lld3377xTPLDisable(); // disable TPL
+		if (slaveIF_writeGlobalReg(SYS_CFG_GLOBAL, SYS_CFG_GLOBAL_GO2SLEEP))
+		{								  // sleep command (must be global write for TPL)
+			slaveIF_transceiverDisable(); // disable TPL
 			return true;
 		}
-		return !lld3377xGetError(NULL);
+		return !slaveIF_getError(NULL);
 	}
 	else
 	{
-		return _lld3377xSetError(ERR_WrongInterface);
+		return slaveIF_setError(ERR_WrongInterface);
 	}
 }
 // ----------------------------------------------------------------------------
@@ -834,7 +834,7 @@ bool MC3377xSleepMode(TYPE_INTERFACE interface)
  * - Calls \ref slaveIF_wakeUp
  *
  * <b>TPL interface</b> \n
- * - Calls \ref lld3377xTPLEnable
+ * - Calls \ref slaveIF_transceiverEnable
  * - Calls \ref slaveIF_wakeUp
  *
  * @param interface  Interface used (SPI or TPL)
@@ -857,28 +857,28 @@ bool MC3377xNormalMode(TYPE_INTERFACE interface)
 	}
 	else if (interface == IntTPL)
 	{
-		lld3377xTPLEnable();
+		slaveIF_transceiverEnable();
 		slaveIF_wakeUp();
 		//		Delayms(WAIT_AFTER_WAKEUP);
 		return true;
 	}
 	else
 	{
-		return _lld3377xSetError(ERR_WrongInterface);
+		return slaveIF_setError(ERR_WrongInterface);
 	}
 }
 // ----------------------------------------------------------------------------
-/*! \brief Checks if a MC3377x has woken up.
+/*! \brief Checks if a MC33771B has woken up.
  *
  * Implementation is interface dependent.
  *
  * <b>SPI interface</b> \n
- * - Wake-up has occurred if FAULT pin is high (\ref FaultPinStatus)
+ * - Wake-up has occurred if FAULT pin is high (\ref slaveIF_faultPinStatus)
  *
  * <b>TPL interface</b> \n
- * - Wake-up has occurred if INTB pin is low (\ref IntbPinStatus)
+ * - Wake-up has occurred if INTB pin is low (\ref slaveIF_IntbPinStatus)
  * 		- waits for 150us
- * 		- enables TPL (\ref lld3377xTPLEnable)
+ * 		- enables TPL (\ref slaveIF_transceiverEnable)
  * 		- send wakeup pattern (\ref slaveIF_wakeUp)
  *
  * @param interface  Interface used (SPI or TPL)
@@ -894,7 +894,7 @@ bool MC3377xCheck4Wakeup(TYPE_INTERFACE interface)
 
 	if (interface == IntSPI)
 	{
-		if (FaultPinStatus())
+		if (slaveIF_faultPinStatus())
 		{
 			//		slaveIF_wakeUp();													// wakeup BCC e.g. required if FAULT is enabled but WAKEUP is not
 			return true;
@@ -903,10 +903,10 @@ bool MC3377xCheck4Wakeup(TYPE_INTERFACE interface)
 	}
 	else if (interface == IntTPL)
 	{
-		if (IntbPinStatus() == 0)
+		if (slaveIF_IntbPinStatus() == 0)
 		{ // check wakeup = INTB pin low
 			Delay(DELAY_150us);
-			lld3377xTPLEnable();
+			slaveIF_transceiverEnable();
 			slaveIF_wakeUp();
 			return true;
 		}
@@ -914,7 +914,7 @@ bool MC3377xCheck4Wakeup(TYPE_INTERFACE interface)
 	}
 	else
 	{
-		return _lld3377xSetError(ERR_WrongInterface);
+		return slaveIF_setError(ERR_WrongInterface);
 	}
 }
 // ----------------------------------------------------------------------------
@@ -936,8 +936,8 @@ bool MC3377xReadFuseMirror(u8 cid, TYPE_FUSE_DATA *fusedata)
 
 	for (u8Adr = 0; u8Adr < 32; u8Adr++)
 	{
-		lld3377xWriteRegister(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), &rdData);
-		lld3377xReadRegisters(cid, FUSE_MIRROR_DATA, 1, &(fusedata->u16Data[u8Adr]));
+		slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), &rdData);
+		slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &(fusedata->u16Data[u8Adr]));
 	}
-	return !lld3377xGetError(NULL);
+	return !slaveIF_getError(NULL);
 }

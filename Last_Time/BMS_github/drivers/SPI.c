@@ -74,7 +74,7 @@ void SPIInit(u8 spiNo)
 	{
 		SPI0_C1 = SPI_C1_MSTR_MASK | SPI_C1_CPHA_MASK;		  // slave, clock idle=low, SCLK edge occurs at start
 		SPI0_BR = SPI_BR_SPPR(3 - 1) | SPI_BR_SPR(4 / 2 - 1); // 24MHz bus   /  (3 * 4) = 2MHz
-		//		SPI0_BR = SPI_BR_SPPR(3-1) | SPI_BR_SPR(2/2-1); 						//24MHz bus   /  (3 * 2) = 4MHz
+															  //		SPI0_BR = SPI_BR_SPPR(3-1) | SPI_BR_SPR(2/2-1); 						//24MHz bus   /  (3 * 2) = 4MHz
 	}
 	if (_TxSPI == 1)
 	{
@@ -143,7 +143,7 @@ bool SPISendBuffer(u8 *u8TxData, u8 *u8RxData, u8 u8TxLen)
 	SPITxSendBuffer(u8TxData, u8TxLen); // transmit read request
 
 	if (MSGLEN != SPIRxReadBytes(u8RxData, u8TxLen)) // read request "echo" and check
-		return _lld3377xSetError(ERR_TX);
+		return slaveIF_setError(ERR_TX);
 
 	return true; // Return Data
 }
@@ -237,7 +237,7 @@ void SPITxDisable(void)
 void SPITxSendBuffer(u8 *u8TxData, u8 u8TxLen)
 {
 
-	slaveIF_SPISC(0);
+	slaveIF_SPICS(0);
 	if (_TxSPI == 0)
 	{
 		// transmit handling
@@ -273,7 +273,7 @@ void SPITxSendBuffer(u8 *u8TxData, u8 u8TxLen)
 			DONOTHING(); // wait till everything was sent
 	}
 	Delay(DELAY_1us); // required to wait till buffer is sent
-	slaveIF_SPISC(1);
+	slaveIF_SPICS(1);
 }
 //-----------------------------------------------------------------------------
 /*! \brief Initialises the spiNo for receiving as SPI Slave. (Dual-SPI usage)

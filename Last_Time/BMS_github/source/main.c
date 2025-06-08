@@ -1,6 +1,6 @@
 // --- Needed library --- //
-#include <COTs/BatteryStatusMonitor/Inc/dataMonitor.h>
 #include <COTs/DebugInfoManager/Inc/debugInfo.h>
+#include <COTs/BatteryStatusMonitor/Inc/dataMonitor.h>
 #include <COTs/FanControlManager/Inc/fanCtrl.h>
 #include "peripherals.h"
 #include "pin_mux.h"
@@ -60,7 +60,7 @@ static TYPE_PC_CONFIG pcconf;
 static u32 msTick;
 static u32 prev_time;
 static u32 u32msCntDown;
-extern const TYPE_BCC_CONF CONF33771TPL[];
+extern const SsysConf_t CONF33771TPL[];
 
 // ----------------------------------------------------------------------------
 /*! \brief Default Pack Controller Configuration
@@ -89,7 +89,7 @@ TYPE_EVB _evb = EVB_TypeArd;		//!< local copy of evb type
 int main(void)
 {
 	static TYPE_BMS bms;
-	static LLD_TYPE_CLUSTER cluster[MAX_CLUSTER];
+	static SclusterInfo_t cluster[MAX_CLUSTER];
 	static TYPE_MEAS_RESULTS_RAW rawResults[MAX_CLUSTER];
 	static TYPE_STATUS StatusBits[MAX_CLUSTER];
 	static TYPE_THRESHOLDS Thresholds[MAX_CLUSTER];
@@ -109,7 +109,7 @@ int main(void)
 	BOARD_InitBootPins();
 	BOARD_InitBootClocks();
 	BOARD_InitDebugConsole(); // Initialize debug console for PRINTF
-	InitHW();
+	Board_InitHW();
 
 	// TPM0_CH1_PWM_Init();
 	fanCtrl_fan1Init();
@@ -149,13 +149,13 @@ int main(void)
 
 	// DataMonitor_lcd(50, 50, 2, 25, 1, 0); // Abdullah
 
-	lld3377xInitDriver(&(bms.Interface));
-	lld3377xInitCluster(&(cluster[0])); // just tag id is needed for lld3377xReadRegisters()
+	slaveIF_initDriver(&(bms.Interface));
+	slaveIF_initCluster(&(cluster[0])); // just tag id is needed for slaveIF_readReg()
 
 	u4TagID = 1;
 	gu4CIDSelected = 1;
 	cidRoundRobin = 1;
-	uint16_t yarab = 0;
+	uint16_t yarab = 600;
 
 	for
 		EVER
@@ -173,8 +173,8 @@ int main(void)
 			//		PRINTF("RUNNING FAN WITH: %d\r\r\n",yarab );
 			//		yarab = yarab+3;
 
-							fanCtrl_fan1SetDuty(40);
-						 fanCtrl_fan2SetDuty(80);
+			//		fanCtrl_fan1SetDuty(40);
+			//		fanCtrl_fan2SetDuty(80);
 			// PRINTF("RUNNING FAN 1 WITH: %d\r\r\n", 40);
 			// PRINTF("RUNNING FAN 2 WITH: %d\r\r\n", 80);
 
@@ -190,9 +190,9 @@ int main(void)
 
 			case BMS_Init:
 				LEDHandler(Off);
-				lld3377xTPLEnable();
+				slaveIF_transceiverEnable();
 				slaveIF_wakeUp();
-				lld3377xWriteGlobalRegister(SYS_CFG1, 0x9011); // global reset
+				slaveIF_writeGlobalReg(SYS_CFG1, 0x9011); // global reset
 
 				for (cid = 1; cid <= bms.NoClusters; cid++)
 				{
@@ -207,7 +207,7 @@ int main(void)
 				{
 					for (cid = 1; cid <= bms.NoClusters; cid++)
 					{
-						lld3377xClearError();
+						slaveIF_clearError();
 						MC3377xGetSiliconRevision(cid, &(cluster[cid - 1])); // the sequence / order is required
 						MC3377xGetSiliconType(cid, &(cluster[cid - 1]));	 // the sequence / order is required
 					}
@@ -216,17 +216,17 @@ int main(void)
 				break;
 
 			case BMS_Config:
-				lld3377xClearError();
+				slaveIF_clearError();
 				LEDHandler(Off);
 				for (cid = 1; cid <= bms.NoClusters; cid++)
 				{
 					MC3377xConfig(cid, CONF33771TPL);
 				}
 
-				lld3377xClearError();
+				slaveIF_clearError();
 				//				BMSEnableISense(bms.CIDcurrent);
 
-				if (lld3377xGetError(NULL))
+				if (slaveIF_getError(NULL))
 				{
 					bms.Status = BMS_Error; // something failed
 					u32msCntDown = 1000;
@@ -240,10 +240,10 @@ int main(void)
 			case BMS_Running:
 				//! \todo how to start conversion? Global versus local? (global might overwrite ADC_CFG content)
 				// chosen to start ADCs individual, to not change ADC_CFG register
-				// in a normal system a global write to all MC3377x would be used
+				// in a normal system a global write to all MC33771B would be used
 				timeStamp = msTick;
 
-				lld3377xClearError();
+				slaveIF_clearError();
 
 				for (cid = 1; cid <= bms.NoClusters; cid++)
 				{
@@ -271,7 +271,7 @@ int main(void)
 					}
 				}
 
-				if (FaultPinStatus())
+				if (slaveIF_faultPinStatus())
 				{ // check FAULT pin status (after measurement, before Diagnostics)
 
 					LEDHandler(Orange);
@@ -314,11 +314,11 @@ int main(void)
 					//					if(bms->Interface==IntSPI)  {
 					//						// SPI-Ard only
 					//						SPIEnable();
-					//						slaveIF_SPISC(1);
+					//						slaveIF_SPICS(1);
 					//					}
 					//					if(bms->Interface==IntTPL)  {
 					//						// SPI-Ard only
-					//						slaveIF_SPISC(0);
+					//						slaveIF_SPICS(0);
 					//						SPITxEnable();
 					//						SPIRxEnable();
 					//					}
@@ -360,34 +360,33 @@ int main(void)
 					//				     ScreenIF_SetCursor(0, 2);
 					//					DataMonitor_soc_disp(soc);
 
-					yarab++;
-
 					// done SlaveIF_enableCellBalancing(10, true, 0.5, cid);
 					// DataMonitor_Mode_disp(SleepMode);
-					if (0)
+					if (1)
 					{
 						DataMonitor_lcd(99, 90, 55.5, 52, NormalMode, FaultStatusNone);
 						yarab = 0;
 					}
+					yarab++;
 					// uint16_t temp1 = rawResults[0].u16ANVoltage[1];
-					//DataMonitor_ClearScreen();
-					//ScreenIF_SetCursor(0, 0);
-					//DataMonitor_lcd((tempSensorIf_Raw2Celsius(temp1)), 90, 55, 52, NormalMode, FaultStatusNone);
-					DataMonitor_ClearScreen();
-					ScreenIF_SetCursor(0, 0);
-					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
-					ScreenIF_SetCursor(0, 1);
-					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
-					ScreenIF_SetCursor(0, 2);
-					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
-					ScreenIF_SetCursor(10, 3);
-					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
-					ScreenIF_SetCursor(10, 0);
-					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
-					ScreenIF_SetCursor(10, 1);
-					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
-					ScreenIF_SetCursor(10, 2);
-					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
+					// DataMonitor_ClearScreen();
+					// ScreenIF_SetCursor(0, 0);
+					// DataMonitor_lcd((tempSensorIf_Raw2Celsius(temp1)), 90, 55, 52, NormalMode, FaultStatusNone);
+					//					DataMonitor_ClearScreen();
+					//					ScreenIF_SetCursor(0, 0);
+					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
+					//					ScreenIF_SetCursor(0, 1);
+					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
+					//					ScreenIF_SetCursor(0, 2);
+					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
+					//					ScreenIF_SetCursor(10, 3);
+					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
+					//					ScreenIF_SetCursor(10, 0);
+					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
+					//					ScreenIF_SetCursor(10, 1);
+					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
+					//					ScreenIF_SetCursor(10, 2);
+					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
 
 					// DataMonitor_soc_disp(22);
 					//  calculate average current based on coulombcounter
@@ -455,7 +454,7 @@ void BMSEnableISense(u8 cidex)
 	for (cid = 1; cid <= pcconf.NoCluster; cid++)
 	{
 		// enable current measurements
-		if (lld3377xReadRegisters(cid, SYS_CFG1, 1, &u16Data))
+		if (slaveIF_readReg(cid, SYS_CFG1, 1, &u16Data))
 		{
 			if (cidex == 0)
 			{
@@ -476,7 +475,7 @@ void BMSEnableISense(u8 cidex)
 					u16Data &= ~SYS_CFG1_I_MEAS_EN; // disable for all others
 				}
 			}
-			lld3377xWriteRegister(cid, SYS_CFG1, u16Data, NULL);
+			slaveIF_writeReg(cid, SYS_CFG1, u16Data, NULL);
 		}
 	}
 }
@@ -694,7 +693,7 @@ void SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerVal
 	}
 	data |= (timerValueInHalfMinutes & 0x1FF); // Set timer bits
 
-	lld3377xWriteRegister(cid, regAddress, data, NULL);
+	slaveIF_writeReg(cid, regAddress, data, NULL);
 }
 
 /*

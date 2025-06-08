@@ -163,7 +163,7 @@ extern "C"
 }
 #endif /* __cplusplus */
 
-void InitHW(void);
+void Board_InitHW(void);
 void InitBoardLED(void);
 void LEDHandler(TYPE_LEDcolor color);
 //void InitInterface(TYPE_INTERFACE interface, TYPE_EVB evb);
