@@ -1,54 +1,31 @@
-// --------------------------------------------------------------------
-//  Copyright (c) 2015, NXP Semiconductors.
-//  All rights reserved.
-// 
-//  Redistribution and use in source and binary forms, with or without modification,
-//  are permitted provided that the following conditions are met:
-// 
-//  o Redistributions of source code must retain the above copyright notice, this list
-//    of conditions and the following disclaimer.
-// 
-//  o Redistributions in binary form must reproduce the above copyright notice, this
-//    list of conditions and the following disclaimer in the documentation and/or
-//    other materials provided with the distribution.
-// 
-//  o Neither the name of NXP Semiconductors nor the names of its
-//    contributors may be used to endorse or promote products derived from this
-//    software without specific prior written permission.
-// 
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-//  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-//  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-//  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-//  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-//  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-//  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-//  ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-//  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-//  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// --------------------------------------------------------------------
-//! \addtogroup platform
-// @{
+/**
+ * @file       TempSensorIF.h
+ * @brief      Public interface header for the Temperature Sensor Interface driver.
+ *
+ * @details    This header defines the public APIs for converting raw ADC values
+ *             from an NTC thermistor (10kOhm, Beta: 3900) to temperature in Celsius
+ *             and Kelvin using a precomputed lookup table. The table covers a range
+ *             from -40°C to 125°C with a 10000Ohm reference resistor.
+ *
+ * @note       Project: Graduation Project - Battery Management System
+ * @note       Component: Temperature Sensor Interface driver
+ */
 
-/*! \brief Function to evaluate Thermistor measurement results
-  
-  Functions to convert NTC (negative temperature coefficient) measurement results
-  to temperature values.
-  
-*/
+#ifndef TEMPSENSORIF_H_
+#define TEMPSENSORIF_H_
 
-//! \addtogroup nct
-// @{
-// --------------------------------------------------------------------
-#ifndef NTC_H_
-#define NTC_H_
-// --------------------------------------------------------------------
-#include <COTs/KL25ZUtilize/Inc/KL25ZUtil.h>
-// --------------------------------------------------------------------
-// generated with CalcNTCTable.py
-// NTC 10000Ohm  Beta:3900
+//=============================================================================
+// Includes
+//=============================================================================
+#include "COTs/DebugInfoManager/Inc/debugInfo.h"
+
+//=============================================================================
+// Definitions and Lookup Table
+//=============================================================================
+// Generated with CalcNTCTable.py
+// NTC 10000Ohm  Beta: 3900
 // Rpre 10000Ohm
-// temperature range NTC[-40..125]
+// Temperature range NTC [-40..125]
 #define DEGm40C  (1001)
 #define DEGm39C  (999)
 #define DEGm38C  (997)
@@ -215,12 +192,29 @@
 #define DEG123C  (38)
 #define DEG124C  (37)
 #define DEG125C  (37)
-// --------------------------------------------------------------------
-u16 NTCRaw2Kelvin(u16 u16RawValue);
-s8 NTCRaw2Celsius(u16 u16RawValue);
-// --------------------------------------------------------------------
-#endif // NTC_H_ 
-//---------------------------------------------------------------------
-// @}
-// @}
-//---------------------------------------------------------------------
+
+//=============================================================================
+// Public Function Prototypes
+//=============================================================================
+
+/**
+ * @brief      Converts a raw ADC value to temperature in Celsius.
+ * @details    Searches the NTC lookup table to find the corresponding temperature
+ *             index and converts it to Celsius (-40°C to 125°C range).
+ * @param      u16RawValue Raw ADC value from the NTC thermistor.
+ * @return     Temperature in degrees Celsius (int8_t).
+ */
+int8_t tempSensorIf_Raw2Celsius(uint16_t rawValue);
+
+/**
+ * @brief      Converts a raw ADC value to temperature in Kelvin.
+ * @details    Converts the raw ADC value to Celsius and adds 273 to get Kelvin.
+ * @param      u16RawValue Raw ADC value from the NTC thermistor.
+ * @return     Temperature in degrees Kelvin (uint16_t).
+ */
+uint16_t tempSensorIf_Raw2Kelvin(uint16_t rawValue);
+
+#endif /* TEMPSENSORIF_H_ */
+//=============================================================================
+// End of File
+//=============================================================================

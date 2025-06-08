@@ -119,14 +119,12 @@ int main(void)
 	DelayInit();
 
 	ScreenIF_Init();
-	//DataMonitor_ClearScreen();
-	//  GPIO_PinInit(GPIOC, 2U, &(gpio_pin_config_t){kGPIO_DigitalOutput, 0}); // Blue LED
-	//  GPIO_WritePinOutput(GPIOC, 2U, 0);
-	//  Delayms(3*500);
-	//  GPIO_WritePinOutput(GPIOC, 2U, 1);
-	//  PWM_Init(64, 1499);
-	//  PWM_Start(50);
-	//  PWM_SetDutyCycle(50);
+	// DataMonitor_ClearScreen();
+	//   GPIO_PinInit(GPIOC, 2U, &(gpio_pin_config_t){kGPIO_DigitalOutput, 0}); // Blue LED
+	//   GPIO_WritePinOutput(GPIOC, 2U, 0);
+	//   Delayms(3*500);
+	//   GPIO_WritePinOutput(GPIOC, 2U, 1);
+
 	PRINTF("Board Initialized.\n\r\r");
 	float x = 3.14f;
 	PRINTF("X = %f\r\n", x);
@@ -162,7 +160,6 @@ int main(void)
 	for
 		EVER
 		{
-
 			// PRINTF("Prev sample = %d\r\r\n", prev_samples);
 			// PRINTF("prev_ccounter = %d\r\r\n", prev_ccounter);
 
@@ -176,10 +173,10 @@ int main(void)
 			//		PRINTF("RUNNING FAN WITH: %d\r\r\n",yarab );
 			//		yarab = yarab+3;
 
-				fanCtrl_fan1SetDuty(40);
-			 fanCtrl_fan2SetDuty(80);
-			 //PRINTF("RUNNING FAN 1 WITH: %d\r\r\n", 40);
-			 //PRINTF("RUNNING FAN 2 WITH: %d\r\r\n", 80);
+							fanCtrl_fan1SetDuty(40);
+						 fanCtrl_fan2SetDuty(80);
+			// PRINTF("RUNNING FAN 1 WITH: %d\r\r\n", 40);
+			// PRINTF("RUNNING FAN 2 WITH: %d\r\r\n", 80);
 
 			u4TagID++;
 			u4TagID %= 16;
@@ -367,30 +364,30 @@ int main(void)
 
 					// done SlaveIF_enableCellBalancing(10, true, 0.5, cid);
 					// DataMonitor_Mode_disp(SleepMode);
-					if (yarab == 100)
+					if (0)
 					{
 						DataMonitor_lcd(99, 90, 55.5, 52, NormalMode, FaultStatusNone);
 						yarab = 0;
 					}
-					//					  uint16_t temp1 = rawResults[0].u16ANVoltage[1];
-					//					  DataMonitor_ClearScreen();
-					//					  ScreenIF_SetCursor(0, 0);
-					//					  DataMonitor_lcd((NTCRaw2Celsius(temp1)), 90, 55, 52, NormalMode, FaultStatusNone);
-					//				DataMonitor_ClearScreen();
-					//				ScreenIF_SetCursor(0, 0);
-					//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[0]));
-					//				ScreenIF_SetCursor(0, 1);
-					//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[1]));
-					//				ScreenIF_SetCursor(0, 2);
-					//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[2]));
-					//				ScreenIF_SetCursor(10, 3);
-					//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[3]));
-					//				ScreenIF_SetCursor(10, 0);
-					//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[4]));
-					//				ScreenIF_SetCursor(10, 1);
-					//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[5]));
-					//				ScreenIF_SetCursor(10, 2);
-					//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[6]));
+					// uint16_t temp1 = rawResults[0].u16ANVoltage[1];
+					//DataMonitor_ClearScreen();
+					//ScreenIF_SetCursor(0, 0);
+					//DataMonitor_lcd((tempSensorIf_Raw2Celsius(temp1)), 90, 55, 52, NormalMode, FaultStatusNone);
+					DataMonitor_ClearScreen();
+					ScreenIF_SetCursor(0, 0);
+					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
+					ScreenIF_SetCursor(0, 1);
+					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
+					ScreenIF_SetCursor(0, 2);
+					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
+					ScreenIF_SetCursor(10, 3);
+					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
+					ScreenIF_SetCursor(10, 0);
+					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
+					ScreenIF_SetCursor(10, 1);
+					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
+					ScreenIF_SetCursor(10, 2);
+					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
 
 					// DataMonitor_soc_disp(22);
 					//  calculate average current based on coulombcounter

@@ -27,6 +27,7 @@
 #include "source/COTs/KL25ZUtilize/Inc/KL25ZUtil.h"
 #include <MKL25Z4.h>
 #include <string.h>
+#include <math.h>
 #include "stdio.h"
 #include "string.h"
 #include "stdbool.h"
@@ -88,8 +89,10 @@
 // #define SCREENIF_DEBUG_CMD     ///< Enable ScreenIF LCD command execution debug prints
 // #define SCREENIF_DEBUG_DATA    ///< Enable ScreenIF data (character/string) display debug prints
 
- #define FANCTRL_DEBUG_INIT    ///< Enable FanCtrl initialization debug prints
- #define FANCTRL_DEBUG_PWM     ///< Enable FanCtrl PWM duty cycle debug prints
+// #define FANCTRL_DEBUG_INIT    ///< Enable FanCtrl initialization debug prints
+// #define FANCTRL_DEBUG_PWM     ///< Enable FanCtrl PWM duty cycle debug prints
+
+#define TEMPSENSORIF_DEBUG_CONVERT    ///< Enable TempSensorIF temperature conversion debug prints
 //=============================================================================
 // Public Function Declarations
 //=============================================================================
