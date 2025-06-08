@@ -15,27 +15,41 @@
 #include "source/COTs/BMSDataBase/Inc/database.h"
 // ----------------------------------------------------------------------------
 #define CELL_BATTERY_CAPACITY_AH 1.5
-#define CELL_OCV_FULL            4.2
-#define CELL_OCV_EMPTY           3.0
-
+#define CELL_OCV_FULL 4.2
+#define CELL_OCV_EMPTY 3.0
+#define SET_BIT(address, bit) address |= (1 << bit)
 #define PACK_BATTERY_CAPACITY_AH 21.0
-#define PACK_OCV_FULL            58.8
-#define PACK_OCV_EMPTY           42.0
-
-static float SOC;
-
+#define PACK_OCV_FULL 58.8
+#define PACK_OCV_EMPTY 25
+// Global variables to store previous values
+static u32 prev_time = 0;
+static u8 SOC;
+static long prev_ccounter = 0;	  // Static variable to store previous Coulomb counter value
+static uint16_t prev_samples = 0; // Static variable to store previous samples value
 /*
 @ brief calculation of SOC using OCV method at startup and before connection of load
 @ param volage voltage reading of battery
  */
-float initialSOC(float voltage);
+float initialSOC(u16 voltage);
+
+void SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerValueInMinutes, uint8_t cid);
 
 /*
 @ brief calculation of SOC using coloumb counting at runtime and after connection of load
 @ param currentA current drawn by the load in Amps
 @ param deltaTimeH difference in time between current and previous SOC estimation
  */
-float calculateSOC(float currentA, float voltage, u32 current_time);
+u8 calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, u16 voltage, u32 current_time);
+
+/*
+@ brief calculation of SOH using Coulomb counter data
+@ param rawResults Raw measurement data including Coulomb counter
+@ param nominal_capacity_mAh Nominal capacity of the battery in mAh
+@ param v2res Reference voltage resolution
+@ param delta_t_seconds Time interval between samples in seconds
+ */
+float calculate_soh(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, float nominal_capacity_mAh,
+		float v2res, u32 current_time, u32 prev_time);
 #define SW_VER 4
 #define SW_SUB 0
 void BMSEnableISense(u8 cidex);
@@ -97,25 +111,26 @@ int main(void)
 	BOARD_InitDebugConsole(); // Initialize debug console for PRINTF
 	InitHW();
 
-	//TPM0_CH1_PWM_Init();
+	// TPM0_CH1_PWM_Init();
 	PWM_Fan1_Init();
 	PWM_Fan2_Init();
 
-	//PWM_Init();
+	// PWM_Init();
 	DelayInit();
 
 	I2C_init();
 	ScreenIF_Init(4);
 	ScreenIF_Clear();
-	//	GPIO_PinInit(GPIOC, 2U, &(gpio_pin_config_t){kGPIO_DigitalOutput, 0}); // Blue LED
-	//
-	//	GPIO_WritePinOutput(GPIOC, 2U, 0);
-	//	Delayms(3*500);
-	//		GPIO_WritePinOutput(GPIOC, 2U, 1);
-	//PWM_Init(64, 1499);
-	//PWM_Start(50);
-	//	PWM_SetDutyCycle(50);
+	//  GPIO_PinInit(GPIOC, 2U, &(gpio_pin_config_t){kGPIO_DigitalOutput, 0}); // Blue LED
+	//  GPIO_WritePinOutput(GPIOC, 2U, 0);
+	//  Delayms(3*500);
+	//  GPIO_WritePinOutput(GPIOC, 2U, 1);
+	//  PWM_Init(64, 1499);
+	//  PWM_Start(50);
+	//  PWM_SetDutyCycle(50);
 	PRINTF("Board Initialized.\n\r\r");
+    float x = 3.14f;
+    PRINTF("X = %f\r\n", x);
 	bms.Interface = pcconf.IntType;
 	bms.EVB = pcconf.EvbType;
 	bms.NoClusters = pcconf.NoCluster;
@@ -133,7 +148,7 @@ int main(void)
 	NVICEnIrq(PIT_IRQ);
 
 	LED_RED_On();
-	SOC = initialSOC(49); //Abdullah
+	SOC = initialSOC(30); // Abdullah
 
 	// DataMonitor_lcd(50, 50, 2, 25, 1, 0); // Abdullah
 
@@ -143,11 +158,15 @@ int main(void)
 	u4TagID = 1;
 	gu4CIDSelected = 1;
 	cidRoundRobin = 1;
-	uint8_t yarab = 0;
+	uint16_t yarab = 0;
 
 	for
 	EVER
 	{
+
+		//PRINTF("Prev sample = %d\r\r\n", prev_samples);
+		//PRINTF("prev_ccounter = %d\r\r\n", prev_ccounter);
+
 		//		if(yarab >= 100)
 		//		{
 		//			yarab = 0;
@@ -158,11 +177,10 @@ int main(void)
 		//		PRINTF("RUNNING FAN WITH: %d\r\r\n",yarab );
 		//		yarab = yarab+3;
 
-
-		PWM_Fan1_SetDuty(40);
-		PWM_Fan2_SetDuty(80);
-		PRINTF("RUNNING FAN 1 WITH: %d\r\r\n",40 );
-		PRINTF("RUNNING FAN 2 WITH: %d\r\r\n",80 );
+		// PWM_Fan1_SetDuty(40);
+		// PWM_Fan2_SetDuty(80);
+		// PRINTF("RUNNING FAN 1 WITH: %d\r\r\n", 40);
+		// PRINTF("RUNNING FAN 2 WITH: %d\r\r\n", 80);
 
 		u4TagID++;
 		u4TagID %= 16;
@@ -334,21 +352,32 @@ int main(void)
 			{
 				// DebugPrintMeasurements(cid, cluster[cid-1].NoCTs, &(rawResults[cid-1]));						// output values to host PC
 				//  DebugPrintMeasurements(1, cluster[0].NoCTs, &(rawResults[0])); // output values to host PC
-				u16 TeamStackVoltage = rawResults[0].u16StackVoltage;
-				ScreenIF_SetCursor(0,0);
-				u8 SOCPack = calculateSOC(rawResults[0].s32Current, TeamStackVoltage, msTick);
-				DataMonitor_soc_disp(SOCPack);
-				yarab ++;
-				if (yarab == 10)
+
+
+				//					u16 TeamStackVoltage = (rawResults[0].u16StackVoltage) * 2.44141 * 0.001;
+				//					ScreenIF_Clear();
+				//					ScreenIF_SetCursor(0, 1);
+				//					DataMonitor_soc_disp(TeamStackVoltage);
+				//					ScreenIF_SetCursor(0, 0);
+				//					u8 SOCPack = calculateSOC(rawResults[0], TeamStackVoltage, msTick);
+				//					DataMonitor_soc_disp(SOCPack);
+				//					u8 soc = initialSOC(TeamStackVoltage);
+				//				     ScreenIF_SetCursor(0, 2);
+				//					DataMonitor_soc_disp(soc);
+
+				yarab++;
+
+				// done SlaveIF_enableCellBalancing(10, true, 0.5, cid);
+				//DataMonitor_Mode_disp(SleepMode);
+				if(yarab == 100)
 				{
-				    ScreenIF_SetCursor(0,3);
-				    DataMonitor_soh_disp(TeamStackVoltage * 2.44141 * 0.001);
-				}
-				if (yarab == 100)
+					DataMonitor_lcd(99, 90, 55.5, 52, NormalMode, FaultStatusNone);
 					yarab = 0;
-				// DataMonitor_lcd((TeamStackVoltage * 2.44141 * 0.001), 90, 55, 52, 1, 0);
-				// uint16_t temp1 = rawResults[0].u16ANVoltage[1];
-				// DataMonitor_lcd((NTCRaw2Celsius(temp1)), 90, 55, 52, 1, 0 );
+				}
+				//					  uint16_t temp1 = rawResults[0].u16ANVoltage[1];
+				//					  ScreenIF_Clear();
+				//					  ScreenIF_SetCursor(0, 0);
+				//					  DataMonitor_lcd((NTCRaw2Celsius(temp1)), 90, 55, 52, NormalMode, FaultStatusNone);
 				//				ScreenIF_Clear();
 				//				ScreenIF_SetCursor(0, 0);
 				//				DataMonitor_Temp_disp(NTCRaw2Celsius(rawResults[0].u16ANVoltage[0]));
@@ -467,7 +496,7 @@ u16 gu16Len;
 #define MAX_NO_OF_CTx 14 // CT1..14
 #define NO_OF_ANx 7		 // AN0..6
 
-float initialSOC(float voltage)
+float initialSOC(u16 voltage)
 {
 	if (voltage > 10)
 	{
@@ -489,28 +518,264 @@ float initialSOC(float voltage)
 	}
 }
 
-// Coulomb counting SOC update
-float calculateSOC(float currentA, float voltage, u32 current_time)
+/*
+ * Function: calculateSOC
+ * Description: Calculates SOC using a hybrid method (OCV initialization + Coulomb counting)
+ * Parameters:
+ *   - rawResults: Raw measurement data including Coulomb counter and current
+ *   - voltage: Stack voltage reading
+ *   - current_time: Current timestamp in milliseconds
+ * Returns: Updated SOC percentage
+ */
+u8 calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, u16 voltage, u32 current_time)
 {
-
 	float capacityAh;
-
+	uint64_t delta_ccounter = 0;
+	uint64_t delta_samples = 0 ;
 	if (voltage > 10)
 	{
-		capacityAh = PACK_BATTERY_CAPACITY_AH;
+		capacityAh = PACK_BATTERY_CAPACITY_AH; // 21.0 Ah for pack
 	}
 	else
 	{
-		capacityAh = CELL_BATTERY_CAPACITY_AH;
+		capacityAh = CELL_BATTERY_CAPACITY_AH; // 1.5 Ah for cell
 	}
 
-	float deltaSOC = (currentA / capacityAh) * (current_time - prev_time) * 100.0;
-	SOC += deltaSOC;
+	// Initialize prev_time and SOC on first call
+	//	if (prev_time == 0)
+	//	{
+	//		SOC = initialSOC(voltage); // Initialize with OCV
+	//		prev_time = current_time;
+	//		prev_ccounter = rawResults.s32CCCounter;
+	//		prev_samples = rawResults.u16CCSamples;
+	//		return SOC;
+	//	}
+
+	//	// Periodic recalibration with OCV (e.g., every 24 hours = 86,400,000 ms)
+	//	if ((current_time - prev_time) >= 86400000)
+	//	{
+	//		SOC = initialSOC(voltage); // Recalibrate with OCV
+	//		prev_time = current_time;
+	//		prev_ccounter = rawResults.s32CCCounter;
+	//		prev_samples = rawResults.u16CCSamples;
+	//	}
+
+	// Calculate time difference in seconds
+	float delta_time_seconds = (current_time - prev_time) / 1000.0;
+
+	// Check if samples are available to avoid division by zero
+	if (rawResults.u16CCSamples > 0 && prev_samples > 0)
+	{
+		// Calculate change in Coulomb counter and samples
+		delta_ccounter = rawResults.s32CCCounter - prev_ccounter;
+		delta_samples = rawResults.u16CCSamples - prev_samples;
+
+		// Calculate average current in Amps (V2RES = 0.0000006 V/LSB)
+		float average_current = (delta_ccounter * 0.0000006) / delta_samples;
+		float charge_ah = (average_current * delta_time_seconds) / 3600.0; // Convert to Ah
+
+		// Calculate delta SOC
+		float deltaSOC = (charge_ah / capacityAh) * 100.0;
+
+		// Update SOC (adjust sign based on charge/discharge)
+		SOC -= deltaSOC; // Subtract for discharge, adjust if needed
+	}
+
+	// Update previous values
+	prev_ccounter = rawResults.s32CCCounter;
+	prev_samples = rawResults.u16CCSamples;
 	prev_time = current_time;
-	if (SOC > 100.0)
-		SOC = 100.0;
-	else if (SOC < 0.0)
-		SOC = 0.0;
+
+	//    // Clamp SOC between 0 and 100
+	//    if (SOC > 100.0)
+	//        SOC = 100.0;
+	//    else if (SOC < 0.0)
+	//        SOC = 0.0;
+
+	// Print debug information
+	PRINTF("CCounter: %d, Samples: %d, Delta CC: %d, Delta Samples: %d, Delta Time: f s, SOC: %d \r\r\n",
+			rawResults.s32CCCounter, rawResults.u16CCSamples, delta_ccounter, delta_samples, delta_time_seconds, SOC);
 
 	return SOC;
+}
+
+// float calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, u32 current_time)
+// {
+//     float capacityAh;
+
+//     if (voltage > 10)
+//     {
+//         capacityAh = PACK_BATTERY_CAPACITY_AH;
+//     }
+//     else
+//     {
+//         capacityAh = CELL_BATTERY_CAPACITY_AH;
+//     }
+
+//     // Calculate charge difference using Coulomb counter
+//     float delta_charge_coulombs = (float)(rawResults.s32CCCounter) * 0.0001;  // Assuming V2RES = 0.0001V, adjust if different
+//     float delta_time_seconds = (current_time - prev_time) / 1000.0;           // Convert ms to seconds
+//     float deltaSOC = (delta_charge_coulombs / (capacityAh * 3600.0)) * 100.0; // Convert to Ah and percentage
+
+//     SOC += deltaSOC;
+//     prev_time = current_time;
+
+//     if (SOC > 100.0)
+//         SOC = 100.0;
+//     else if (SOC < 0.0)
+//         SOC = 0.0;
+
+//     return SOC;
+// }
+/*
+ * Function: SlaveIF_enableCellBalancing
+ * Description: Enables or disables cell balancing for a specific cell with a timer.
+ * Parameters:
+ *   - cellNumber: Cell number (1-14)
+ *   - enable: True to enable, false to disable
+ *   - timerValueInMinutes: Balancing duration in minutes
+ */
+void SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerValueInMinutes, uint8_t cid)
+{
+	uint8_t regAddress;
+	switch (cellNumber)
+	{
+	case 1:
+		regAddress = CB1_CFG;
+		break;
+	case 2:
+		regAddress = CB2_CFG;
+		break;
+	case 3:
+		regAddress = CB3_CFG;
+		break;
+	case 4:
+		regAddress = CB4_CFG;
+		break;
+	case 5:
+		regAddress = CB5_CFG;
+		break;
+	case 6:
+		regAddress = CB6_CFG;
+		break;
+	case 7:
+		regAddress = CB7_CFG;
+		break;
+	case 8:
+		regAddress = CB8_CFG;
+		break;
+	case 9:
+		regAddress = CB9_CFG;
+		break;
+	case 10:
+		regAddress = CB10_CFG;
+		break;
+	case 11:
+		regAddress = CB11_CFG;
+		break;
+	case 12:
+		regAddress = CB12_CFG;
+		break;
+	case 13:
+		regAddress = CB13_CFG;
+		break;
+	case 14:
+		regAddress = CB14_CFG;
+		break;
+	default:
+		return; // Invalid cell number
+	}
+
+	uint16_t data = 0;
+	if (enable)
+	{
+		SET_BIT(data, 9); // Enable CB_EN (bit 9)
+	}
+
+	uint16_t timerValueInHalfMinutes = (uint16_t)(timerValueInMinutes / 0.5);
+	if (timerValueInHalfMinutes > 0x1FF)
+	{
+		timerValueInHalfMinutes = 0x1FF; // Cap at max value
+	}
+	data |= (timerValueInHalfMinutes & 0x1FF); // Set timer bits
+
+	lld3377xWriteRegister(cid, regAddress, data, NULL);
+}
+
+/*
+ * Function: calculate_soh
+ * Description: Calculates the State of Health (SOH) of the battery based on Coulomb counter data
+ * Parameters:
+ *   - rawResults: Raw measurement data including Coulomb counter and samples
+ *   - voltage: Stack voltage reading to determine pack or cell context
+ *   - nominal_capacity_mAh: Nominal capacity of the battery in milliamp-hours (mAh)
+ *   - v2res: Reference voltage resolution (V2RES) in volts per LSB
+ *   - current_time: Current timestamp in milliseconds
+ *   - prev_time: Previous timestamp in milliseconds for time difference
+ * Returns: SOH percentage (0.0 to 100.0)
+ */
+float calculate_soh(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, float nominal_capacity_mAh,
+		float v2res, u32 current_time, u32 prev_time)
+{
+	float capacityAh;
+
+
+	// Determine nominal capacity based on voltage (pack or cell)
+	if (voltage > 10)
+	{
+		capacityAh = nominal_capacity_mAh / 1000.0; // Convert mAh to Ah for pack (21 Ah for 14 cells)
+	}
+	else
+	{
+		capacityAh = nominal_capacity_mAh / (1000.0 * 14.0); // Convert mAh to Ah per cell (1.5 Ah)
+	}
+
+	// Initialize prev_time and prev values on first call
+	if (prev_time == 0)
+	{
+		prev_time = current_time;
+		prev_ccounter = rawResults.s32CCCounter;
+		prev_samples = rawResults.u16CCSamples;
+		return 100.0; // Initial SOH assumed 100% until measured
+	}
+
+	// Calculate time difference in seconds
+	float delta_time_seconds = (current_time - prev_time) / 1000.0;
+
+	// Check if samples are available to avoid division by zero
+	if (rawResults.u16CCSamples > 0 && prev_samples > 0)
+	{
+		// Calculate change in Coulomb counter and samples
+		long delta_ccounter = rawResults.s32CCCounter - prev_ccounter;
+		uint16_t delta_samples = rawResults.u16CCSamples - prev_samples;
+
+		// Calculate average current in Amps using V2RES
+		float average_current = (delta_ccounter * v2res) / delta_samples;
+		float charge_ah = (average_current * delta_time_seconds) / 3600.0; // Convert to Ah
+
+		// Calculate current capacity based on accumulated charge
+		float current_capacity_ah = capacityAh - (charge_ah / 1000.0); // Adjust based on discharge
+
+		// Calculate SOH as a percentage of nominal capacity
+		float soh = (current_capacity_ah / capacityAh) * 100.0;
+
+		// Ensure SOH is within valid range
+		if (soh > 100.0)
+			soh = 100.0;
+		else if (soh < 0.0)
+			soh = 0.0;
+
+		// Update previous values
+		prev_ccounter = rawResults.s32CCCounter;
+		prev_samples = rawResults.u16CCSamples;
+		prev_time = current_time;
+
+		// Return SOH
+		return soh;
+	}
+	else
+	{
+		// Return previous SOH if no valid samples
+		return 100.0; // Default to 100% if no change detected
+	}
 }

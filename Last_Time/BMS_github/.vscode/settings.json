@@ -16,7 +16,8 @@
     "database.h": "c",
     "pin_mux.h": "c",
     "peripherals.h": "c",
-    "slaveif_cfg.h": "c"
+    "slaveif_cfg.h": "c",
+    "debuginfo.h": "c"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",

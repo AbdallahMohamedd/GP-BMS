@@ -65,8 +65,8 @@
 #endif
 
 /*! @brief Definition to printf the float number. */
-#ifndef PRINTF_FLOAT_ENABLE
-#define PRINTF_FLOAT_ENABLE 0U
+#ifdef PRINTF_FLOAT_ENABLE
+#define PRINTF_FLOAT_ENABLE 1U
 #endif /* PRINTF_FLOAT_ENABLE */
 
 /*! @brief Definition to scanf the float number. */

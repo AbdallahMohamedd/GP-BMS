@@ -74,7 +74,14 @@
 // #define SLAVEIF_DEBUG_GPIO      ///< Enable SlaveIF GPIO status prints
 // #define SLAVEIF_DEBUG
 
-
+// #define DATAMONITOR_DEBUG_CONVERSION ///< Enable DataMonitor float-to-string conversion debug prints
+// #define DATAMONITOR_DEBUG_SOC        ///< Enable DataMonitor SOC display debug prints
+// #define DATAMONITOR_DEBUG_SOH        ///< Enable DataMonitor SOH display debug prints
+// #define DATAMONITOR_DEBUG_CURRENT    ///< Enable DataMonitor current display debug prints
+// #define DATAMONITOR_DEBUG_FAULT      ///< Enable DataMonitor fault status display debug prints
+// #define DATAMONITOR_DEBUG_TEMP       ///< Enable DataMonitor temperature display debug prints
+// #define DATAMONITOR_DEBUG_MODE       ///< Enable DataMonitor operating mode display debug prints
+ #define DATAMONITOR_DEBUG_DATA       ///< Enable DataMonitor all parameters display debug prints
 //=============================================================================
 // Public Function Declarations
 //=============================================================================
@@ -88,9 +95,7 @@
  */
 // void DebugInfo_PrintFaultReason(const FaultData *faultData);
 
-
 #endif /* DEBUG_INFO_MANAGER */
-
 
 //=============================================================================
 // End of File

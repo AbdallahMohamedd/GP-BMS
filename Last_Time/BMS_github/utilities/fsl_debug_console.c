@@ -184,6 +184,7 @@ enum _debugconsole_printf_flag
 };
 #endif /* PRINTF_ADVANCED_ENABLE */
 
+
 /*! @brief Specification modifier flags for scanf. */
 enum _debugconsole_scanf_flag
 {

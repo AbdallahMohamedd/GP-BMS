@@ -96,7 +96,7 @@ const TYPE_BCC_CONF CONF33771TPL[] = {
     {WAKEUP_MASK3, 0xBFFF}, // All masked
     // Configuration Settings
     {OV_UV_EN, 0x3FFF},         // Enable OV & UV handling
-    {SYS_CFG1, 0x9000},         // System configuration 1
+    {SYS_CFG1, 0x9280},         // System configuration 1
     {SYS_CFG2, 0x6330},         // System configuration 2
     {FAULT1_STATUS, 0xC000},    // Clear all bits except POR, Reset
     {FAULT2_STATUS, 0},         // Clear all bits
