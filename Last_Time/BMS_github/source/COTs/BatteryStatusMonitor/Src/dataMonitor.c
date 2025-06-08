@@ -25,7 +25,7 @@
  * @brief      Clears the LCD display.
  * @details    Sends the clear display command and waits for completion.
  */
-void DataMonitor_ClearScreen(void)
+void dataMonitor_clearScreen(void)
 {
     ScreenIF_Clear();
 }
@@ -39,7 +39,7 @@ void DataMonitor_ClearScreen(void)
  * @param       str Pointer to the output string buffer.
  * @param       precision Number of decimal places to include.
  */
-void floatToString(float num, char *str, int precision)
+void DataMonitor_float2str(float num, char *str, int precision)
 {
     int32_t int_part = (int32_t)num;
     float frac_part = num - (float)int_part;
@@ -110,7 +110,7 @@ void floatToString(float num, char *str, int precision)
  *              using the ScreenIF module.
  * @param       soc State of Charge of the battery pack (0 to 100).
  */
-void DataMonitor_soc_disp(uint8_t soc)
+void dataMonitor_socDisp(uint8_t soc)
 {
     char Buffer[16];
     ScreenIF_PrintStr("SOC:");
@@ -129,7 +129,7 @@ void DataMonitor_soc_disp(uint8_t soc)
  *              using the ScreenIF module.
  * @param       soh State of Health of the battery pack (0 to 100).
  */
-void DataMonitor_soh_disp(uint8_t soh)
+void dataMonitor_sohDisp(uint8_t soh)
 {
     char Buffer[16];
     ScreenIF_PrintStr("SOH:");
@@ -148,11 +148,11 @@ void DataMonitor_soh_disp(uint8_t soh)
  *              and displays it on the LCD with the unit "A".
  * @param       current Current of the battery pack in amperes.
  */
-void DataMonitor_current_disp(float current)
+void dataMonitor_currentDisp(float current)
 {
     char Buffer[16];
     ScreenIF_PrintStr("I=");
-    floatToString(current, Buffer, 2);
+    DataMonitor_float2str(current, Buffer, 2);
     ScreenIF_PrintStr(Buffer);
     ScreenIF_PrintStr("A");
 
@@ -167,7 +167,7 @@ void DataMonitor_current_disp(float current)
  *              no-fault message (FAULT_STATUS_NONE) on the LCD using the ScreenIF module.
  * @param       fault Fault status of the battery pack.
  */
-void DataMonitor_Fault_disp(BMSFaultStatus_t fault)
+void dataMonitor_faultDisp(BMSFaultStatus_t fault)
 {
     if (fault == FaultStatusActive)
     {
@@ -201,11 +201,11 @@ void DataMonitor_Fault_disp(BMSFaultStatus_t fault)
  *              and displays it on the LCD with the unit "C".
  * @param       temp Temperature of the battery pack in degrees Celsius.
  */
-void DataMonitor_Temp_disp(float temp)
+void dataMonitor_tempDisp(float temp)
 {
     char Buffer[16];
     ScreenIF_PrintStr("T:");
-    floatToString(temp, Buffer, 2);
+    DataMonitor_float2str(temp, Buffer, 2);
     ScreenIF_PrintStr(Buffer);
     ScreenIF_PrintStr("C");
 
@@ -220,7 +220,7 @@ void DataMonitor_Temp_disp(float temp)
  *              on the input mode value.
  * @param       mode Operating mode of the battery pack
  */
-void DataMonitor_Mode_disp(BMSMode_t mode)
+void dataMonitor_modeDisp(BMSMode_t mode)
 {
     ScreenIF_SetCursor(9, 3);
     ScreenIF_PrintStr("Mode:");
@@ -264,16 +264,16 @@ void DataMonitor_lcd(uint8_t soc, uint8_t soh, float current, float temp, BMSMod
     ScreenIF_Init();
     ScreenIF_Clear();
     ScreenIF_SetCursor(0, 0);
-    DataMonitor_soc_disp(soc);
+    dataMonitor_socDisp(soc);
     ScreenIF_SetCursor(11, 0);
-    DataMonitor_soh_disp(soh);
+    dataMonitor_sohDisp(soh);
     ScreenIF_SetCursor(0, 1);
-    DataMonitor_current_disp(current);
+    dataMonitor_currentDisp(current);
     ScreenIF_SetCursor(8, 1);
-    DataMonitor_Temp_disp(temp);
+    dataMonitor_tempDisp(temp);
     ScreenIF_SetCursor(9, 3);
-    DataMonitor_Mode_disp(mode);
-    DataMonitor_Fault_disp(fault);
+    dataMonitor_modeDisp(mode);
+    dataMonitor_faultDisp(fault);
 
 #ifdef DATAMONITOR_DEBUG_DATA
     PRINTF("DataMonitor: Displayed all parameters - SOC: %d%%, SOH: %d%%, Current: %f A, Temp: %f C, Mode: %d, Fault: %d\r\r\n",

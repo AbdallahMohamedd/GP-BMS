@@ -16,8 +16,8 @@
 //=============================================================================
 // Includes
 //=============================================================================
-#include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
-#include "source/COTs/SlaveControlIF/Inc/SlaveIF_Cfg.h"
+#include <COTs/SlaveControlIF/Inc/slaveIF.h>
+#include <COTs/SlaveControlIF/Inc/slaveIF_Cfg.h>
 
 //=============================================================================
 // Constant Definitions
@@ -685,6 +685,68 @@ bool slaveIF_writeGlobalReg(uint8_t Register, uint16_t writeData)
     }
     else
         return slaveIF_setError(ERR_WrongInterface);
+}
+
+/**
+ * @brief      Enables or disables cell balancing for a specified cell.
+ * @details    Configures cell balancing for a given cell (1-14) by setting the
+ *             register address, enabling/disabling (bit 9), and setting a timer
+ *             in half-minute increments (up to 511 minutes) via I2C write.
+ * @param      cellNumber The cell number (1-14) to enable balancing for.
+ * @param      enable Boolean flag to enable (true) or disable (false) balancing.
+ * @param      timerValueInMinutes Float value for balancing duration (capped at 511 min).
+ * @param      cid Chip ID of the slave device to write to.
+ * @return     None (void).
+ */
+void SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerValueInMinutes, uint8_t cid)
+{
+    uint8_t regAddress;
+    switch (cellNumber) 
+    {
+    case 1:  regAddress = CB1_CFG;  break;
+    case 2:  regAddress = CB2_CFG;  break;
+    case 3:  regAddress = CB3_CFG;  break;
+    case 4:  regAddress = CB4_CFG;  break;
+    case 5:  regAddress = CB5_CFG;  break;
+    case 6:  regAddress = CB6_CFG;  break;
+    case 7:  regAddress = CB7_CFG;  break;
+    case 8:  regAddress = CB8_CFG;  break;
+    case 9:  regAddress = CB9_CFG;  break;
+    case 10: regAddress = CB10_CFG; break;
+    case 11: regAddress = CB11_CFG; break;
+    case 12: regAddress = CB12_CFG; break;
+    case 13: regAddress = CB13_CFG; break;
+    case 14: regAddress = CB14_CFG; break;
+    default: return; 
+#ifdef SLAVEIF_DEBUG_ERROR
+             PRINTF("SlaveIF: Invalid cell number %d\n", cellNumber);
+#endif
+    }
+
+    uint16_t data = 0;
+    if (enable)
+    {
+        SET_BIT(data, 9); // Enable CB_EN (bit 9)
+#ifdef SLAVEIF_DEBUG_CONFIG
+        PRINTF("SlaveIF: Enabling cell balancing for cell %d\n", cellNumber);
+#endif
+    }
+
+    uint16_t timerValueInHalfMinutes = (uint16_t)(timerValueInMinutes / 0.5);
+    if (timerValueInHalfMinutes > 0x1FF)
+    {
+        timerValueInHalfMinutes = 0x1FF; // Cap at max value
+#ifdef SLAVEIF_DEBUG_CONFIG
+        PRINTF("SlaveIF: Timer value capped to 511 minutes for cell %d\n", cellNumber);
+#endif
+    }
+    data |= (timerValueInHalfMinutes & 0x1FF); // Set timer bits
+
+    slaveIF_writeReg(cid, regAddress, data, NULL);
+#ifdef SLAVEIF_DEBUG_CONFIG
+    PRINTF("SlaveIF: Wrote data 0x%04x to reg 0x%02x for cell %d (CID: %d)\n",
+           data, regAddress, cellNumber, cid);
+#endif
 }
 //=============================================================================
 // End of File

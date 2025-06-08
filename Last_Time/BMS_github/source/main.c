@@ -2,6 +2,7 @@
 #include <COTs/DebugInfoManager/Inc/debugInfo.h>
 #include <COTs/BatteryStatusMonitor/Inc/dataMonitor.h>
 #include <COTs/FanControlManager/Inc/fanCtrl.h>
+#include <COTs/SlaveControlIF/Inc/slaveIF.h>
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
@@ -11,26 +12,25 @@
 #include "fsl_device_registers.h"
 // ----------------------------------------------------------------------------
 #include "Platform/pcconf.h"
-#include "source/COTs/SlaveControlIF/Inc/SlaveIF.h"
 #include "source/COTs/BMSDataBase/Inc/database.h"
 // ----------------------------------------------------------------------------
 #define CELL_BATTERY_CAPACITY_AH 1.5
 #define CELL_OCV_FULL 4.2
 #define CELL_OCV_EMPTY 3.0
-#define SET_BIT(address, bit) address |= (1 << bit)
+
 #define PACK_BATTERY_CAPACITY_AH 21.0
 #define PACK_OCV_FULL 58.8
 #define PACK_OCV_EMPTY 25
 // Global variables to store previous values
-static u32 prev_time = 0;
-static u8 SOC;
+static uint32_t prev_time = 0;
+static uint8_t SOC;
 static long prev_ccounter = 0;	  // Static variable to store previous Coulomb counter value
 static uint16_t prev_samples = 0; // Static variable to store previous samples value
 /*
 @ brief calculation of SOC using OCV method at startup and before connection of load
 @ param volage voltage reading of battery
  */
-float initialSOC(u16 voltage);
+float initialSOC(uint16_t voltage);
 
 void SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerValueInMinutes, uint8_t cid);
 
@@ -39,7 +39,7 @@ void SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerVal
 @ param currentA current drawn by the load in Amps
 @ param deltaTimeH difference in time between current and previous SOC estimation
  */
-u8 calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, u16 voltage, u32 current_time);
+uint8_t calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, uint16_t voltage, uint32_t current_time);
 
 /*
 @ brief calculation of SOH using Coulomb counter data
@@ -49,17 +49,17 @@ u8 calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, u16 voltage, u32 current_time)
 @ param delta_t_seconds Time interval between samples in seconds
  */
 float calculate_soh(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, float nominal_capacity_mAh,
-					float v2res, u32 current_time, u32 prev_time);
+					float v2res, uint32_t current_time, uint32_t prev_time);
 #define SW_VER 4
 #define SW_SUB 0
-void BMSEnableISense(u8 cidex);
+void BMSEnableISense(uint8_t cidex);
 // ----------------------------------------------------------------------------
 // globals vars
-u8 gu4CIDSelected;
+uint8_t gu4CIDSelected;
 static TYPE_PC_CONFIG pcconf;
-static u32 msTick;
-static u32 prev_time;
-static u32 u32msCntDown;
+static uint32_t msTick;
+static uint32_t prev_time;
+static uint32_t u32msCntDown;
 extern const SsysConf_t CONF33771TPL[];
 
 // ----------------------------------------------------------------------------
@@ -94,12 +94,12 @@ int main(void)
 	static TYPE_STATUS StatusBits[MAX_CLUSTER];
 	static TYPE_THRESHOLDS Thresholds[MAX_CLUSTER];
 	static TYPE_CONFIG ConfigBits[MAX_CLUSTER];
-	u8 cid;
-	u8 cidRoundRobin;
-	u8 u4TagID;
-	u16 u16EvalFault;
+	uint8_t cid;
+	uint8_t cidRoundRobin;
+	uint8_t u4TagID;
+	uint16_t u16EvalFault;
 	bool bBCCFault;
-	u32 timeStamp;
+	uint32_t timeStamp;
 
 	if (FALSE == PackCrtlConfigRead(&pcconf, defPCConfig))
 	{
@@ -119,7 +119,7 @@ int main(void)
 	DelayInit();
 
 	ScreenIF_Init();
-	// DataMonitor_ClearScreen();
+	// dataMonitor_clearScreen();
 	//   GPIO_PinInit(GPIOC, 2U, &(gpio_pin_config_t){kGPIO_DigitalOutput, 0}); // Blue LED
 	//   GPIO_WritePinOutput(GPIOC, 2U, 0);
 	//   Delayms(3*500);
@@ -157,8 +157,7 @@ int main(void)
 	cidRoundRobin = 1;
 	uint16_t yarab = 600;
 
-	for
-		EVER
+	for(;;)
 		{
 			// PRINTF("Prev sample = %d\r\r\n", prev_samples);
 			// PRINTF("prev_ccounter = %d\r\r\n", prev_ccounter);
@@ -349,19 +348,19 @@ int main(void)
 					// DebugPrintMeasurements(cid, cluster[cid-1].NoCTs, &(rawResults[cid-1]));						// output values to host PC
 					//  DebugPrintMeasurements(1, cluster[0].NoCTs, &(rawResults[0])); // output values to host PC
 
-					//					u16 TeamStackVoltage = (rawResults[0].u16StackVoltage) * 2.44141 * 0.001;
-					//					DataMonitor_ClearScreen();
+					//					uint16_t TeamStackVoltage = (rawResults[0].u16StackVoltage) * 2.44141 * 0.001;
+					//					dataMonitor_clearScreen();
 					//					ScreenIF_SetCursor(0, 1);
-					//					DataMonitor_soc_disp(TeamStackVoltage);
+					//					dataMonitor_socDisp(TeamStackVoltage);
 					//					ScreenIF_SetCursor(0, 0);
-					//					u8 SOCPack = calculateSOC(rawResults[0], TeamStackVoltage, msTick);
-					//					DataMonitor_soc_disp(SOCPack);
-					//					u8 soc = initialSOC(TeamStackVoltage);
+					//					uint8_t SOCPack = calculateSOC(rawResults[0], TeamStackVoltage, msTick);
+					//					dataMonitor_socDisp(SOCPack);
+					//					uint8_t soc = initialSOC(TeamStackVoltage);
 					//				     ScreenIF_SetCursor(0, 2);
-					//					DataMonitor_soc_disp(soc);
+					//					dataMonitor_socDisp(soc);
 
-					// done SlaveIF_enableCellBalancing(10, true, 0.5, cid);
-					// DataMonitor_Mode_disp(SleepMode);
+					 //SlaveIF_enableCellBalancing(7, true, 0.5, cid);
+					// dataMonitor_modeDisp(SleepMode);
 					if (1)
 					{
 						DataMonitor_lcd(99, 90, 55.5, 52, NormalMode, FaultStatusNone);
@@ -369,26 +368,26 @@ int main(void)
 					}
 					yarab++;
 					// uint16_t temp1 = rawResults[0].u16ANVoltage[1];
-					// DataMonitor_ClearScreen();
+					// dataMonitor_clearScreen();
 					// ScreenIF_SetCursor(0, 0);
 					// DataMonitor_lcd((tempSensorIf_Raw2Celsius(temp1)), 90, 55, 52, NormalMode, FaultStatusNone);
-					//					DataMonitor_ClearScreen();
+					//					dataMonitor_clearScreen();
 					//					ScreenIF_SetCursor(0, 0);
-					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
+					//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
 					//					ScreenIF_SetCursor(0, 1);
-					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
+					//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
 					//					ScreenIF_SetCursor(0, 2);
-					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
+					//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
 					//					ScreenIF_SetCursor(10, 3);
-					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
+					//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
 					//					ScreenIF_SetCursor(10, 0);
-					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
+					//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
 					//					ScreenIF_SetCursor(10, 1);
-					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
+					//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
 					//					ScreenIF_SetCursor(10, 2);
-					//					DataMonitor_Temp_disp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
+					//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
 
-					// DataMonitor_soc_disp(22);
+					// dataMonitor_socDisp(22);
 					//  calculate average current based on coulombcounter
 					//				ccCount[1] = rawResults[cid-1].u16CCSamples;
 					//				ccValue[1] = rawResults[cid-1].s32CCCounter;
@@ -446,10 +445,10 @@ void PIT_IRQHandler(void)
  *          15 -> enable for all CIDs
  *
  */
-void BMSEnableISense(u8 cidex)
+void BMSEnableISense(uint8_t cidex)
 {
-	u16 u16Data;
-	u8 cid;
+	uint16_t u16Data;
+	uint8_t cid;
 
 	for (cid = 1; cid <= pcconf.NoCluster; cid++)
 	{
@@ -483,14 +482,14 @@ void BMSEnableISense(u8 cidex)
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // globals vars
-u16 u16Data;
-u16 u16Value;
-u16 gu16Len;
+uint16_t u16Data;
+uint16_t u16Value;
+uint16_t gu16Len;
 // ----------------------------------------------------------------------------
 #define MAX_NO_OF_CTx 14 // CT1..14
 #define NO_OF_ANx 7		 // AN0..6
 
-float initialSOC(u16 voltage)
+float initialSOC(uint16_t voltage)
 {
 	if (voltage > 10)
 	{
@@ -521,7 +520,7 @@ float initialSOC(u16 voltage)
  *   - current_time: Current timestamp in milliseconds
  * Returns: Updated SOC percentage
  */
-u8 calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, u16 voltage, u32 current_time)
+uint8_t calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, uint16_t voltage, uint32_t current_time)
 {
 	float capacityAh;
 	uint64_t delta_ccounter = 0;
@@ -593,7 +592,7 @@ u8 calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, u16 voltage, u32 current_time)
 	return SOC;
 }
 
-// float calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, u32 current_time)
+// float calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, uint32_t current_time)
 // {
 //     float capacityAh;
 
@@ -621,80 +620,6 @@ u8 calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, u16 voltage, u32 current_time)
 
 //     return SOC;
 // }
-/*
- * Function: SlaveIF_enableCellBalancing
- * Description: Enables or disables cell balancing for a specific cell with a timer.
- * Parameters:
- *   - cellNumber: Cell number (1-14)
- *   - enable: True to enable, false to disable
- *   - timerValueInMinutes: Balancing duration in minutes
- */
-void SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerValueInMinutes, uint8_t cid)
-{
-	uint8_t regAddress;
-	switch (cellNumber)
-	{
-	case 1:
-		regAddress = CB1_CFG;
-		break;
-	case 2:
-		regAddress = CB2_CFG;
-		break;
-	case 3:
-		regAddress = CB3_CFG;
-		break;
-	case 4:
-		regAddress = CB4_CFG;
-		break;
-	case 5:
-		regAddress = CB5_CFG;
-		break;
-	case 6:
-		regAddress = CB6_CFG;
-		break;
-	case 7:
-		regAddress = CB7_CFG;
-		break;
-	case 8:
-		regAddress = CB8_CFG;
-		break;
-	case 9:
-		regAddress = CB9_CFG;
-		break;
-	case 10:
-		regAddress = CB10_CFG;
-		break;
-	case 11:
-		regAddress = CB11_CFG;
-		break;
-	case 12:
-		regAddress = CB12_CFG;
-		break;
-	case 13:
-		regAddress = CB13_CFG;
-		break;
-	case 14:
-		regAddress = CB14_CFG;
-		break;
-	default:
-		return; // Invalid cell number
-	}
-
-	uint16_t data = 0;
-	if (enable)
-	{
-		SET_BIT(data, 9); // Enable CB_EN (bit 9)
-	}
-
-	uint16_t timerValueInHalfMinutes = (uint16_t)(timerValueInMinutes / 0.5);
-	if (timerValueInHalfMinutes > 0x1FF)
-	{
-		timerValueInHalfMinutes = 0x1FF; // Cap at max value
-	}
-	data |= (timerValueInHalfMinutes & 0x1FF); // Set timer bits
-
-	slaveIF_writeReg(cid, regAddress, data, NULL);
-}
 
 /*
  * Function: calculate_soh
@@ -709,7 +634,7 @@ void SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerVal
  * Returns: SOH percentage (0.0 to 100.0)
  */
 float calculate_soh(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, float nominal_capacity_mAh,
-					float v2res, u32 current_time, u32 prev_time)
+					float v2res, uint32_t current_time, uint32_t prev_time)
 {
 	float capacityAh;
 

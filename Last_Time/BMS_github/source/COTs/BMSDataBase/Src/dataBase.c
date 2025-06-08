@@ -30,9 +30,9 @@
 // #include "mc3377x.h"
 #include "source/COTs/BMSDataBase/Inc/database.h"
 // ----------------------------------------------------------------------------
-extern const u16 _TAGID_BCC14p2[];
-extern const u16 _TAGID_BCC14[];
-extern const u16 _TAGID_BCC6[];
+extern const uint16_t _TAGID_BCC14p2[];
+extern const uint16_t _TAGID_BCC14[];
+extern const uint16_t _TAGID_BCC6[];
 // ----------------------------------------------------------------------------
 #define CheckCID(v) (((v) < 1) || ((v) > MAX_CLUSTER)) //!< macro to check if CID is in {1..MAX_CLUSTER}
 // ----------------------------------------------------------------------------
@@ -54,9 +54,9 @@ extern const u16 _TAGID_BCC6[];
  * \b Note: works for TPL and SPI (only one node) interface
  *
  */
-bool BMSInit(u8 NoOfNodes)
+bool BMSInit(uint8_t NoOfNodes)
 {
-	u8 cid;
+	uint8_t cid;
 
 	if (NoOfNodes == 0)
 		return false;
@@ -68,8 +68,8 @@ bool BMSInit(u8 NoOfNodes)
 		slaveIF_clearError();
 		slaveIF_wakeUp(); // send wakeup in case next device is in idle mode
 		if (slaveIF_readReg(CIDunassiged, INIT, 1, NULL))
-		{														  // check if somebody is there / read Init register
-			slaveIF_writeReg(CIDunassiged, INIT, (u16)cid, NULL); // assign CID
+		{															   // check if somebody is there / read Init register
+			slaveIF_writeReg(CIDunassiged, INIT, (uint16_t)cid, NULL); // assign CID
 			if (cid < NoOfNodes)
 			{													// all nodes except last one
 				slaveIF_writeReg(cid, INIT, INIT_BUS_SW, NULL); // close switch	(except last node)
@@ -97,9 +97,9 @@ bool BMSInit(u8 NoOfNodes)
  * A list entry with register address equal to 0 terminates the list.
  *
  */
-bool MC3377xConfig(u8 cid, const SsysConf_t conf[])
+bool MC3377xConfig(uint8_t cid, const SsysConf_t conf[])
 {
-	u16 n;
+	uint16_t n;
 
 	if (CheckCID(cid))
 		return slaveIF_setError(ERR_WrongParam);
@@ -122,9 +122,9 @@ bool MC3377xConfig(u8 cid, const SsysConf_t conf[])
  * @return \b false   if not successful
  *
  */
-bool MC3377xADCStartConversion(u8 cid, u8 tagID)
+bool MC3377xADCStartConversion(uint8_t cid, uint8_t tagID)
 {
-	u16 adcCfg;
+	uint16_t adcCfg;
 
 	if (CheckCID(cid))
 		return slaveIF_setError(ERR_WrongParam);
@@ -163,9 +163,9 @@ bool MC3377xADCStartConversion(u8 cid, u8 tagID)
  * @return \b true    if conversion still ongoing
  * @return \b false   if Conversion complete, or in case of errors
  */
-bool MC3377xADCIsConverting(u8 cid)
+bool MC3377xADCIsConverting(uint8_t cid)
 {
-	u16 adcCfg;
+	uint16_t adcCfg;
 
 	if (CheckCID(cid))
 		return slaveIF_setError(ERR_WrongParam);
@@ -194,17 +194,17 @@ bool MC3377xADCIsConverting(u8 cid)
  * The Measurement data is only valid, if successfully executed (true).
  * There is no check of DataReady (Bit15) implemented!
  */
-bool MC3377xGetRawMeasurements(u8 cid, u8 tagId, u8 NoCTs, TYPE_MEAS_RESULTS_RAW *RawMeasResults)
+bool MC3377xGetRawMeasurements(uint8_t cid, uint8_t tagId, uint8_t NoCTs, TYPE_MEAS_RESULTS_RAW *RawMeasResults)
 {
-	u16 rdData[0x1B];
-	u8 u8Idx;
-	u32 u19Current;
+	uint16_t rdData[0x1B];
+	uint8_t u8Idx;
+	uint32_t u19Current;
 
 	// -----  burst read data  -----
 	if (slaveIF_readReg(cid, MEAS_ISENSE1, 0x3, &rdData[0]))
 	{																			// read register 0x30..0x32
 		u19Current = ((rdData[0] & 0x7FFF) << 4) | ((rdData[1] & 0x000F) << 0); // -----  MEAS_ISENSE  -----
-		// -----  sign extend to s32  -----
+		// -----  sign extend to int32_t  -----
 		if (u19Current & BIT(18))
 		{														  // if current reading is negative
 			RawMeasResults->s32Current = u19Current | 0xFFF80000; // sign extension
@@ -248,7 +248,7 @@ bool MC3377xGetRawMeasurements(u8 cid, u8 tagId, u8 NoCTs, TYPE_MEAS_RESULTS_RAW
 	if (slaveIF_readReg(cid, CC_NB_SAMPLES, 3, &rdData[0]))
 	{ // read register 0x2D..0x2F
 		RawMeasResults->u16CCSamples = rdData[0];
-		RawMeasResults->s32CCCounter = (s32)((rdData[1] << 16) | rdData[2]);
+		RawMeasResults->s32CCCounter = (int32_t)((rdData[1] << 16) | rdData[2]);
 	}
 
 	return !slaveIF_getError(NULL);
@@ -304,10 +304,10 @@ bool MC3377xGetRawMeasurements(u8 cid, u8 tagId, u8 NoCTs, TYPE_MEAS_RESULTS_RAW
  * In case of not successful execution Guid is set to = 0x0000_0000
  *
  */
-bool MC3377xGetGUID(u8 cid, SclusterInfo_t *pCluster)
+bool MC3377xGetGUID(uint8_t cid, SclusterInfo_t *pCluster)
 {
-	u16 rdData[3];
-	u8 u8Adr;
+	uint16_t rdData[3];
+	uint8_t u8Adr;
 
 	pCluster->Guid = 0L;
 
@@ -451,9 +451,9 @@ bool MC3377xGetGUID(u8 cid, SclusterInfo_t *pCluster)
  * \remarks
  * In case of not successful execution Frev and Mrev will be set to 0
  */
-bool MC3377xGetSiliconRevision(u8 cid, SclusterInfo_t *pCluster)
+bool MC3377xGetSiliconRevision(uint8_t cid, SclusterInfo_t *pCluster)
 {
-	u16 rdData;
+	uint16_t rdData;
 
 	pCluster->FRev = 0;
 	pCluster->MRev = 0;
@@ -463,8 +463,8 @@ bool MC3377xGetSiliconRevision(u8 cid, SclusterInfo_t *pCluster)
 
 	if (slaveIF_readReg(cid, SILICON_REV, 1, &rdData))
 	{
-		pCluster->FRev = (u8)(rdData >> 3) & 0x07;
-		pCluster->MRev = (u8)(rdData >> 0) & 0x07;
+		pCluster->FRev = (uint8_t)(rdData >> 3) & 0x07;
+		pCluster->MRev = (uint8_t)(rdData >> 0) & 0x07;
 	}
 	return !slaveIF_getError(NULL);
 }
@@ -505,10 +505,10 @@ bool MC3377xGetSiliconRevision(u8 cid, SclusterInfo_t *pCluster)
  * | MC33771 |       6.1           |        3.2         |
  *
  */
-bool MC3377xGetSiliconType(u8 cid, SclusterInfo_t *pCluster)
+bool MC3377xGetSiliconType(uint8_t cid, SclusterInfo_t *pCluster)
 {
 	TypeReturn_t res;
-	u16 rdData, bakData;
+	uint16_t rdData, bakData;
 	bool bcc14;
 	bool revA;
 
@@ -635,9 +635,9 @@ bool MC3377xGetSiliconType(u8 cid, SclusterInfo_t *pCluster)
  * \remarks
  * The Status data is only value if successfully executed (true).
  */
-bool MC3377xGetStatus(u8 cid, TYPE_STATUS *Status)
+bool MC3377xGetStatus(uint8_t cid, TYPE_STATUS *Status)
 {
-	u16 rdData[13];
+	uint16_t rdData[13];
 
 	// burst read data
 	if (slaveIF_readReg(cid, CELL_OV_FLT, 2, &rdData[0]))
@@ -680,16 +680,16 @@ bool MC3377xGetStatus(u8 cid, TYPE_STATUS *Status)
  * \remarks
  * The Threshold data is only value if successfully executed (true).
  */
-bool MC3377xGetThresholds(u8 cid, u8 NoCTs, TYPE_THRESHOLDS *Threshold)
+bool MC3377xGetThresholds(uint8_t cid, uint8_t NoCTs, TYPE_THRESHOLDS *Threshold)
 {
-	u16 rdData[29];
-	u8 u8Idx;
+	uint16_t rdData[29];
+	uint8_t u8Idx;
 
 	// -----  TH_ALL_OV_UV  -----
 	if (slaveIF_readReg(cid, TH_ALL_CT, 1, &rdData[0]))
 	{
-		Threshold->u8ThAllOv = (u8)(rdData[0] >> 8);
-		Threshold->u8ThAllUv = (u8)(rdData[0] >> 0);
+		Threshold->u8ThAllOv = (uint8_t)(rdData[0] >> 8);
+		Threshold->u8ThAllUv = (uint8_t)(rdData[0] >> 0);
 	}
 	// -----  TH_CT[14..1]_OV_UV  -----
 	if (slaveIF_readReg(cid, TH_CT1 - NoCTs + 1, NoCTs, &rdData[0]))
@@ -698,8 +698,8 @@ bool MC3377xGetThresholds(u8 cid, u8 NoCTs, TYPE_THRESHOLDS *Threshold)
 		while (u8Idx)
 		{
 			u8Idx--;
-			Threshold->u8ThCTxOv[u8Idx] = (u8)(rdData[NoCTs - 1 - u8Idx] >> 8); // reverse order
-			Threshold->u8ThCTxUv[u8Idx] = (u8)(rdData[NoCTs - 1 - u8Idx] >> 0); // reverse order
+			Threshold->u8ThCTxOv[u8Idx] = (uint8_t)(rdData[NoCTs - 1 - u8Idx] >> 8); // reverse order
+			Threshold->u8ThCTxUv[u8Idx] = (uint8_t)(rdData[NoCTs - 1 - u8Idx] >> 0); // reverse order
 		}
 	}
 	// -----  TH_ANxOT[6..0] -----
@@ -726,7 +726,7 @@ bool MC3377xGetThresholds(u8 cid, u8 NoCTs, TYPE_THRESHOLDS *Threshold)
 	if (slaveIF_readReg(cid, TH_ISENSE_OC, 3, &rdData[0]))
 	{
 		Threshold->u12ThIsenseOC = rdData[0];
-		Threshold->u32ThCoulombCnt = ((u32)rdData[1] << 16) | ((u32)rdData[2] << 0);
+		Threshold->u32ThCoulombCnt = ((uint32_t)rdData[1] << 16) | ((uint32_t)rdData[2] << 0);
 	}
 	return !slaveIF_getError(NULL);
 }
@@ -743,10 +743,10 @@ bool MC3377xGetThresholds(u8 cid, u8 NoCTs, TYPE_THRESHOLDS *Threshold)
  * \remarks
  * The Configuration data is only value if successfully executed (true).
  */
-bool MC3377xGetConfig(u8 cid, u8 NoCTs, TYPE_CONFIG *Config)
+bool MC3377xGetConfig(uint8_t cid, uint8_t NoCTs, TYPE_CONFIG *Config)
 {
-	u16 rdData[0x1A];
-	u8 u8Idx;
+	uint16_t rdData[0x1A];
+	uint8_t u8Idx;
 
 	// burst read data
 	if (slaveIF_readReg(cid, INIT, 0xF, &rdData[0]))
@@ -927,10 +927,10 @@ bool MC3377xCheck4Wakeup(TYPE_INTERFACE interface)
  * @return \b false  if not successful executed
  *
  */
-bool MC3377xReadFuseMirror(u8 cid, TYPE_FUSE_DATA *fusedata)
+bool MC3377xReadFuseMirror(uint8_t cid, TYPE_FUSE_DATA *fusedata)
 {
-	u16 rdData;
-	u8 u8Adr;
+	uint16_t rdData;
+	uint8_t u8Adr;
 
 #define FUSE_MIRROR_CTRL_FSTM BIT(4)
 

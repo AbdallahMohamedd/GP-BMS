@@ -79,18 +79,18 @@ typedef enum {
 // ----------------------------------------------------------------------------
 //! \brief Pack controller configuration (stored in FLASH)
 typedef struct {
-	u16 Initialized;															//!< used for first time init 
+	uint16_t Initialized;															//!< used for first time init 
 	TYPE_INTERFACE IntType;														//!< TPL or SPI
 	TYPE_EVB EvbType;															//!< Type1 or TypeArd
-	u8 NoCluster;																//!< No of clusters connected
-	u8 NoCells;																	//!< which chip is connected 6:BCC6, 14:BCC14
+	uint8_t NoCluster;																//!< No of clusters connected
+	uint8_t NoCells;																	//!< which chip is connected 6:BCC6, 14:BCC14
 	ENUM_PACKCTRL_MODE OpMode;													//!< used for special mode handling (e.g. verbose)
-	u8 CIDcurrent;																//!< CID which performs current measurements
-	u16 MeasPeriod;																//!< measurement period
-	u8 Test;																	//!< used for test purposes, e.g. error injection
+	uint8_t CIDcurrent;																//!< CID which performs current measurements
+	uint16_t MeasPeriod;																//!< measurement period
+	uint8_t Test;																	//!< used for test purposes, e.g. error injection
 	// InitConfig
 	
-	u32 AlignDummy;																//!< used for 4 byte alignment
+	uint32_t AlignDummy;																//!< used for 4 byte alignment
 }TYPE_PC_CONFIG;
 //---------------------------------------------------------------------
 #define PC_CONFIG_SIZE         sizeof(TYPE_PC_CONFIG)
@@ -103,9 +103,9 @@ typedef struct {
 // ----------------------------------------------------------------------------
 bool PackCrtlConfigRead(TYPE_PC_CONFIG *conf, TYPE_PC_CONFIG defConfig);
 
-void PcconfUpdate(TYPE_PC_CONFIG *conf, u8 idx, u16 data);
-bool FlashConfigurationRead(TYPE_PC_CONFIG *packConf, u8 packConfSize);
-bool FlashConfigurationWrite(TYPE_PC_CONFIG *packConf, u8 packConfSize);
+void PcconfUpdate(TYPE_PC_CONFIG *conf, uint8_t idx, uint16_t data);
+bool FlashConfigurationRead(TYPE_PC_CONFIG *packConf, uint8_t packConfSize);
+bool FlashConfigurationWrite(TYPE_PC_CONFIG *packConf, uint8_t packConfSize);
 // ----------------------------------------------------------------------------
 
 

@@ -18,7 +18,7 @@
 //=============================================================================
 // Includes
 //=============================================================================
-#include <COTs/TempSensorIF/Inc/TempSens.h> // For NTC temperature definitions
+#include <COTs/TempSensorIF/Inc/tempSens.h> // For NTC temperature definitions
 
 //=============================================================================
 // Timing Constants

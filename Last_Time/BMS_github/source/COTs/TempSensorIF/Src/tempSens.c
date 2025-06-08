@@ -14,7 +14,7 @@
 //=============================================================================
 // Includes
 //=============================================================================
-#include <COTs/TempSensorIF/Inc/TempSens.h>
+#include <COTs/TempSensorIF/Inc/tempSens.h>
 
 //=============================================================================
 // Definitions and Lookup Table
@@ -52,7 +52,7 @@ const uint16_t tempSensorIf_ntcLookupTable[166] = {
  *             index and converts it to Celsius (-40°C to 125°C range). Note that
  *             error handling for out-of-range values is marked as a TODO.
  * @param      rawValue Raw ADC value from the NTC thermistor.
- * @return     Temperature in degrees Celsius (s8).
+ * @return     Temperature in degrees Celsius (int8_t).
  */
 int8_t tempSensorIf_Raw2Celsius(uint16_t rawValue)
 {
@@ -72,7 +72,7 @@ int8_t tempSensorIf_Raw2Celsius(uint16_t rawValue)
  * @brief      Converts a raw ADC value to temperature in Kelvin.
  * @details    Calls tempSensorIf_rawToCelsius and adds 273 to convert to Kelvin.
  * @param      rawValue Raw ADC value from the NTC thermistor.
- * @return     Temperature in degrees Kelvin (u16).
+ * @return     Temperature in degrees Kelvin (uint16_t).
  */
 uint16_t tempSensorIf_Raw2Kelvin(uint16_t rawValue)
 {

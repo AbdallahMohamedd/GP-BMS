@@ -438,6 +438,19 @@ bool slaveIF_readReg(uint8_t CID, uint8_t Register, uint8_t noRegs2Read, uint16_
 bool slaveIF_writeReg(uint8_t CID, uint8_t Register, uint16_t writeData, uint16_t *returnData);
 
 /**
+ * @brief   Enables or disables cell balancing for a specified cell.
+ * @details Configures cell balancing for a given cell (1-14) by setting the
+ *          register address, enabling/disabling (bit 9), and setting a timer
+ *          in half-minute increments (up to 511 minutes) via I2C write.
+ * @param   cellNumber The cell number (1-14) to enable balancing for.
+ * @param   enable Boolean flag to enable (true) or disable (false) balancing.
+ * @param   timerValueInMinutes Float value for balancing duration (capped at 511 min).
+ * @param   cid Chip ID of the slave device to write to.
+ * @return  None (void).
+ */
+void SlaveIF_enableCellBalancing(uint8_t cellNumber, bool enable, float timerValueInMinutes, uint8_t cid);
+
+/**
  * @brief 	Enables TPL interface.
  * @details Sets TPL enable signal and waits for INTB acknowledge.
  * @return 	bool True if successful, false on error.
