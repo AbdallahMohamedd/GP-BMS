@@ -1,34 +1,43 @@
 /**
- * @file dataMonitor.c
- * @brief Implementation of the Data Monitor driver for LCD display.
+ * @file        dataMonitor.c
+ * @brief       Implementation of the Data Monitor driver for LCD display.
  *
- * @details This file contains the implementation for displaying battery management
- *          system parameters such as State of Charge (SOC), State of Health (SOH),
- *          current, temperature, mode, and fault status on an LCD. It interfaces
- *          with the ScreenIF module for LCD operations and provides utility functions
- *          for formatting data for display.
+ * @details     This file contains the implementation for displaying battery management
+ *              system parameters such as State of Charge (SOC), State of Health (SOH),
+ *              current, temperature, mode, and fault status on an LCD. It interfaces
+ *              with the ScreenIF module for LCD operations and provides utility functions
+ *              for formatting data for display.
  *
- * @note Project: Graduation Project - Battery Management System
- * @note Engineer: Amr Ahmed
- * @note Component: Data Monitor driver
+ * @note        Project: Graduation Project - Battery Management System
+ * @note        Engineer: Amr Ahmed
+ * @note        Component: Data Monitor driver
  */
 
 //=============================================================================
 // Includes
 //=============================================================================
-#include <COTs/BatteryStatusMonitor/Inc/dataMonitor.h>
+#include "COTs/BatteryStatusMonitor/Inc/dataMonitor.h"
 
 //=============================================================================
 // Public Function Definitions
 //=============================================================================
 /**
- * @brief Converts a float to a string with specified precision.
- * @details Converts a floating-point number to a string representation, handling
- *          negative numbers, integer and fractional parts, and rounding to the
- *          specified precision. The result is stored in the provided buffer.
- * @param num Floating-point number to convert.
- * @param str Pointer to the output string buffer.
- * @param precision Number of decimal places to include.
+ * @brief      Clears the LCD display.
+ * @details    Sends the clear display command and waits for completion.
+ */
+void DataMonitor_ClearScreen(void)
+{
+    ScreenIF_Clear();
+}
+
+/**
+ * @brief       Converts a float to a string with specified precision.
+ * @details     Converts a floating-point number to a string representation, handling
+ *              negative numbers, integer and fractional parts, and rounding to the
+ *              specified precision. The result is stored in the provided buffer.
+ * @param       num Floating-point number to convert.
+ * @param       str Pointer to the output string buffer.
+ * @param       precision Number of decimal places to include.
  */
 void floatToString(float num, char *str, int precision)
 {
@@ -91,15 +100,15 @@ void floatToString(float num, char *str, int precision)
     *ptr = '\0';
 
 #ifdef DATAMONITOR_DEBUG_CONVERSION
-    printf("DataMonitor: Converted float %f to string: %s\n", num, str);
+    PRINTF("DataMonitor: Converted float %f to string: %s\r\r\n", num, str);
 #endif
 }
 
 /**
- * @brief Displays the State of Charge (SOC) on the LCD.
- * @details Formats the SOC value as a percentage and displays it on the LCD
- *          using the ScreenIF module.
- * @param soc State of Charge of the battery pack (0 to 100).
+ * @brief       Displays the State of Charge (SOC) on the LCD.
+ * @details     Formats the SOC value as a percentage and displays it on the LCD
+ *              using the ScreenIF module.
+ * @param       soc State of Charge of the battery pack (0 to 100).
  */
 void DataMonitor_soc_disp(uint8_t soc)
 {
@@ -110,15 +119,15 @@ void DataMonitor_soc_disp(uint8_t soc)
     ScreenIF_PrintStr("%");
 
 #ifdef DATAMONITOR_DEBUG_SOC
-    printf("DataMonitor: Displayed SOC: %d%%\n", soc);
+    PRINTF("DataMonitor: Displayed SOC: %d%%\r\r\n", soc);
 #endif
 }
 
 /**
- * @brief Displays the State of Health (SOH) on the LCD.
- * @details Formats the SOH value as a percentage and displays it on the LCD
- *          using the ScreenIF module.
- * @param soh State of Health of the battery pack (0 to 100).
+ * @brief       Displays the State of Health (SOH) on the LCD.
+ * @details     Formats the SOH value as a percentage and displays it on the LCD
+ *              using the ScreenIF module.
+ * @param       soh State of Health of the battery pack (0 to 100).
  */
 void DataMonitor_soh_disp(uint8_t soh)
 {
@@ -129,15 +138,15 @@ void DataMonitor_soh_disp(uint8_t soh)
     ScreenIF_PrintStr("%");
 
 #ifdef DATAMONITOR_DEBUG_SOH
-    printf("DataMonitor: Displayed SOH: %d%%\n", soh);
+    PRINTF("DataMonitor: Displayed SOH: %d%%\r\r\n", soh);
 #endif
 }
 
 /**
- * @brief Displays the current on the LCD.
- * @details Converts the current value to a string with two decimal places
- *          and displays it on the LCD with the unit "A".
- * @param current Current of the battery pack in amperes.
+ * @brief       Displays the current on the LCD.
+ * @details     Converts the current value to a string with two decimal places
+ *              and displays it on the LCD with the unit "A".
+ * @param       current Current of the battery pack in amperes.
  */
 void DataMonitor_current_disp(float current)
 {
@@ -148,15 +157,15 @@ void DataMonitor_current_disp(float current)
     ScreenIF_PrintStr("A");
 
 #ifdef DATAMONITOR_DEBUG_CURRENT
-    printf("DataMonitor: Displayed current: %f A\n", current);
+    PRINTF("DataMonitor: Displayed current: %f A\r\r\n", current);
 #endif
 }
 
 /**
- * @brief Displays the fault status on the LCD.
- * @details Displays a warning message for fault condition (FAULT_STATUS_ACTIVE) or a
- *          no-fault message (FAULT_STATUS_NONE) on the LCD using the ScreenIF module.
- * @param fault Fault status of the battery pack.
+ * @brief       Displays the fault status on the LCD.
+ * @details     Displays a warning message for fault condition (FAULT_STATUS_ACTIVE) or a
+ *              no-fault message (FAULT_STATUS_NONE) on the LCD using the ScreenIF module.
+ * @param       fault Fault status of the battery pack.
  */
 void DataMonitor_Fault_disp(BMSFaultStatus_t fault)
 {
@@ -171,7 +180,7 @@ void DataMonitor_Fault_disp(BMSFaultStatus_t fault)
         ScreenIF_PrintStr("Check UART for INFO");
 
 #ifdef DATAMONITOR_DEBUG_FAULT
-        printf("DataMonitor: Displayed fault status: Warning\n");
+        PRINTF("DataMonitor: Displayed fault status: Warning\r\r\n");
 #endif
     }
     else if (fault == FaultStatusNone)
@@ -182,15 +191,15 @@ void DataMonitor_Fault_disp(BMSFaultStatus_t fault)
         ScreenIF_PrintStr("No Fault");
 
 #ifdef DATAMONITOR_DEBUG_FAULT
-        printf("DataMonitor: Displayed fault status: No Fault\n");
+        PRINTF("DataMonitor: Displayed fault status: No Fault\r\r\n");
 #endif
     }
 }
 /**
- * @brief Displays the temperature on the LCD.
- * @details Converts the temperature value to a string with two decimal places
- *          and displays it on the LCD with the unit "C".
- * @param temp Temperature of the battery pack in degrees Celsius.
+ * @brief       Displays the temperature on the LCD.
+ * @details     Converts the temperature value to a string with two decimal places
+ *              and displays it on the LCD with the unit "C".
+ * @param       temp Temperature of the battery pack in degrees Celsius.
  */
 void DataMonitor_Temp_disp(float temp)
 {
@@ -200,16 +209,16 @@ void DataMonitor_Temp_disp(float temp)
     ScreenIF_PrintStr(Buffer);
     ScreenIF_PrintStr("C");
 
-#ifdef DATAMONITOR_DEBUG_TEMP
-    printf("DataMonitor: Displayed temperature: %f C\n", temp);
+#ifdef DATAMONITOR_TEMP_DEBUG
+    PRINTF("DataMonitor: Displayed temperature: %f C\r\r\n", temp);
 #endif
 }
 
 /**
- * @brief Displays the operating mode on the LCD.
- * @details Displays the operating mode (Normal, Sleep, or Diagnostics) based
- *          on the input mode value.
- * @param mode Operating mode of the battery pack
+ * @brief       Displays the operating mode on the LCD.
+ * @details     Displays the operating mode (Normal, Sleep, or Diagnostics) based
+ *              on the input mode value.
+ * @param       mode Operating mode of the battery pack
  */
 void DataMonitor_Mode_disp(BMSMode_t mode)
 {
@@ -218,41 +227,41 @@ void DataMonitor_Mode_disp(BMSMode_t mode)
     if (mode == NormalMode)
     {
         ScreenIF_PrintStr("Normal");
-#ifdef DATAMONITOR_DEBUG_MODE
-        printf("DataMonitor: Displayed mode: Normal\n");
+#ifdef DATAMONITOR_MODE_DEBUG
+        PRINTF("DataMonitor: Displayed mode: Normal\r\r\n");
 #endif
     }
     else if (mode == SleepMode)
     {
         ScreenIF_PrintStr("Sleep");
-#ifdef DATAMONITOR_DEBUG_MODE
-        printf("DataMonitor: Displayed mode: Sleep\n");
+#ifdef DATAMONITOR_MODE_DEBUG
+        PRINTF("DataMonitor: Displayed mode: Sleep\r\r\n");
 #endif
     }
     else if (mode == DiagnosticMode)
     {
         ScreenIF_PrintStr("Diagnostics");
-#ifdef DATAMONITOR_DEBUG_MODE
-        printf("DataMonitor: Displayed mode: Diagnostics\n");
+#ifdef DATAMONITOR_MODE_DEBUG
+        PRINTF("DataMonitor: Displayed mode: Diagnostics\r\r\n");
 #endif
     }
 }
 
 /**
- * @brief Displays all battery parameters on the LCD.
- * @details Initializes the LCD with 4 lines, clears the display, and calls
- *          individual display functions to show SOC, SOH, current, temperature,
- *          mode, and fault status.
- * @param soc State of Charge of the battery pack (0 to 100).
- * @param soh State of Health of the battery pack (0 to 100).
- * @param current Current of the battery pack in amperes.
- * @param temp Temperature of the battery pack in degrees Celsius.
- * @param mode Operating mode of the battery pack (0: Normal, 1: Sleep, 2: Diagnostics).
- * @param fault Fault status of the battery pack (0 for no fault, 1 for fault).
+ * @brief       Displays all battery parameters on the LCD.
+ * @details     Initializes the LCD with 4 lines, clears the display, and calls
+ *              individual display functions to show SOC, SOH, current, temperature,
+ *              mode, and fault status.
+ * @param       soc State of Charge of the battery pack (0 to 100).
+ * @param       soh State of Health of the battery pack (0 to 100).
+ * @param       current Current of the battery pack in amperes.
+ * @param       temp Temperature of the battery pack in degrees Celsius.
+ * @param       mode Operating mode of the battery pack (0: Normal, 1: Sleep, 2: Diagnostics).
+ * @param       fault Fault status of the battery pack (0 for no fault, 1 for fault).
  */
 void DataMonitor_lcd(uint8_t soc, uint8_t soh, float current, float temp, BMSMode_t mode, BMSFaultStatus_t fault)
 {
-    ScreenIF_Init(4);
+    ScreenIF_Init();
     ScreenIF_Clear();
     ScreenIF_SetCursor(0, 0);
     DataMonitor_soc_disp(soc);
@@ -267,8 +276,8 @@ void DataMonitor_lcd(uint8_t soc, uint8_t soh, float current, float temp, BMSMod
     DataMonitor_Fault_disp(fault);
 
 #ifdef DATAMONITOR_DEBUG_DATA
-    PRINTF("DataMonitor: Displayed all parameters - SOC: %d%%, SOH: %d%%, Current: %.2f A, Temp: %.2f C, Mode: %d, Fault: %d\r\r\n",
-               soc, soh, current, temp, (int)mode, (int)fault);
+    PRINTF("DataMonitor: Displayed all parameters - SOC: %d%%, SOH: %d%%, Current: %f A, Temp: %f C, Mode: %d, Fault: %d\r\r\n",
+           soc, soh, current, temp, mode, fault);
 #endif
 }
 

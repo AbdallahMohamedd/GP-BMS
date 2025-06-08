@@ -213,7 +213,7 @@ bool lld3377xInitDriver(TYPE_INTERFACE *interface)
     _errLast = RETURN_OK;
     P_interface_ = interface;
 #ifdef SLAVEIF_DEBUG_INIT
-    printf("SlaveIF: Driver initialized with interface %d\n", *interface);
+    PRINTF("SlaveIF: Driver initialized with interface %d\n", *interface);
 #endif
     return true;
 }
@@ -228,7 +228,7 @@ bool lld3377xInitCluster(LLD_TYPE_CLUSTER *cluster)
 {
     _cluster_ = cluster;
 #ifdef SLAVEIF_DEBUG_INIT
-    printf("SlaveIF: Cluster initialized with chip type %d\n", cluster->Chip);
+    PRINTF("SlaveIF: Cluster initialized with chip type %d\n", cluster->Chip);
 #endif
     return true;
 }
@@ -247,7 +247,7 @@ uint8_t FaultPinStatus(void)
     {                                                   // Arduino type connection
         uint8_t status = (GPIOD_PDIR & BIT(4)) ? 1 : 0; // PTD4
 #ifdef SLAVEIF_DEBUG_FAULT
-        printf("SlaveIF: Fault pin status: %d\n", status);
+        PRINTF("SlaveIF: Fault pin status: %d\n", status);
 #endif
         return status;
     }
@@ -265,7 +265,7 @@ uint8_t IntbPinStatus(void)
     {
         uint8_t status = (GPIOA_PDIR & BIT(12)) ? 1 : 0; // PTA12
 #ifdef SLAVEIF_DEBUG_FAULT
-        printf("SlaveIF: INTB pin status: %d\n", status);
+        PRINTF("SlaveIF: INTB pin status: %d\n", status);
 #endif
         return status;
     }
@@ -297,7 +297,7 @@ void slaveIF_SPISC(uint8_t u8Level)
             GPIOC_PSOR = BIT(8); // set PTC8
     }
 #ifdef SLAVEIF_DEBUG_COMM
-    printf("SlaveIF: CSB set to %d\n", u8Level);
+    PRINTF("SlaveIF: CSB set to %d\n", u8Level);
 #endif
 }
 
@@ -316,7 +316,7 @@ void TplEnable(uint8_t bEnable)
             GPIOE_PSOR = BIT(0);
     }
 #ifdef SLAVEIF_DEBUG_COMM
-    printf("SlaveIF: TPL enable set to %d\n", bEnable);
+    PRINTF("SlaveIF: TPL enable set to %d\n", bEnable);
 #endif
 }
 
@@ -352,7 +352,7 @@ bool lld3377xTPLEnable(void)
     }
 
 #ifdef SLAVEIF_DEBUG_COMM
-    printf("SlaveIF: TPL enabled successfully\n");
+    PRINTF("SlaveIF: TPL enabled successfully\n");
 #endif
     return true;
 }
@@ -369,7 +369,7 @@ bool lld3377xTPLDisable(void)
 
     TplEnable(0); // disable
 #ifdef SLAVEIF_DEBUG_COMM
-    printf("SlaveIF: TPL disabled\n");
+    PRINTF("SlaveIF: TPL disabled\n");
 #endif
     return true;
 }
@@ -393,7 +393,7 @@ uint8_t lld3377xCrcCalc(uint8_t *data, uint16_t length)
         crc = crc_table[tbl_idx];
     }
 #ifdef SLAVEIF_DEBUG_COMM
-    printf("SlaveIF: CRC calculated: 0x%02X\n", crc);
+    PRINTF("SlaveIF: CRC calculated: 0x%02X\n", crc);
 #endif
     return crc;
 }
@@ -439,7 +439,7 @@ uint32_t crc8_test(void)
         u32Result |= BIT(10);
 
 #ifdef SLAVEIF_DEBUG_COMM
-    printf("SlaveIF: CRC test result: 0x%08lX\n", u32Result);
+    PRINTF("SlaveIF: CRC test result: 0x%08lX\n", u32Result);
 #endif
     return u32Result;
 }
@@ -470,7 +470,7 @@ void lld3377xPackFrame(uint8_t *pu8Buf, uint16_t data, uint8_t addr, uint8_t CID
     *(pu8Buf + 1) = (uint8_t)((CID & 0x0F) << 4) | (cmd & 0x0F);
     *(pu8Buf + 0) = lld3377xCrcCalc(pu8Buf + 1, 4);
 #ifdef SLAVEIF_DEBUG_COMM
-    printf("SlaveIF: Packed frame - CID: %d, Addr: 0x%02X, Cmd: %d, Data: 0x%04X, CRC: 0x%02X\n",
+    PRINTF("SlaveIF: Packed frame - CID: %d, Addr: 0x%02X, Cmd: %d, Data: 0x%04X, CRC: 0x%02X\n",
            CID, addr, cmd, data, *(pu8Buf + 0));
 #endif
 }
@@ -485,7 +485,7 @@ uint8_t lld3377xNewRCValue(void)
     gu8RCIdx = (gu8RCIdx + 1) % sizeof(RCVALUELIST);
     uint8_t rc = RCVALUELIST[gu8RCIdx];
 #ifdef SLAVEIF_DEBUG_COMM
-    printf("SlaveIF: New RC value: %d\n", rc);
+    PRINTF("SlaveIF: New RC value: %d\n", rc);
 #endif
     return rc;
 }
@@ -503,7 +503,7 @@ bool lld3377xSetTagID(uint8_t CID, uint8_t NewTagId)
         return _lld3377xSetError(ERR_WrongParam);
     gTagID[CID] = NewTagId;
 #ifdef SLAVEIF_DEBUG_CONFIG
-    printf("SlaveIF: Set TagID %d for CID %d\n", NewTagId, CID);
+    PRINTF("SlaveIF: Set TagID %d for CID %d\n", NewTagId, CID);
 #endif
     return true;
 }
@@ -531,7 +531,7 @@ bool slaveIF_wakeUp(void)
         slaveIF_SPISC(1);
         Delayms(WAIT_AFTER_WAKEUP);
 #ifdef SLAVEIF_DEBUG_INIT
-        printf("SlaveIF: TPL wake-up sequence completed\n");
+        PRINTF("SlaveIF: TPL wake-up sequence completed\n");
 #endif
         return true;
     }
@@ -612,7 +612,7 @@ bool lld3377xReadRegisters(uint8_t CID, uint8_t Register, uint8_t noRegs2Read, u
             {
                 readData[idx] = UNPACK_DATA(rxFrame); // read data
 #ifdef SLAVEIF_DEBUG_COMM
-                printf("SlaveIF: Read register 0x%02X, Data: 0x%04X\n", Register, readData ? readData[idx] : 0);
+                PRINTF("SlaveIF: Read register 0x%02X, Data: 0x%04X\n", Register, readData ? readData[idx] : 0);
 #endif
             }
             idx++;

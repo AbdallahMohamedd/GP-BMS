@@ -31,7 +31,7 @@
 #include "string.h"
 #include "stdbool.h"
 #include "fsl_debug_console.h"
-
+#include <tpm1.h>
 //=============================================================================
 // Debug Control Macro Definition (General)
 //=============================================================================
