@@ -110,14 +110,13 @@ void DataMonitor_float2str(float num, char *str, int precision)
  *              using the ScreenIF module.
  * @param       soc State of Charge of the battery pack (0 to 100).
  */
-void dataMonitor_socDisp(uint8_t soc)
+void dataMonitor_socDisp(float soc)
 {
     char Buffer[16];
     ScreenIF_PrintStr("SOC:");
-    sprintf(Buffer, "%d", soc);
+    DataMonitor_float2str(soc, Buffer, 2);
     ScreenIF_PrintStr(Buffer);
     ScreenIF_PrintStr("%");
-
 #ifdef DATAMONITOR_DEBUG_SOC
     PRINTF("DataMonitor: Displayed SOC: %d%%\r\r\n", soc);
 #endif
@@ -204,7 +203,7 @@ void dataMonitor_faultDisp(BMSFaultStatus_t fault)
 void dataMonitor_tempDisp(float temp)
 {
     char Buffer[16];
-    ScreenIF_PrintStr("T:");
+    ScreenIF_PrintStr("Temp:");
     DataMonitor_float2str(temp, Buffer, 2);
     ScreenIF_PrintStr(Buffer);
     ScreenIF_PrintStr("C");
@@ -222,8 +221,6 @@ void dataMonitor_tempDisp(float temp)
  */
 void dataMonitor_modeDisp(BMSMode_t mode)
 {
-    ScreenIF_SetCursor(9, 3);
-    ScreenIF_PrintStr("Mode:");
     if (mode == NormalMode)
     {
         ScreenIF_PrintStr("Normal");
@@ -259,28 +256,135 @@ void dataMonitor_modeDisp(BMSMode_t mode)
  * @param       mode Operating mode of the battery pack (0: Normal, 1: Sleep, 2: Diagnostics).
  * @param       fault Fault status of the battery pack (0 for no fault, 1 for fault).
  */
-void DataMonitor_lcd(uint8_t soc, uint8_t soh, float current, float temp, BMSMode_t mode, BMSFaultStatus_t fault)
+void dataMonitor_packInfo(float soc, uint8_t soh, float current, float temp, BMSMode_t mode, BMSFaultStatus_t fault)
 {
-    ScreenIF_Init();
     ScreenIF_Clear();
-    ScreenIF_SetCursor(0, 0);
-    dataMonitor_socDisp(soc);
-    ScreenIF_SetCursor(11, 0);
-    dataMonitor_sohDisp(soh);
+    ScreenIF_SetCursor(6, 0);
+    ScreenIF_PrintStr("Pack Info");
     ScreenIF_SetCursor(0, 1);
-    dataMonitor_currentDisp(current);
-    ScreenIF_SetCursor(8, 1);
+    dataMonitor_socDisp(soc);
+    ScreenIF_SetCursor(0, 2);
     dataMonitor_tempDisp(temp);
+    ScreenIF_SetCursor(0, 3);
+    dataMonitor_currentDisp(current);
     ScreenIF_SetCursor(9, 3);
+    ScreenIF_PrintStr("Mode:");
+    ScreenIF_SetCursor(14,3);
     dataMonitor_modeDisp(mode);
-    dataMonitor_faultDisp(fault);
 
 #ifdef DATAMONITOR_DEBUG_DATA
     PRINTF("DataMonitor: Displayed all parameters - SOC: %d%%, SOH: %d%%, Current: %f A, Temp: %f C, Mode: %d, Fault: %d\r\r\n",
            soc, soh, current, temp, mode, fault);
 #endif
 }
+void dataMonitor_balancingStatus(uint16_t data) {
 
+    ScreenIF_Clear();
+    ScreenIF_SetCursor(2,0);
+    ScreenIF_PrintStr("Balancing status:");
+
+    int found = 0;
+    int row = 1;
+    int column = 0;
+    int count = 0;                  // Count bits per row for LCD display
+    int no_of_balanced_cells = 0;  // Count of set bits (optional total)
+
+    for (int i = 15; i >= 0; i--) {
+        if (data & (1u << i)) {
+            int bit_num = i+1;
+            char Buffer[16];
+            sprintf(Buffer, "%d", bit_num);
+            // LCD display
+            ScreenIF_SetCursor(column,row);
+            ScreenIF_PrintStr("Cell:");
+            ScreenIF_PrintStr(Buffer);
+            column += 10;             // Move cursor right
+            count++;
+            no_of_balanced_cells++;
+            found = 1;
+
+            if (count == 2) {
+                row++;
+                column = 0;
+                count = 0;
+            }
+        }
+    }
+
+    if (!found) {
+        printf("No bits are set to 1\n");
+    } else {
+        printf("Total number of bits set to 1: %d\n", no_of_balanced_cells);
+    }
+}
+void dataMonitor_speedDisp(uint8_t speed)
+{
+    char Buffer[16];
+    ScreenIF_PrintStr("Speed:");
+    sprintf(Buffer, "%d", speed);
+    ScreenIF_PrintStr(Buffer);
+    ScreenIF_PrintStr("%");
+
+#ifdef DATAMONITOR_DEBUG_SOH
+    PRINTF("DataMonitor: Displayed SOH: %d%%\r\r\n", soh);
+#endif
+}
+void dataMonitor_Fan(uint8_t speed1, uint8_t speed2,FanMode_t Fan1_mode,FanMode_t Fan2_mode)
+{
+    ScreenIF_Clear();
+    ScreenIF_SetCursor(0, 0);
+    ScreenIF_PrintStr("Fan 1:");
+    ScreenIF_SetCursor(0, 1);
+    ScreenIF_PrintStr("Mode:");
+    if (Fan1_mode == ON )
+    {
+        ScreenIF_PrintStr("ON");
+#ifdef DATAMONITOR_MODE_DEBUG
+        PRINTF("DataMonitor: Displayed mode: Normal\r\r\n");
+#endif
+    }
+    else if (Fan1_mode == OFF)
+    {
+        ScreenIF_PrintStr(OFF);
+    }
+    ScreenIF_SetCursor(9, 1);
+    dataMonitor_speedDisp(speed1);
+    ScreenIF_SetCursor(0, 2);
+    ScreenIF_PrintStr("Fan 2:");
+    ScreenIF_SetCursor(0, 3);
+    ScreenIF_PrintStr("Mode:");
+    if (Fan2_mode == ON)
+    {
+        ScreenIF_PrintStr("ON");
+#ifdef DATAMONITOR_MODE_DEBUG
+        PRINTF("DataMonitor: Displayed mode: Normal\r\r\n");
+#endif
+    }
+    else if (Fan2_mode == OFF)
+    {
+        ScreenIF_PrintStr("OFF");
+    }
+    ScreenIF_SetCursor(9, 3);
+    dataMonitor_speedDisp(speed1);
+#ifdef DATAMONITOR_DEBUG_DATA
+    PRINTF("DataMonitor: Displayed all parameters - SOC: %d%%, SOH: %d%%, Current: %f A, Temp: %f C, Mode: %d, Fault: %d\r\r\n",
+           soc, soh, current, temp, mode, fault);
+#endif
+}
+void dataMonitor_packvoltage(float voltage)
+{
+	ScreenIF_Clear();
+    ScreenIF_SetCursor(0, 0);
+    ScreenIF_PrintStr("Pack Voltage:");
+    char Buffer[16];
+    DataMonitor_float2str(voltage, Buffer, 2);
+    ScreenIF_PrintStr(Buffer);
+    ScreenIF_PrintStr("V");
+
+#ifdef DATAMONITOR_DEBUG_CURRENT
+    PRINTF("DataMonitor: Displayed current: %f A\r\r\n", current);
+#endif
+}
 //=============================================================================
 // End of File
 //=============================================================================

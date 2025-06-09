@@ -8,7 +8,7 @@
  *             Fan 1 (PTC2/TPM0_CH1) and Fan 2 (PTC1/TPM0_CH0).
  *
  * @note       Project: Graduation Project - Battery Management System
- * @note       Engineer: Abdullah Mohamed
+ * @note       Engineer: Abdelrahman Mohamed
  * @note       Component: Fan Control Manager driver
  */
 

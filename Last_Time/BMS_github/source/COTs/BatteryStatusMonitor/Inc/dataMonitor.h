@@ -63,7 +63,7 @@ void dataMonitor_clearScreen(void);
  *             	using the ScreenIF module.
  * @param 		soc State of Charge of the battery pack (0 to 100).
  */
-void dataMonitor_socDisp(uint8_t soc);
+void dataMonitor_socDisp(float soc);
 
 /**
  * @brief      	Displays the State of Health (SOH) on the LCD.
@@ -116,7 +116,7 @@ void dataMonitor_modeDisp(BMSMode_t mode);
  * @param 		mode Operating mode of the battery pack (see DATA_MONITOR_MODE).
  * @param 		fault Fault status of the battery pack (see DATA_MONITOR_FAULT_STATUS).
  */
-void DataMonitor_lcd(uint8_t soc, uint8_t soh, float current, float temp, BMSMode_t mode, BMSFaultStatus_t fault);
+void dataMonitor_packInfo(float soc, uint8_t soh, float current, float temp, BMSMode_t mode, BMSFaultStatus_t fault);
 
 /**
  * @brief      	Converts a float to a string with specified precision.
@@ -127,6 +127,17 @@ void DataMonitor_lcd(uint8_t soc, uint8_t soh, float current, float temp, BMSMod
  * @param 		precision Number of decimal places to include.
  */
 void DataMonitor_float2str(float num, char *str, int precision);
+
+
+void dataMonitor_balancingStatus(uint16_t data);
+typedef enum
+{
+	OFF = 0,	   //!< Normal operating mode.
+	ON = 1,	   //!< Sleep mode for low power consumption.
+} FanMode_t;
+void dataMonitor_Fan(uint8_t speed1, uint8_t speed2,FanMode_t Fan1_mode,FanMode_t Fan2_mode);
+void dataMonitor_speedDisp(uint8_t speed);
+void dataMonitor_packvoltage(float voltage);
 
 #endif /* DATAMONITOR_H */
 //=============================================================================

@@ -13,12 +13,17 @@ package_id: MKL25Z128VLK4
 mcu_data: ksdk2_0
 processor_version: 13.0.1
 board: FRDM-KL25Z
+pin_labels:
+- {pin_num: '16', pin_signal: ADC0_DM3/ADC0_SE7a/PTE23/TPM2_CH1/UART2_RX, label: 'J10[7]', identifier: push3}
+- {pin_num: '21', pin_signal: CMP0_IN5/ADC0_SE4b/PTE29/TPM0_CH2/TPM_CLKIN0, label: 'J10[9]', identifier: push2}
+- {pin_num: '22', pin_signal: DAC0_OUT/ADC0_SE23/CMP0_IN4/PTE30/TPM0_CH3/TPM_CLKIN1, label: 'J10[11]', identifier: push1}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
 
 #include "fsl_common.h"
 #include "fsl_port.h"
+#include "fsl_gpio.h"
 #include "pin_mux.h"
 
 /* FUNCTION ************************************************************************************************************
@@ -44,6 +49,9 @@ BOARD_InitPins:
   - {pin_num: '46', peripheral: I2C0, signal: SDA, pin_signal: ADC0_SE13/TSI0_CH8/PTB3/I2C0_SDA/TPM2_CH1}
   - {pin_num: '57', peripheral: TPM0, signal: 'CH, 1', pin_signal: ADC0_SE11/TSI0_CH15/PTC2/I2C1_SDA/TPM0_CH1}
   - {pin_num: '56', peripheral: TSI0, signal: 'CH, 14', pin_signal: ADC0_SE15/TSI0_CH14/PTC1/LLWU_P6/RTC_CLKIN/I2C1_SCL/TPM0_CH0}
+  - {pin_num: '22', peripheral: GPIOE, signal: 'GPIO, 30', pin_signal: DAC0_OUT/ADC0_SE23/CMP0_IN4/PTE30/TPM0_CH3/TPM_CLKIN1, direction: INPUT, pull_enable: enable}
+  - {pin_num: '21', peripheral: GPIOE, signal: 'GPIO, 29', pin_signal: CMP0_IN5/ADC0_SE4b/PTE29/TPM0_CH2/TPM_CLKIN0, direction: INPUT, pull_enable: enable}
+  - {pin_num: '16', peripheral: GPIOE, signal: 'GPIO, 23', pin_signal: ADC0_DM3/ADC0_SE7a/PTE23/TPM2_CH1/UART2_RX, direction: INPUT, pull_enable: enable}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -62,6 +70,29 @@ void BOARD_InitPins(void)
     CLOCK_EnableClock(kCLOCK_PortB);
     /* Port C Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortC);
+    /* Port E Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortE);
+
+    gpio_pin_config_t push3_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PTE23 (pin 16)  */
+    GPIO_PinInit(BOARD_INITPINS_push3_GPIO, BOARD_INITPINS_push3_PIN, &push3_config);
+
+    gpio_pin_config_t push2_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PTE29 (pin 21)  */
+    GPIO_PinInit(BOARD_INITPINS_push2_GPIO, BOARD_INITPINS_push2_PIN, &push2_config);
+
+    gpio_pin_config_t push1_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PTE30 (pin 22)  */
+    GPIO_PinInit(BOARD_INITPINS_push1_GPIO, BOARD_INITPINS_push1_PIN, &push1_config);
 
     /* PORTA1 (pin 27) is configured as UART0_RX */
     PORT_SetPinMux(BOARD_INITPINS_DEBUG_UART_RX_PORT, BOARD_INITPINS_DEBUG_UART_RX_PIN, kPORT_MuxAlt2);
@@ -80,6 +111,45 @@ void BOARD_InitPins(void)
 
     /* PORTC2 (pin 57) is configured as TPM0_CH1 */
     PORT_SetPinMux(PORTC, 2U, kPORT_MuxAlt4);
+
+    const port_pin_config_t push3 = {/* Internal pull-up resistor is enabled */
+                                     kPORT_PullUp,
+                                     /* Slow slew rate is configured */
+                                     kPORT_SlowSlewRate,
+                                     /* Passive filter is disabled */
+                                     kPORT_PassiveFilterDisable,
+                                     /* Low drive strength is configured */
+                                     kPORT_LowDriveStrength,
+                                     /* Pin is configured as PTE23 */
+                                     kPORT_MuxAsGpio};
+    /* PORTE23 (pin 16) is configured as PTE23 */
+    PORT_SetPinConfig(BOARD_INITPINS_push3_PORT, BOARD_INITPINS_push3_PIN, &push3);
+
+    const port_pin_config_t push2 = {/* Internal pull-up resistor is enabled */
+                                     kPORT_PullUp,
+                                     /* Slow slew rate is configured */
+                                     kPORT_SlowSlewRate,
+                                     /* Passive filter is disabled */
+                                     kPORT_PassiveFilterDisable,
+                                     /* Low drive strength is configured */
+                                     kPORT_LowDriveStrength,
+                                     /* Pin is configured as PTE29 */
+                                     kPORT_MuxAsGpio};
+    /* PORTE29 (pin 21) is configured as PTE29 */
+    PORT_SetPinConfig(BOARD_INITPINS_push2_PORT, BOARD_INITPINS_push2_PIN, &push2);
+
+    const port_pin_config_t push1 = {/* Internal pull-up resistor is enabled */
+                                     kPORT_PullUp,
+                                     /* Slow slew rate is configured */
+                                     kPORT_SlowSlewRate,
+                                     /* Passive filter is disabled */
+                                     kPORT_PassiveFilterDisable,
+                                     /* Low drive strength is configured */
+                                     kPORT_LowDriveStrength,
+                                     /* Pin is configured as PTE30 */
+                                     kPORT_MuxAsGpio};
+    /* PORTE30 (pin 22) is configured as PTE30 */
+    PORT_SetPinConfig(BOARD_INITPINS_push1_PORT, BOARD_INITPINS_push1_PIN, &push1);
 
     SIM->SOPT5 = ((SIM->SOPT5 &
                    /* Mask bits to zero which are setting */

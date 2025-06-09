@@ -46,6 +46,48 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_DEBUG_UART_RX_PIN_MASK (1U << 1U)      /*!<@brief PORT pin mask */
                                                               /* @} */
 
+/*! @name PORTE30 (number 22), J10[11]
+  @{ */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_push1_FGPIO FGPIOE              /*!<@brief FGPIO peripheral base pointer */
+#define BOARD_INITPINS_push1_GPIO GPIOE                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_push1_GPIO_PIN_MASK (1U << 30U) /*!<@brief GPIO pin mask */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_push1_PORT PORTE                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_push1_PIN 30U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_push1_PIN_MASK (1U << 30U)      /*!<@brief PORT pin mask */
+                                                       /* @} */
+
+/*! @name PORTE29 (number 21), J10[9]
+  @{ */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_push2_FGPIO FGPIOE              /*!<@brief FGPIO peripheral base pointer */
+#define BOARD_INITPINS_push2_GPIO GPIOE                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_push2_GPIO_PIN_MASK (1U << 29U) /*!<@brief GPIO pin mask */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_push2_PORT PORTE                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_push2_PIN 29U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_push2_PIN_MASK (1U << 29U)      /*!<@brief PORT pin mask */
+                                                       /* @} */
+
+/*! @name PORTE23 (number 16), J10[7]
+  @{ */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_push3_FGPIO FGPIOE              /*!<@brief FGPIO peripheral base pointer */
+#define BOARD_INITPINS_push3_GPIO GPIOE                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_push3_GPIO_PIN_MASK (1U << 23U) /*!<@brief GPIO pin mask */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_push3_PORT PORTE                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_push3_PIN 23U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_push3_PIN_MASK (1U << 23U)      /*!<@brief PORT pin mask */
+                                                       /* @} */
+
 /*!
  * @brief Configures pin routing and optionally pin electrical features.
  *
