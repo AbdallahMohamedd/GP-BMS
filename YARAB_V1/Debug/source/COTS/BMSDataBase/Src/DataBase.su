@@ -1,4 +1,0 @@
-../source/COTS/BMSDataBase/Src/DataBase.c:46:6:DataBase_Init	8	static
-../source/COTS/BMSDataBase/Src/DataBase.c:64:6:DataBase_UpdateMeasurementData	24	static
-../source/COTS/BMSDataBase/Src/DataBase.c:97:6:DataBase_GetCurrentMeasurementData	16	static
-../source/COTS/BMSDataBase/Src/DataBase.c:116:6:DataBase_GetPreviousMeasurementData	16	static

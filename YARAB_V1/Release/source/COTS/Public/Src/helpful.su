@@ -1,6 +1,0 @@
-../source/COTS/Public/Src/helpful.c:169:6:delay_us.part.0	0	static
-../source/COTS/Public/Src/helpful.c:42:6:Timer_Init	24	static
-../source/COTS/Public/Src/helpful.c:169:6:delay_us	8	static
-../source/COTS/Public/Src/helpful.c:233:6:delay_ms	16	static
-../source/COTS/Public/Src/helpful.c:245:6:delay_seconds	16	static
-../source/COTS/Public/Src/helpful.c:268:6:PIT_IRQHandler	0	static

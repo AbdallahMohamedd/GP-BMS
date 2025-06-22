@@ -1,2 +1,0 @@
-../drivers/fsl_sim.c:37:6:SIM_SetUsbVoltRegulatorEnableMode	0	static
-../drivers/fsl_sim.c:45:6:SIM_GetUniqueId	0	static

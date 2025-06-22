@@ -1,0 +1,11 @@
+22:24:03 **** Incremental Build of configuration Debug for project frdmkl25z_driver_examples_adc16_polling ****
+make -r -j20 all 
+make[1]: Nothing to be done for 'main-build'.
+Performing post-build steps
+arm-none-eabi-size "frdmkl25z_driver_examples_adc16_polling.axf"; # arm-none-eabi-objcopy -v -O binary "frdmkl25z_driver_examples_adc16_polling.axf" "frdmkl25z_driver_examples_adc16_polling.bin" ; # checksum -p MKL25Z128xxx4 -d "frdmkl25z_driver_examples_adc16_polling.bin";
+   text	   data	    bss	    dec	    hex	filename
+  17160	      8	   2404	  19572	   4c74	frdmkl25z_driver_examples_adc16_polling.axf
+ 
+
+22:24:03 Build Finished. 0 errors, 0 warnings. (took 212ms)
+
