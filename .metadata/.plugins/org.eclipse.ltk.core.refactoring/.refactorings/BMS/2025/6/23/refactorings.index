@@ -1,7 +1,0 @@
-1749025930804	Rename resource 'mc3377x.c'
-1749025985716	Move 'dataBase.c' to 'Src'
-1749026448764	Rename resource 'DataMonitor.h'
-1749026455450	Rename resource 'DataMonitor.c'
-1749026519485	Rename resource 'DebugInfo.h'
-1749027764669	Move 'main.c' to 'source'
-1749049545927	Move 'cpu' to 'BMS'
