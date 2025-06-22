@@ -13,10 +13,21 @@ package_id: MKL25Z128VLK4
 mcu_data: ksdk2_0
 processor_version: 13.0.1
 board: FRDM-KL25Z
+external_user_signals: {}
 pin_labels:
+- {pin_num: '13', pin_signal: ADC0_DP0/ADC0_SE0/PTE20/TPM1_CH0/UART0_TX, label: 'J10[1]', identifier: push6}
+- {pin_num: '14', pin_signal: ADC0_DM0/ADC0_SE4a/PTE21/TPM1_CH1/UART0_RX, label: 'J10[3]', identifier: push5}
+- {pin_num: '15', pin_signal: ADC0_DP3/ADC0_SE3/PTE22/TPM2_CH0/UART2_TX, label: 'J10[5]', identifier: push4}
 - {pin_num: '16', pin_signal: ADC0_DM3/ADC0_SE7a/PTE23/TPM2_CH1/UART2_RX, label: 'J10[7]', identifier: push3}
 - {pin_num: '21', pin_signal: CMP0_IN5/ADC0_SE4b/PTE29/TPM0_CH2/TPM_CLKIN0, label: 'J10[9]', identifier: push2}
 - {pin_num: '22', pin_signal: DAC0_OUT/ADC0_SE23/CMP0_IN4/PTE30/TPM0_CH3/TPM_CLKIN1, label: 'J10[11]', identifier: push1}
+- {pin_num: '23', pin_signal: PTE31/TPM0_CH4, label: 'J2[13]', identifier: Sensor_7}
+- {pin_num: '36', pin_signal: PTA16/SPI0_MOSI/SPI0_MISO, label: 'J2[9]', identifier: Sensor_5}
+- {pin_num: '37', pin_signal: PTA17/SPI0_MISO/SPI0_MOSI, label: 'J2[11]', identifier: Sensor_6}
+- {pin_num: '69', pin_signal: PTC12/TPM_CLKIN0, label: 'J2[1]', identifier: Sensor_1}
+- {pin_num: '70', pin_signal: PTC13/TPM_CLKIN1, label: 'J2[3]', identifier: Sensor_2}
+- {pin_num: '71', pin_signal: PTC16, label: 'J2[5]', identifier: Sensor_3}
+- {pin_num: '72', pin_signal: PTC17, label: 'J2[7]', identifier: Sensor_4}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -48,10 +59,19 @@ BOARD_InitPins:
   - {pin_num: '45', peripheral: I2C0, signal: SCL, pin_signal: ADC0_SE12/TSI0_CH7/PTB2/I2C0_SCL/TPM2_CH0}
   - {pin_num: '46', peripheral: I2C0, signal: SDA, pin_signal: ADC0_SE13/TSI0_CH8/PTB3/I2C0_SDA/TPM2_CH1}
   - {pin_num: '57', peripheral: TPM0, signal: 'CH, 1', pin_signal: ADC0_SE11/TSI0_CH15/PTC2/I2C1_SDA/TPM0_CH1}
-  - {pin_num: '56', peripheral: TSI0, signal: 'CH, 14', pin_signal: ADC0_SE15/TSI0_CH14/PTC1/LLWU_P6/RTC_CLKIN/I2C1_SCL/TPM0_CH0}
   - {pin_num: '22', peripheral: GPIOE, signal: 'GPIO, 30', pin_signal: DAC0_OUT/ADC0_SE23/CMP0_IN4/PTE30/TPM0_CH3/TPM_CLKIN1, direction: INPUT, pull_enable: enable}
   - {pin_num: '21', peripheral: GPIOE, signal: 'GPIO, 29', pin_signal: CMP0_IN5/ADC0_SE4b/PTE29/TPM0_CH2/TPM_CLKIN0, direction: INPUT, pull_enable: enable}
   - {pin_num: '16', peripheral: GPIOE, signal: 'GPIO, 23', pin_signal: ADC0_DM3/ADC0_SE7a/PTE23/TPM2_CH1/UART2_RX, direction: INPUT, pull_enable: enable}
+  - {pin_num: '15', peripheral: GPIOE, signal: 'GPIO, 22', pin_signal: ADC0_DP3/ADC0_SE3/PTE22/TPM2_CH0/UART2_TX, direction: INPUT, pull_enable: enable}
+  - {pin_num: '14', peripheral: GPIOE, signal: 'GPIO, 21', pin_signal: ADC0_DM0/ADC0_SE4a/PTE21/TPM1_CH1/UART0_RX, direction: INPUT, pull_enable: enable}
+  - {pin_num: '13', peripheral: GPIOE, signal: 'GPIO, 20', pin_signal: ADC0_DP0/ADC0_SE0/PTE20/TPM1_CH0/UART0_TX, direction: INPUT, pull_enable: enable}
+  - {pin_num: '79', peripheral: ADC0, signal: 'SE, 7b', pin_signal: ADC0_SE7b/PTD6/LLWU_P15/SPI1_MOSI/UART0_RX/SPI1_MISO}
+  - {pin_num: '43', peripheral: ADC0, signal: 'SE, 8', pin_signal: ADC0_SE8/TSI0_CH0/PTB0/LLWU_P5/I2C0_SCL/TPM1_CH0}
+  - {pin_num: '44', peripheral: ADC0, signal: 'SE, 9', pin_signal: ADC0_SE9/TSI0_CH6/PTB1/I2C0_SDA/TPM1_CH1}
+  - {pin_num: '55', peripheral: ADC0, signal: 'SE, 14', pin_signal: ADC0_SE14/TSI0_CH13/PTC0/EXTRG_IN/CMP0_OUT}
+  - {pin_num: '78', peripheral: ADC0, signal: 'SE, 6b', pin_signal: ADC0_SE6b/PTD5/SPI1_SCK/UART2_TX/TPM0_CH5}
+  - {pin_num: '74', peripheral: ADC0, signal: 'SE, 5b', pin_signal: ADC0_SE5b/PTD1/SPI0_SCK/TPM0_CH1}
+  - {pin_num: '56', peripheral: TPM0, signal: 'CH, 0', pin_signal: ADC0_SE15/TSI0_CH14/PTC1/LLWU_P6/RTC_CLKIN/I2C1_SCL/TPM0_CH0}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 /* clang-format on */
@@ -70,8 +90,31 @@ void BOARD_InitPins(void)
     CLOCK_EnableClock(kCLOCK_PortB);
     /* Port C Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortC);
+    /* Port D Clock Gate Control: Clock enabled */
+    CLOCK_EnableClock(kCLOCK_PortD);
     /* Port E Clock Gate Control: Clock enabled */
     CLOCK_EnableClock(kCLOCK_PortE);
+
+    gpio_pin_config_t push6_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PTE20 (pin 13)  */
+    GPIO_PinInit(BOARD_INITPINS_push6_GPIO, BOARD_INITPINS_push6_PIN, &push6_config);
+
+    gpio_pin_config_t push5_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PTE21 (pin 14)  */
+    GPIO_PinInit(BOARD_INITPINS_push5_GPIO, BOARD_INITPINS_push5_PIN, &push5_config);
+
+    gpio_pin_config_t push4_config = {
+        .pinDirection = kGPIO_DigitalInput,
+        .outputLogic = 0U
+    };
+    /* Initialize GPIO functionality on pin PTE22 (pin 15)  */
+    GPIO_PinInit(BOARD_INITPINS_push4_GPIO, BOARD_INITPINS_push4_PIN, &push4_config);
 
     gpio_pin_config_t push3_config = {
         .pinDirection = kGPIO_DigitalInput,
@@ -100,17 +143,74 @@ void BOARD_InitPins(void)
     /* PORTA2 (pin 28) is configured as UART0_TX */
     PORT_SetPinMux(BOARD_INITPINS_DEBUG_UART_TX_PORT, BOARD_INITPINS_DEBUG_UART_TX_PIN, kPORT_MuxAlt2);
 
+    /* PORTB0 (pin 43) is configured as ADC0_SE8 */
+    PORT_SetPinMux(PORTB, 0U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTB1 (pin 44) is configured as ADC0_SE9 */
+    PORT_SetPinMux(PORTB, 1U, kPORT_PinDisabledOrAnalog);
+
     /* PORTB2 (pin 45) is configured as I2C0_SCL */
     PORT_SetPinMux(PORTB, 2U, kPORT_MuxAlt2);
 
     /* PORTB3 (pin 46) is configured as I2C0_SDA */
     PORT_SetPinMux(PORTB, 3U, kPORT_MuxAlt2);
 
-    /* PORTC1 (pin 56) is configured as TSI0_CH14 */
-    PORT_SetPinMux(PORTC, 1U, kPORT_PinDisabledOrAnalog);
+    /* PORTC0 (pin 55) is configured as ADC0_SE14 */
+    PORT_SetPinMux(PORTC, 0U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTC1 (pin 56) is configured as TPM0_CH0 */
+    PORT_SetPinMux(PORTC, 1U, kPORT_MuxAlt4);
 
     /* PORTC2 (pin 57) is configured as TPM0_CH1 */
     PORT_SetPinMux(PORTC, 2U, kPORT_MuxAlt4);
+
+    /* PORTD1 (pin 74) is configured as ADC0_SE5b */
+    PORT_SetPinMux(BOARD_INITPINS_LED_BLUE_PORT, BOARD_INITPINS_LED_BLUE_PIN, kPORT_PinDisabledOrAnalog);
+
+    /* PORTD5 (pin 78) is configured as ADC0_SE6b */
+    PORT_SetPinMux(PORTD, 5U, kPORT_PinDisabledOrAnalog);
+
+    /* PORTD6 (pin 79) is configured as ADC0_SE7b */
+    PORT_SetPinMux(PORTD, 6U, kPORT_PinDisabledOrAnalog);
+
+    const port_pin_config_t push6 = {/* Internal pull-up resistor is enabled */
+                                     kPORT_PullUp,
+                                     /* Slow slew rate is configured */
+                                     kPORT_SlowSlewRate,
+                                     /* Passive filter is disabled */
+                                     kPORT_PassiveFilterDisable,
+                                     /* Low drive strength is configured */
+                                     kPORT_LowDriveStrength,
+                                     /* Pin is configured as PTE20 */
+                                     kPORT_MuxAsGpio};
+    /* PORTE20 (pin 13) is configured as PTE20 */
+    PORT_SetPinConfig(BOARD_INITPINS_push6_PORT, BOARD_INITPINS_push6_PIN, &push6);
+
+    const port_pin_config_t push5 = {/* Internal pull-up resistor is enabled */
+                                     kPORT_PullUp,
+                                     /* Slow slew rate is configured */
+                                     kPORT_SlowSlewRate,
+                                     /* Passive filter is disabled */
+                                     kPORT_PassiveFilterDisable,
+                                     /* Low drive strength is configured */
+                                     kPORT_LowDriveStrength,
+                                     /* Pin is configured as PTE21 */
+                                     kPORT_MuxAsGpio};
+    /* PORTE21 (pin 14) is configured as PTE21 */
+    PORT_SetPinConfig(BOARD_INITPINS_push5_PORT, BOARD_INITPINS_push5_PIN, &push5);
+
+    const port_pin_config_t push4 = {/* Internal pull-up resistor is enabled */
+                                     kPORT_PullUp,
+                                     /* Slow slew rate is configured */
+                                     kPORT_SlowSlewRate,
+                                     /* Passive filter is disabled */
+                                     kPORT_PassiveFilterDisable,
+                                     /* Low drive strength is configured */
+                                     kPORT_LowDriveStrength,
+                                     /* Pin is configured as PTE22 */
+                                     kPORT_MuxAsGpio};
+    /* PORTE22 (pin 15) is configured as PTE22 */
+    PORT_SetPinConfig(BOARD_INITPINS_push4_PORT, BOARD_INITPINS_push4_PIN, &push4);
 
     const port_pin_config_t push3 = {/* Internal pull-up resistor is enabled */
                                      kPORT_PullUp,

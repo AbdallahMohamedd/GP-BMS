@@ -21,6 +21,7 @@
 //=============================================================================
 #include <COTs/ScreenIF/Inc/screenIF.h>
 #include "COTs/DebugInfoManager/Inc/debugInfo.h"
+#include <COTs/FanControlManager/Inc/fanCtrl.h>
 
 //=============================================================================
 // Enums
@@ -128,15 +129,35 @@ void dataMonitor_packInfo(float soc, uint8_t soh, float current, float temp, BMS
  */
 void DataMonitor_float2str(float num, char *str, int precision);
 
-
+/**
+ * @brief      Displays the balancing status of cells on the LCD.
+ * @details    Clears the LCD, prints a header, and displays the numbers of cells
+ *             with balancing enabled (bits set in the input data). Cells are shown
+ *             in a 2-per-row format, with a total count if any bits are set.
+ * @param      data 16-bit value where each bit represents a cell's balancing status.
+ * @return     None (void).
+ */
 void dataMonitor_balancingStatus(uint16_t data);
-typedef enum
-{
-	OFF = 0,	   //!< Normal operating mode.
-	ON = 1,	   //!< Sleep mode for low power consumption.
-} FanMode_t;
-void dataMonitor_Fan(uint8_t speed1, uint8_t speed2,FanMode_t Fan1_mode,FanMode_t Fan2_mode);
-void dataMonitor_speedDisp(uint8_t speed);
+
+/**
+ * @brief      Displays fan status and speed on the LCD.
+ * @details    Clears the LCD and shows status (ON/OFF) and speed for Fan 1 and Fan 2
+ *             in a structured format across four rows.
+ * @param      speed1 Speed percentage for Fan 1 (0-100).
+ * @param      speed2 Speed percentage for Fan 2 (0-100).
+ * @param      Fan1_mode Operational mode of Fan 1 (ON or OFF).
+ * @param      Fan2_mode Operational mode of Fan 2 (ON or OFF).
+ * @return     None (void).
+ */
+void dataMonitor_fanInfo(uint8_t speed1, uint8_t speed2, FanStatus_t Fan1_mode, FanStatus_t Fan2_mode);
+
+/**
+ * @brief      Displays the pack voltage on the LCD.
+ * @details    Clears the LCD, prints a "Pack Voltage:" label, and displays the
+ *             voltage value with two decimal places followed by "V".
+ * @param      voltage Float value representing the pack voltage.
+ * @return     None (void).
+ */
 void dataMonitor_packvoltage(float voltage);
 
 #endif /* DATAMONITOR_H */

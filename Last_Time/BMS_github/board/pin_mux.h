@@ -88,6 +88,57 @@ void BOARD_InitBootPins(void);
 #define BOARD_INITPINS_push3_PIN_MASK (1U << 23U)      /*!<@brief PORT pin mask */
                                                        /* @} */
 
+/*! @name PORTE22 (number 15), J10[5]
+  @{ */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_push4_FGPIO FGPIOE              /*!<@brief FGPIO peripheral base pointer */
+#define BOARD_INITPINS_push4_GPIO GPIOE                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_push4_GPIO_PIN_MASK (1U << 22U) /*!<@brief GPIO pin mask */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_push4_PORT PORTE                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_push4_PIN 22U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_push4_PIN_MASK (1U << 22U)      /*!<@brief PORT pin mask */
+                                                       /* @} */
+
+/*! @name PORTE21 (number 14), J10[3]
+  @{ */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_push5_FGPIO FGPIOE              /*!<@brief FGPIO peripheral base pointer */
+#define BOARD_INITPINS_push5_GPIO GPIOE                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_push5_GPIO_PIN_MASK (1U << 21U) /*!<@brief GPIO pin mask */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_push5_PORT PORTE                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_push5_PIN 21U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_push5_PIN_MASK (1U << 21U)      /*!<@brief PORT pin mask */
+                                                       /* @} */
+
+/*! @name PORTE20 (number 13), J10[1]
+  @{ */
+
+/* Symbols to be used with GPIO driver */
+#define BOARD_INITPINS_push6_FGPIO FGPIOE              /*!<@brief FGPIO peripheral base pointer */
+#define BOARD_INITPINS_push6_GPIO GPIOE                /*!<@brief GPIO peripheral base pointer */
+#define BOARD_INITPINS_push6_GPIO_PIN_MASK (1U << 20U) /*!<@brief GPIO pin mask */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_push6_PORT PORTE                /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_push6_PIN 20U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_push6_PIN_MASK (1U << 20U)      /*!<@brief PORT pin mask */
+                                                       /* @} */
+
+/*! @name PORTD1 (number 74), J2[12]/D3[3]/D13/LEDRGB_BLUE
+  @{ */
+
+/* Symbols to be used with PORT driver */
+#define BOARD_INITPINS_LED_BLUE_PORT PORTD               /*!<@brief PORT peripheral base pointer */
+#define BOARD_INITPINS_LED_BLUE_PIN 1U                   /*!<@brief PORT pin number */
+#define BOARD_INITPINS_LED_BLUE_PIN_MASK (1U << 1U)      /*!<@brief PORT pin mask */
+                                                         /* @} */
+
 /*!
  * @brief Configures pin routing and optionally pin electrical features.
  *

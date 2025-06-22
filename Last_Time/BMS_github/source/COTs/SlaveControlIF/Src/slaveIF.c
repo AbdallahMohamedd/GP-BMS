@@ -102,6 +102,7 @@ const SsysConf_t CONF33771TPL[] = {
     {FAULT2_STATUS, 0},         // Clear all bits
     {FAULT3_STATUS, 0},         // Clear all bits
     {ADC_CFG, ADC_CFG_SETTING}, // Set ADC configuration
+	{GPIO_CFG1, 0},
     {0, 0}                      // End symbol
 };
 

@@ -22,6 +22,12 @@
 #include <MKL25Z4.h>
 #include <stdint.h>
 
+typedef enum
+{
+	OFF = 0, //!< Normal operating mode.
+	ON = 1,	 //!< Sleep mode for low power consumption.
+} FanStatus_t;
+
 //=============================================================================
 // Public Function Prototypes
 //=============================================================================

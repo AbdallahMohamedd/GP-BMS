@@ -16,10 +16,15 @@
 // Includes
 //=============================================================================
 #include <COTS/DebugInfoManager/Inc/DebugInfo.h>
-
+#include <source/COTs/BMSDataBase/Inc/database.h>
+#define READ_BIT(address, bit)		     ((address & (1 << bit)) >> bit)
+extern uint16_t faultFlag;
 //=============================================================================
 // Public Function Declarations
 //=============================================================================
+
+
+
 /**
  * @brief Prints detailed fault reasons to the serial console.
  * @param[in] faultData Pointer to the FaultData structure containing fault status.
@@ -28,86 +33,87 @@
  *          from FAULT1, FAULT2, FAULT3 registers and their detailed status.
  *          Messages are prefixed with a timestamp (systick_count) for tracking.
  */
-//void DebugInfo_PrintFaultReason(const FaultData *faultData)
-//{
-//	if (faultData == NULL)
-//	{
-//		PRINTF("[ERROR] DebugInfo: Invalid fault data pointer!\n\r\r");
-//		return;
-//	}
-//
-//	//extern volatile uint32_t pit_count; // From main.c
-//	//PRINTF("\n[FAULT DETECTED] Time: %lu ms - Circuit Disconnected (SSR Opened)\n", pit_count * 100);
-//	PRINTF("------------------------------------------------------------\n");
-//
-//	// Check FAULT1-related faults
-//	if (faultData->overVoltageFlags)
-//	{
-//		PRINTF("FAULT: Cell Over-Voltage detected. Affected cells (bitmask): 0x%04X\n",
-//				faultData->overVoltageFlags);
-//	}
-//	if (faultData->underVoltageFlags)
-//	{
-//		PRINTF("FAULT: Cell Under-Voltage detected. Affected cells (bitmask): 0x%04X\n",
-//				faultData->underVoltageFlags);
-//	}
-//	if (faultData->overtemperatureFlags)
-//	{
-//		PRINTF("FAULT: Over-Temperature detected. Affected sensors (bitmask): 0x%02X\n",
-//				faultData->overtemperatureFlags);
-//	}
-//	if (faultData->undertemperatureFlags)
-//	{
-//		PRINTF("FAULT: Under-Temperature detected. Affected sensors (bitmask): 0x%02X\n",
-//				faultData->undertemperatureFlags);
-//	}
-//
-//	// Check FAULT2-related faults
-//	if (faultData->gpioShortFlags)
-//	{
-//		PRINTF("FAULT: GPIO Short Circuit detected. Affected GPIOs (bitmask): 0x%02X\n",
-//				faultData->gpioShortFlags);
-//	}
-//	if (faultData->anOpenLoadFlags)
-//	{
-//		PRINTF("FAULT: Analog Open Load detected. Affected channels (bitmask): 0x%02X\n",
-//				faultData->anOpenLoadFlags);
-//	}
-//	if (faultData->cbShortFlags)
-//	{
-//		PRINTF("FAULT: Cell Balancing Short Circuit detected. Affected channels (bitmask): 0x%04X\n",
-//				faultData->cbShortFlags);
-//	}
-//	if (faultData->cbOpenFlags)
-//	{
-//		PRINTF("FAULT: Cell Balancing Open Load detected. Affected channels (bitmask): 0x%04X\n",
-//				faultData->cbOpenFlags);
-//	}
-//
-//	// Check raw fault registers for other conditions
-//	if (faultData->rawFault1Status && !faultData->overVoltageFlags &&
-//			!faultData->underVoltageFlags && !faultData->overtemperatureFlags &&
-//			!faultData->undertemperatureFlags)
-//	{
-//		PRINTF("FAULT: Other FAULT1 conditions detected (raw): 0x%04X\n",
-//				faultData->rawFault1Status);
-//	}
-//	if (faultData->rawFault2Status && !faultData->gpioShortFlags &&
-//			!faultData->anOpenLoadFlags && !faultData->cbShortFlags &&
-//			!faultData->cbOpenFlags)
-//	{
-//		PRINTF("FAULT: Other FAULT2 conditions detected (raw): 0x%04X\n",
-//				faultData->rawFault2Status);
-//	}
-//	if (faultData->rawFault3Status)
-//	{
-//		PRINTF("FAULT: FAULT3 conditions detected (raw): 0x%04X\n",
-//				faultData->rawFault3Status);
-//	}
-//
-//	PRINTF("------------------------------------------------------------\n");
-//	PRINTF("ACTION: Battery disconnected to ensure safety.\n\n");
-//}
+void DebugInfo_PrintFaultReason(TYPE_STATUS *faultData)
+{
+	if (faultData == NULL)
+	{
+		PRINTF("[ERROR] DebugInfo: Invalid fault data pointer!\r\r\n");
+		return;
+	}
+
+	//extern volatile uint32_t pit_count; // From main.c
+	//PRINTF("\r\r\n[FAULT DETECTED] Time: %lu ms - Circuit Disconnected (SSR Opened)\r\r\n", pit_count * 100);
+	PRINTF("------------------------------------------------------------\r\r\n");
+
+	// Check FAULT1-related faults
+	if (faultData->u16CellOV)
+	{
+		for (int i = 0; i < 14; i++)
+		{
+			if(READ_BIT(faultData->u16CellOV,i))
+				PRINTF("FAULT: Cell Over-Voltage detected. Cell %d\r\r\n", i+1);
+		}
+		faultFlag++;
+	}
+	if (faultData->u16CellUV)
+	{
+		for (int i = 0; i < 14; i++)
+		{
+			if(READ_BIT(faultData->u16CellUV,i))
+				PRINTF("FAULT: Cell Under-Voltage detected. Cell %d\r\r\n", i+1);
+		}
+		faultFlag++;
+
+	}
+	if (faultData->u16ANOtUt) //edit Abdullah
+	{
+		PRINTF("FAULT: Over-Temperature detected. Affected sensors (bitmask): 0x%02X\r\r\n",
+				faultData->u16ANOtUt);
+
+	}
+
+	// Check FAULT2-related faults
+	if (faultData->u16GPIOOpen)
+	{
+		PRINTF("FAULT: GPIO Short Circuit detected. Affected GPIOs (bitmask): 0x%02X\r\r\n",
+				faultData->u16GPIOOpen);
+	}
+
+	if (faultData->u16CBShort)
+	{
+		PRINTF("FAULT: Cell Balancing Short Circuit detected. Affected channels (bitmask): 0x%04X\r\r\n",
+				faultData->u16CBShort);
+	}
+	if (faultData->u16CBOpen)
+	{
+		PRINTF("FAULT: Cell Balancing Open Load detected. Affected channels (bitmask): 0x%04X\r\r\n",
+				faultData->u16CBOpen);
+	}
+
+	// Check raw fault registers for other conditions
+	if (faultData->u16Fault1 && !faultData->u16CellOV &&
+			!faultData->u16CellUV && !faultData->u16ANOtUt)
+	{
+		PRINTF("FAULT: Other FAULT1 conditions detected (raw): 0x%04X\r\r\n",
+				faultData->u16Fault1);
+	}
+	if (faultData->u16Fault2 && !faultData->u16GPIOOpen &&
+			!faultData->u16CBShort && !faultData->u16GPIOOpen &&
+			!faultData->u16CBOpen)
+	{
+		PRINTF("FAULT: Other FAULT2 conditions detected (raw): 0x%04X\r\r\n",
+				faultData->u16Fault2);
+	}
+	if (faultData->u16Fault3)
+	{
+		PRINTF("FAULT: FAULT3 conditions detected (raw): 0x%04X\r\r\n",
+				faultData->u16Fault3);
+	}
+
+	PRINTF("------------------------------------------------------------\r\r\n");
+	PRINTF("ACTION: Battery disconnected to ensure safety.\r\r\n");
+}
+
 
 //=============================================================================
 // End of File

@@ -22,6 +22,23 @@
 // Public Function Definitions
 //=============================================================================
 /**
+ * @brief      Startup with Graduation project BMS
+ */
+void DataMonitor_startUp(){
+	dataMonitor_clearScreen();
+    ScreenIF_SetCursor(0,0);
+    ScreenIF_PrintStr("Graduation");
+    ScreenIF_SetCursor(11,0);
+    ScreenIF_PrintStr("Project");
+    ScreenIF_SetCursor(0,1);
+    ScreenIF_PrintStr("Sponsored by:");
+    ScreenIF_SetCursor(11,2);
+    ScreenIF_PrintStr("Vehiclevo");
+    ScreenIF_SetCursor(0,3);
+    ScreenIF_PrintStr("Dr.:Mohamed Mostafa");
+}
+
+/**
  * @brief      Clears the LCD display.
  * @details    Sends the clear display command and waits for completion.
  */
@@ -204,7 +221,7 @@ void dataMonitor_tempDisp(float temp)
 {
     char Buffer[16];
     ScreenIF_PrintStr("Temp:");
-    DataMonitor_float2str(temp, Buffer, 2);
+    DataMonitor_float2str(temp, Buffer, 1);
     ScreenIF_PrintStr(Buffer);
     ScreenIF_PrintStr("C");
 
@@ -269,7 +286,7 @@ void dataMonitor_packInfo(float soc, uint8_t soh, float current, float temp, BMS
     dataMonitor_currentDisp(current);
     ScreenIF_SetCursor(9, 3);
     ScreenIF_PrintStr("Mode:");
-    ScreenIF_SetCursor(14,3);
+    ScreenIF_SetCursor(14, 3);
     dataMonitor_modeDisp(mode);
 
 #ifdef DATAMONITOR_DEBUG_DATA
@@ -277,33 +294,44 @@ void dataMonitor_packInfo(float soc, uint8_t soh, float current, float temp, BMS
            soc, soh, current, temp, mode, fault);
 #endif
 }
-void dataMonitor_balancingStatus(uint16_t data) {
 
+/**
+ * @brief      Displays the balancing status of cells on the LCD.
+ * @details    Clears the LCD, prints a header, and displays the numbers of cells
+ *             with balancing enabled (bits set in the input data). Cells are shown
+ *             in a 2-per-row format, with a total count if any bits are set.
+ * @param      data 16-bit value where each bit represents a cell's balancing status.
+ * @return     None (void).
+ */
+void dataMonitor_balancingStatus(uint16_t data)
+{
     ScreenIF_Clear();
-    ScreenIF_SetCursor(2,0);
+    ScreenIF_SetCursor(2, 0);
     ScreenIF_PrintStr("Balancing status:");
 
     int found = 0;
     int row = 1;
     int column = 0;
-    int count = 0;                  // Count bits per row for LCD display
-    int no_of_balanced_cells = 0;  // Count of set bits (optional total)
+    int count = 0;                // Count bits per row for LCD display
+    int no_of_balanced_cells = 0; // Count of set bits
 
-    for (int i = 15; i >= 0; i--) {
-        if (data & (1u << i)) {
-            int bit_num = i+1;
+    for (int i = 15; i >= 0; i--)
+    {
+        if (data & (1u << i))
+        {
+            int bit_num = i + 1;
             char Buffer[16];
             sprintf(Buffer, "%d", bit_num);
-            // LCD display
-            ScreenIF_SetCursor(column,row);
+            ScreenIF_SetCursor(column, row);
             ScreenIF_PrintStr("Cell:");
             ScreenIF_PrintStr(Buffer);
-            column += 10;             // Move cursor right
+            column += 10; // Move cursor right
             count++;
             no_of_balanced_cells++;
             found = 1;
 
-            if (count == 2) {
+            if (count == 2)
+            {
                 row++;
                 column = 0;
                 count = 0;
@@ -311,13 +339,32 @@ void dataMonitor_balancingStatus(uint16_t data) {
         }
     }
 
-    if (!found) {
-        printf("No bits are set to 1\n");
-    } else {
-        printf("Total number of bits set to 1: %d\n", no_of_balanced_cells);
+    if (!found)
+    {
+    	ScreenIF_SetCursor(0, 2);
+    	ScreenIF_PrintStr("Balancing");
+    	ScreenIF_SetCursor(8, 3);
+    	ScreenIF_PrintStr("Deactivated");
+
+#ifdef DATAMONITOR_DEBUG_STATUS
+        PRINTF("DataMonitor: No cells are balancing\r\r\n");
+#endif
+    }
+    else
+    {
+#ifdef DATAMONITOR_DEBUG_STATUS
+        PRINTF("DataMonitor: Total balanced cells: %d\r\r\n", no_of_balanced_cells);
+#endif
     }
 }
-void dataMonitor_speedDisp(uint8_t speed)
+
+/**
+ * @brief      Displays the speed percentage on the LCD.
+ * @details    Prints a "Speed:" label followed by the speed value and "%" suffix.
+ * @param      speed Percentage speed value to display (0-100).
+ * @return     None (void).
+ */
+static void dataMonitor_speedDisp(uint8_t speed)
 {
     char Buffer[16];
     ScreenIF_PrintStr("Speed:");
@@ -325,30 +372,45 @@ void dataMonitor_speedDisp(uint8_t speed)
     ScreenIF_PrintStr(Buffer);
     ScreenIF_PrintStr("%");
 
-#ifdef DATAMONITOR_DEBUG_SOH
-    PRINTF("DataMonitor: Displayed SOH: %d%%\r\r\n", soh);
+#ifdef DATAMONITOR_DEBUG_SPEED
+    PRINTF("DataMonitor: Displayed speed: %d%%\r\r\n", speed);
 #endif
 }
-void dataMonitor_Fan(uint8_t speed1, uint8_t speed2,FanMode_t Fan1_mode,FanMode_t Fan2_mode)
+
+/**
+ * @brief      Displays fan status and speed on the LCD.
+ * @details    Clears the LCD and shows status (ON/OFF) and speed for Fan 1 and Fan 2
+ *             in a structured format across four rows.
+ * @param      speed1 Speed percentage for Fan 1 (0-100).
+ * @param      speed2 Speed percentage for Fan 2 (0-100).
+ * @param      Fan1_mode Operational mode of Fan 1 (ON or OFF).
+ * @param      Fan2_mode Operational mode of Fan 2 (ON or OFF).
+ * @return     None (void).
+ */
+void dataMonitor_fanInfo(uint8_t speed1, uint8_t speed2, FanStatus_t Fan1_mode, FanStatus_t Fan2_mode)
 {
     ScreenIF_Clear();
     ScreenIF_SetCursor(0, 0);
     ScreenIF_PrintStr("Fan 1:");
     ScreenIF_SetCursor(0, 1);
     ScreenIF_PrintStr("Mode:");
-    if (Fan1_mode == ON )
+    if (Fan1_mode == ON)
     {
         ScreenIF_PrintStr("ON");
-#ifdef DATAMONITOR_MODE_DEBUG
-        PRINTF("DataMonitor: Displayed mode: Normal\r\r\n");
+#ifdef DATAMONITOR_DEBUG_FAN
+        PRINTF("DataMonitor: Fan 1 mode displayed: ON\r\r\n");
 #endif
     }
     else if (Fan1_mode == OFF)
     {
-        ScreenIF_PrintStr(OFF);
+        ScreenIF_PrintStr("OFF");
+#ifdef DATAMONITOR_DEBUG_FAN
+        PRINTF("DataMonitor: Fan 1 mode displayed: OFF\r\r\n");
+#endif
     }
     ScreenIF_SetCursor(9, 1);
     dataMonitor_speedDisp(speed1);
+
     ScreenIF_SetCursor(0, 2);
     ScreenIF_PrintStr("Fan 2:");
     ScreenIF_SetCursor(0, 3);
@@ -356,24 +418,31 @@ void dataMonitor_Fan(uint8_t speed1, uint8_t speed2,FanMode_t Fan1_mode,FanMode_
     if (Fan2_mode == ON)
     {
         ScreenIF_PrintStr("ON");
-#ifdef DATAMONITOR_MODE_DEBUG
-        PRINTF("DataMonitor: Displayed mode: Normal\r\r\n");
+#ifdef DATAMONITOR_DEBUG_FAN
+        PRINTF("DataMonitor: Fan 2 mode displayed: ON\r\r\n");
 #endif
     }
     else if (Fan2_mode == OFF)
     {
         ScreenIF_PrintStr("OFF");
+#ifdef DATAMONITOR_DEBUG_FAN
+        PRINTF("DataMonitor: Fan 2 mode displayed: OFF\r\r\n");
+#endif
     }
     ScreenIF_SetCursor(9, 3);
-    dataMonitor_speedDisp(speed1);
-#ifdef DATAMONITOR_DEBUG_DATA
-    PRINTF("DataMonitor: Displayed all parameters - SOC: %d%%, SOH: %d%%, Current: %f A, Temp: %f C, Mode: %d, Fault: %d\r\r\n",
-           soc, soh, current, temp, mode, fault);
-#endif
+    dataMonitor_speedDisp(speed2);
 }
+
+/**
+ * @brief      Displays the pack voltage on the LCD.
+ * @details    Clears the LCD, prints a "Pack Voltage:" label, and displays the
+ *             voltage value with two decimal places followed by "V".
+ * @param      voltage Float value representing the pack voltage.
+ * @return     None (void).
+ */
 void dataMonitor_packvoltage(float voltage)
 {
-	ScreenIF_Clear();
+    ScreenIF_Clear();
     ScreenIF_SetCursor(0, 0);
     ScreenIF_PrintStr("Pack Voltage:");
     char Buffer[16];
@@ -381,8 +450,8 @@ void dataMonitor_packvoltage(float voltage)
     ScreenIF_PrintStr(Buffer);
     ScreenIF_PrintStr("V");
 
-#ifdef DATAMONITOR_DEBUG_CURRENT
-    PRINTF("DataMonitor: Displayed current: %f A\r\r\n", current);
+#ifdef DATAMONITOR_DEBUG_VOLTAGE
+    PRINTF("DataMonitor: Displayed pack voltage: %.2f V\n", voltage);
 #endif
 }
 //=============================================================================

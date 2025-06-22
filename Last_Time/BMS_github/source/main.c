@@ -11,6 +11,7 @@
 #include "fsl_port.h"
 #include "fsl_pit.h"
 #include "fsl_device_registers.h"
+#include "fsl_adc16.h"
 // ----------------------------------------------------------------------------
 #include "Platform/pcconf.h"
 #include "source/COTs/BMSDataBase/Inc/database.h"
@@ -18,7 +19,7 @@
 #define CELL_BATTERY_CAPACITY_AH 1.5
 #define CELL_OCV_FULL 4.2
 #define CELL_OCV_EMPTY 3.0
-
+uint16_t faultFlag;
 #define PACK_BATTERY_CAPACITY_AH 21.0
 #define PACK_OCV_FULL 58.8
 #define PACK_OCV_EMPTY 25
@@ -68,6 +69,71 @@ extern const SsysConf_t CONF33771TPL[];
  * will be used only once after first start. Then the configuration will be stored
  * in the Flash and loaded from Flash afterwards.
  */
+//---------------------------ADC-----------------------------------------------------
+#define DEMO_ADC16_BASE ADC0
+#define DEMO_ADC16_CHANNEL_GROUP 0U
+//#define DEMO_ADC16_USER_CHANNEL 9U  // Choose your channel based on connection
+
+#define SERIES_RESISTOR 100000.0      // 100kΩ fixed resistor
+#define NOMINAL_RESISTANCE 100000.0   // 100kΩ at 25°C
+#define NOMINAL_TEMPERATURE 25.0      // 25°C
+#define BETA_COEFFICIENT 3950.0       // Adjust based on your thermistor spec
+#define ADC_MAX 65535.0               // 16-bit ADC
+#define VREF 3.3                     // Reference voltage (typically 3.3V)
+
+/*******************************************************************************
+ * Prototypes
+ ******************************************************************************/
+double Thermistor(uint16_t adc_value);
+
+/*******************************************************************************
+ * Code
+ ******************************************************************************/
+double Thermistor(uint16_t adc_value)
+{
+    double v_in = (adc_value / ADC_MAX) * VREF;
+    double resistance = SERIES_RESISTOR * ((VREF-v_in)/v_in);
+
+    double steinhart = resistance / NOMINAL_RESISTANCE;     // (R/R0)
+    steinhart = log(steinhart);                             // ln(R/R0)
+    steinhart /= BETA_COEFFICIENT;                          // 1/B * ln(R/R0)
+    steinhart += 1.0 / (NOMINAL_TEMPERATURE + 273.15);      // + (1/To)
+    steinhart = 1.0 / steinhart;                            // Invert to Kelvin
+    steinhart -= 273.15;                                    // Convert to Celsius
+
+    return steinhart;
+}
+void ADC_Init(void)
+{
+    adc16_config_t adc16ConfigStruct;
+
+    ADC16_GetDefaultConfig(&adc16ConfigStruct);
+    adc16ConfigStruct.resolution = kADC16_ResolutionSE16Bit;
+    adc16ConfigStruct.referenceVoltageSource = kADC16_ReferenceVoltageSourceVref;  // External Vref (3.3V typical)
+    ADC16_Init(DEMO_ADC16_BASE, &adc16ConfigStruct);
+    ADC16_EnableHardwareTrigger(DEMO_ADC16_BASE, false);  // Software trigger
+}
+uint16_t ADC_Read(uint32_t channel)
+{
+    adc16_channel_config_t adc16ChannelConfigStruct = {0};
+    adc16ChannelConfigStruct.channelNumber = channel;
+    adc16ChannelConfigStruct.enableInterruptOnConversionCompleted = false;
+
+#if defined(FSL_FEATURE_ADC16_HAS_DIFF_MODE) && FSL_FEATURE_ADC16_HAS_DIFF_MODE
+    adc16ChannelConfigStruct.enableDifferentialConversion = false;
+#endif
+
+    ADC16_SetChannelConfig(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP, &adc16ChannelConfigStruct);
+
+    while (0U == (kADC16_ChannelConversionDoneFlag &
+                  ADC16_GetChannelStatusFlags(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP)))
+    {
+    }
+
+    return ADC16_GetChannelConversionValue(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP);
+}
+
+//---------------------------------------------------------
 TYPE_PC_CONFIG const defPCConfig = {
 		PC_CONFIG_VALID,
 		IntTPL,
@@ -101,7 +167,7 @@ int main(void)
 	bool bBCCFault;
 	uint32_t timeStamp;
 
-	if (FALSE == PackCrtlConfigRead(&pcconf, defPCConfig))
+         	if (FALSE == PackCrtlConfigRead(&pcconf, defPCConfig))
 	{
 		while (1)
 			DONOTHING(); // how to handle this error?
@@ -111,19 +177,27 @@ int main(void)
 	BOARD_InitDebugConsole(); // Initialize debug console for PRINTF
 	Board_InitHW();
 
+	DelayInit();
 	// TPM0_CH1_PWM_Init();
 	fanCtrl_fan1Init();
 	fanCtrl_fan2Init();
-
+	fanCtrl_fan1SetDuty(59);
+	fanCtrl_fan2SetDuty(95);
+//	fanCtrl_fan1SetDuty(80);
+//	fanCtrl_fan2SetDuty(60);
+	//TPM0->SC |= TPM_SC_CMOD(1); // Start counter when ready
 	// PWM_Init();
-	DelayInit();
 
-	ScreenIF_Init();
+	ADC_Init();
+   ScreenIF_Init();
 	//dataMonitor_balancingStatus(0x000F);
 	//Delay(100000000);
 	//uint16_t ocv_values[14] = 	rawResults[0].u16CellVoltage[14];
-
+	//TPM0->SC |= TPM_SC_CMOD(1); // Start counter when ready
 	// dataMonitor_clearScreen();
+	GPIO_PinInit(GPIOE, 20U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
+	GPIO_PinInit(GPIOE, 21U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
+	GPIO_PinInit(GPIOE, 22U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
 	GPIO_PinInit(GPIOE, 23U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
 	GPIO_PinInit(GPIOE, 29U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
 	GPIO_PinInit(GPIOE, 30U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
@@ -134,7 +208,7 @@ int main(void)
 	//   GPIO_WritePinOutput(GPIOC, 2U, 1);
 	//GPIO_ReadPinInput(GPIOE, 30U);
 	PRINTF("Board Initialized.\n\r\r");
-
+	DataMonitor_startUp();
 	bms.Interface = pcconf.IntType;
 	bms.EVB = pcconf.EvbType;
 	bms.NoClusters = pcconf.NoCluster;
@@ -163,7 +237,7 @@ int main(void)
 	gu4CIDSelected = 1;
 	cidRoundRobin = 1;
 	uint16_t yarab = 600;
-float test_cell_volrage[14];
+	float test_cell_volrage[14];
 	//	while(1)
 	//	{
 	//
@@ -180,10 +254,31 @@ float test_cell_volrage[14];
 	//}
 	while(1)
 	{
-//		prev_ccounter = rawResults.s32CCCounter;
-//		prev_samples = rawResults.u16CCSamples;
-//		PRINTF("Prev sample = %d\r\r\n", prev_samples);
-//		PRINTF("prev_ccounter = %d\r\r\n", prev_ccounter);
+//		uint16_t adcValue_1 = ADC_Read(9);
+//		uint16_t adcValue_2 = ADC_Read(8);
+//		uint16_t adcValue_3 = ADC_Read(5);
+//
+//    double temperature_1C = Thermistor(adcValue_1);
+   // double temperature_2C = Thermistor(adcValue_2);
+   // double temperature_3C = Thermistor(adcValue_3);
+    //PRINTF("ADC Value1: %5d  →  Temperature1: %.2f °C\r\n", adcValue_1, temperature_1C);
+  //  PRINTF("ADC Value2: %5d  →  Temperature2: %.2f °C\r\n", adcValue_2, temperature_2C);
+  //  PRINTF("ADC Value3: %5d  →  Temperature3: %.2f °C\r\n", adcValue_3, temperature_3C);
+
+		//fanCtrl_fan1SetDuty(80);
+		//fanCtrl_fan2SetDuty(60);
+//		if (faultFlag)
+//		{
+//			fanCtrl_fan1SetDuty(0);
+//			fanCtrl_fan2SetDuty(0);
+//			dataMonitor_faultDisp(FaultStatusActive);
+//			bms.Status = BMS_Error;
+//		}
+//		DebugInfo_PrintFaultReason(&StatusBits[0]);
+//		//		prev_ccounter = rawResults.s32CCCounter;
+		//		prev_samples = rawResults.u16CCSamples;
+		//		PRINTF("Prev sample = %d\r\r\n", prev_samples);
+		//		PRINTF("prev_ccounter = %d\r\r\n", prev_ccounter);
 
 		//		if(yarab >= 100)
 		//		{
@@ -195,8 +290,8 @@ float test_cell_volrage[14];
 		//		PRINTF("RUNNING FAN WITH: %d\r\r\n",yarab );
 		//		yarab = yarab+3;
 
-		//		fanCtrl_fan1SetDuty(40);
-		//		fanCtrl_fan2SetDuty(80);
+		//				fanCtrl_fan1SetDuty(40);
+		//				fanCtrl_fan2SetDuty(80);
 		// PRINTF("RUNNING FAN 1 WITH: %d\r\r\n", 40);
 		// PRINTF("RUNNING FAN 2 WITH: %d\r\r\n", 80);
 
@@ -386,11 +481,12 @@ float test_cell_volrage[14];
 					dataMonitor_clearScreen();
 					ScreenIF_SetCursor(0, 0);
 					dataMonitor_packvoltage((float)TeamStackVoltage);
-
+					PRINTF("11\r\r\n");
 				}
 				if(GPIO_ReadPinInput(GPIOE, 29U)==0)
 				{
 					dataMonitor_balancingStatus(StatusBits->u16CBStatus);
+					PRINTF("22\r\r\n");
 				}
 				if(GPIO_ReadPinInput(GPIOE, 23U)==0)
 				{
@@ -399,11 +495,51 @@ float test_cell_volrage[14];
 						test_cell_volrage[i] = rawResults->u16CellVoltage[i];
 					}
 
-					dataMonitor_packInfo(initialSOC_Pack(test_cell_volrage), 99, 0, 24, NormalMode, FaultStatusNone);
+					dataMonitor_packInfo(initialSOC_Pack(test_cell_volrage), 00, 0, 24, NormalMode, FaultStatusNone);
+					PRINTF("33\r\r\n");
 				}
-				SlaveIF_enableCellBalancing(14, true, 0.5, cid);
-				SlaveIF_enableCellBalancing(8, true, 0.5, cid);
+				if(GPIO_ReadPinInput(GPIOE, 22)==0)
+				{
+					PRINTF("44\r\r\n");
+					dataMonitor_clearScreen();
+					ScreenIF_SetCursor(0, 0);
+					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
+					ScreenIF_SetCursor(0, 1);
+					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
+					ScreenIF_SetCursor(0, 2);
+					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
+					ScreenIF_SetCursor(10, 3);
+					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
+					ScreenIF_SetCursor(10, 0);
+					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
+					ScreenIF_SetCursor(10, 1);
+					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
+					ScreenIF_SetCursor(10, 2);
+					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
+				}
+				if(GPIO_ReadPinInput(GPIOE, 21)==0)
+				{
+					dataMonitor_fanInfo(0, 0, ON, ON);
+					PRINTF("55\r\r\n");
+				}
 
+				//SlaveIF_enableCellBalancing(14, false, 0.5, cid);
+				//SlaveIF_enableCellBalancing(8,  false, 0.5, cid);
+//				dataMonitor_clearScreen();
+//				ScreenIF_SetCursor(0, 0);
+//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
+//				ScreenIF_SetCursor(0, 1);
+//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
+//				ScreenIF_SetCursor(0, 2);
+//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
+//				ScreenIF_SetCursor(10, 3);
+//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
+//				ScreenIF_SetCursor(10, 0);
+//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
+//				ScreenIF_SetCursor(10, 1);
+//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
+//				ScreenIF_SetCursor(10, 2);
+//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
 				// dataMonitor_modeDisp(SleepMode);
 				//					if (1)
 				//					{
@@ -415,21 +551,6 @@ float test_cell_volrage[14];
 				// dataMonitor_clearScreen();
 				// ScreenIF_SetCursor(0, 0);
 				// DataMonitor_lcd((tempSensorIf_Raw2Celsius(temp1)), 90, 55, 52, NormalMode, FaultStatusNone);
-				//					dataMonitor_clearScreen();
-				//					ScreenIF_SetCursor(0, 0);
-				//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
-				//					ScreenIF_SetCursor(0, 1);
-				//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
-				//					ScreenIF_SetCursor(0, 2);
-				//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
-				//					ScreenIF_SetCursor(10, 3);
-				//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
-				//					ScreenIF_SetCursor(10, 0);
-				//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
-				//					ScreenIF_SetCursor(10, 1);
-				//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
-				//					ScreenIF_SetCursor(10, 2);
-				//					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
 
 
 				// dataMonitor_socDisp(22);
