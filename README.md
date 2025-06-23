@@ -26,24 +26,38 @@ To develop an intelligent Battery Management System capable of:
 ## 🧩 System Components
 
 ### ✅ Hardware
-- **NXP FRDM-MC33771B-TPLEVB** — high-precision slave battery monitoring IC
-- **KL25Z Microcontroller** — master controller
-- Custom-designed **sensing and protection circuits**
-- **LCD Interface** for status monitoring
-- Relays, connectors, and peripheral safety hardware
+
+Our hardware implementation consists of two major subsystems:
+
+#### 🔋 Battery Management System (BMS)
+- **NXP FRDMM33771BTPLEVB** — a high-precision slave battery monitoring IC for real-time voltage, current, and temperature measurements.
+- **KL25Z Microcontroller** — functions as the master controller for handling data acquisition, diagnostics, and protection logic.
+- Custom-designed **sensing and protection circuits** — for current measurement, voltage dividers, and overcurrent/overvoltage protection.
+- **LCD Interface** — provides a real-time visual display of system parameters.
+- **Relays**, **connectors**, and other peripheral hardware for integration and switching.
+
+#### ⚡ Custom Battery Charger
+- A dedicated **charging circuit** was designed and implemented on a custom printed circuit board (PCB).
+- The system is powered by an external **42V DC power supply**.
+- An integrated **Boost Converter** steps the voltage up to **60V** to meet the required charging specifications for the battery pack.
 
 ### ✅ Software Architecture
-The software is layered into:
-- **Application Layer**: High-level logic (balancing, thermal, diagnostics)
-- **Service Layer**: Data handling, watchdogs, and status management
-- **HAL (Hardware Abstraction Layer)**: Interfaces for slave control, LCD
-- **MCAL (Microcontroller Abstraction Layer)**: Communication protocols like I2C, SPI, UART, PWM, GPIO
+
+The software is modularly layered and divided into:
+
+- **Application Layer**: Manages high-level functionalities like thermal management, diagnostics, and balancing logic.
+- **Service Layer**: Handles data handling, system states, and watchdog mechanisms.
+- **HAL (Hardware Abstraction Layer)**: Provides unified access to low-level drivers (ADC, GPIO, I2C, SPI, UART).
+- **MCAL (Microcontroller Abstraction Layer)**: Direct interface with hardware peripherals.
+
+> 🔁 The balancing algorithm component was developed in MATLAB/Simulink, and its corresponding subsystem was exported using **automatic code generation**, ensuring seamless integration with the embedded firmware.
 
 ### ✅ MATLAB/Simulink Integration
-We’ve developed detailed battery and control models using Simulink:
-- **Equivalent Circuit Model (ECM)** for Li-ion cells
-- Parametric simulations for SOC and SOH estimation
-- Model-based validation of control strategies
+
+A high-fidelity simulation model of the battery system was created in Simulink:
+- Developed using the **Equivalent Circuit Model (ECM)** for lithium-ion cells to mimic real-world electrical behavior.
+- Parametric simulations enable accurate estimation of **State of Charge (SOC)** and **State of Health (SOH)**.
+- The model is used to **validate control strategies** and system responses under various operating conditions, making it a valuable tool for testing without physical hardware.
 
 ---
 
@@ -84,11 +98,15 @@ We are incredibly proud to have Vehiclevo as our industry sponsor. Their support
 ---
 
 ## 🏫 Institution
+Ain Shams University
 
-**Ain Shams University**  
-Faculty of Engineering  
-Department of Electrical Power and Machines  
-Graduation Year: **2025**
+Faculty of Engineering
+
+Department of Electrical Power and Machines
+
+Graduation Year: 2025
+
+Project Supervisor: Dr. [**Mohamed Mostafa**](https://www.linkedin.com/in/mohamed-mostafa-bb56a619a/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app)
 
 ---
 
