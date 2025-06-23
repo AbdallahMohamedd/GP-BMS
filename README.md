@@ -73,13 +73,13 @@ We’ve developed detailed battery and control models using Simulink:
 
 ## 🤝 Sponsorship & Mentorship
 
-### Sponsored by: [**Vehiclevo**](https://www.vehiclevo.com)  
+### Sponsored by: [**Vehiclevo**](https://www.linkedin.com/company/vehiclevo/posts/?feedView=all)  
 We are incredibly proud to have Vehiclevo as our industry sponsor. Their support enabled us to access state-of-the-art components, tools, and expert mentorship.
 
 ### Mentors from Vehiclevo:
-- Eng. **Mohamed Maklad**
-- Eng. **Omar Gamal Eldin**
-- Eng. **Fady Bassyoni**
+- Eng. [**Mohamed Maklad**](https://www.linkedin.com/in/mohamed-maklad-1a4350100/)
+- Eng. [**Omar Gamal Eldin**](https://www.linkedin.com/in/omar-gamal-4780b0181/)
+- Eng. [**Fady Bassyoni**](https://www.linkedin.com/in/fadybassiouni/)
 
 ---
 
