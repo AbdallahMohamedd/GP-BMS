@@ -1,6 +1,6 @@
 # Design and Implementation of a Sophisticated Battery Management System (BMS)
 
-![System Architecture](https://drive.google.com/file/d/17iNWs7bNCaGj6MBZtE5RcQUcKs_Ifjkd/view?usp=drive_link?raw=true)
+![Image](https://github.com/user-attachments/assets/b7d20004-bb00-4500-b7d7-fc145cfc3571)
 
 ## 🚀 Project Overview
 
