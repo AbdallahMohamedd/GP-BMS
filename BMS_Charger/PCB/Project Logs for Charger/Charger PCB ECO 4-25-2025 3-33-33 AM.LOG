@@ -1,0 +1,34 @@
+Removed Pin From Net: NetName=LO Pin=4o-1
+Removed Pin From Net: NetName=GND Pin=4o-2
+Removed Pin From Net: NetName=PWM Pin=4o-10
+Removed Pin From Net: NetName=GND Pin=4o-11
+Removed Pin From Net: NetName=PWM Pin=4o-12
+Removed Member From Class: ClassName=Charger  Member=4o
+Added Component: Designator=D2(DIOAD1990W125L900D530)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/SR320/Taiwan+Semiconductor/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Taiwan Semiconductor"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "SR320"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "DO-201AD Taiwan Semiconductor"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/SR320/Taiwan+Semiconductor/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=Gate Driver (PCBComponent_1)
+Added Pin To Net: NetName=LO Pin=Gate Driver -1
+Added Pin To Net: NetName=GND Pin=Gate Driver -2
+Added Pin To Net: NetName=PWM Pin=Gate Driver -10
+Added Pin To Net: NetName=GND Pin=Gate Driver -11
+Added Pin To Net: NetName=PWM Pin=Gate Driver -12
+Added Pin To Net: NetName=Net12V Regulator IC_2 Pin=12V Regulator IC-2
+Added Pin To Net: NetName=Net12V Regulator IC_2 Pin=C3-1
+Added Pin To Net: NetName=Net12V Regulator IC_2 Pin=D2-A
+Added Pin To Net: NetName=Net12V Regulator IC_2 Pin=Gate Driver -3
+Added Net: Name=Net12V Regulator IC_2
+Added Pin To Net: NetName=NetC2_1 Pin=C2-1
+Added Pin To Net: NetName=NetC2_1 Pin=D2-C
+Added Pin To Net: NetName=NetC2_1 Pin=Gate Driver -6
+Added Net: Name=NetC2_1
+Added Pin To Net: NetName=NetC2_2 Pin=C2-2
+Added Pin To Net: NetName=NetC2_2 Pin=Gate Driver -5
+Added Net: Name=NetC2_2
+Added Member To Class: ClassName=Charger  Member=Component D2 SR320
+Added Member To Class: ClassName=Charger  Member=Component Gate Driver  Component_1
+Added Member To Class: ClassName=Charger  Member=Component  Rgate

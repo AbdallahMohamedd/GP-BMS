@@ -1,0 +1,7 @@
+Added Component: Designator=hgfdvcs(PCBComponent_1)
+Added Pin To Net: NetName=Netbuck CIN_P Pin=hgfdvcs-1
+Added Pin To Net: NetName=NetBuck Inductor_1 Pin=hgfdvcs-2
+Added Pin To Net: NetName=GND Pin=hgfdvcs-3
+Added Pin To Net: NetName=Netbuck Cout_P Pin=hgfdvcs-4
+Added Pin To Net: NetName=GND Pin=hgfdvcs-5
+Added Member To Class: ClassName=Charger  Member=Component hgfdvcs Component_1

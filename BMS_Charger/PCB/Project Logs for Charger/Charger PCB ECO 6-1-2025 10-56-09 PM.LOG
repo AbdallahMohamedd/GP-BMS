@@ -1,0 +1,10 @@
+Removed Pin From Net: NetName=Net12 VOLT BUCK_1 Pin=12 VOLT BUCK-1
+Removed Pin From Net: NetName=GND Pin=12 VOLT BUCK-3
+Removed Pin From Net: NetName=Net12 VOLT BUCK_4 Pin=12 VOLT BUCK-4
+Removed Pin From Net: NetName=GND Pin=12 VOLT BUCK-5
+Removed Member From Class: ClassName=Charger  Member=12 VOLT BUCK
+Change Net Name : Old Net Name=Net12 VOLT BUCK_1 New Net Name=Netbuck CIN_P
+Change Net Name : Old Net Name=Net12 VOLT BUCK_4 New Net Name=Netbuck Cout_P
+Added Pin To Net: NetName=NetBuck Inductor_1 Pin=Buck Inductor-1
+Added Pin To Net: NetName=NetBuck Inductor_1 Pin=D3-C
+Added Net: Name=NetBuck Inductor_1

@@ -1,0 +1,5 @@
+Removed Member From Class: ClassName=Charger  Member=LM
+Added Component: Designator=IC(PCBComponent_1)
+Added Pin To Net: NetName=NetC2_2 Pin=C2-2
+Added Net: Name=NetC2_2
+Added Member To Class: ClassName=Charger  Member=Component  Rgate

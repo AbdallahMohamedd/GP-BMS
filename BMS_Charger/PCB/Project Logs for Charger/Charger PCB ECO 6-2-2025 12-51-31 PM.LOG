@@ -1,0 +1,13 @@
+Added Component: Designator=Charger Output (TE_1977477-3)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/1977477-3/TE+Connectivity+AMP+Connectors/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "TE Connectivity"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "1977477-3"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/1977477-3/TE+Connectivity+AMP+Connectors/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=Charger Output -3
+Added Pin To Net: NetName=NetCharger Output _1 Pin=Charger Output -1
+Added Pin To Net: NetName=NetCharger Output _1 Pin=Cout-P
+Added Pin To Net: NetName=NetCharger Output _1 Pin=D1-C
+Added Net: Name=NetCharger Output _1
+Added Member To Class: ClassName=Charger  Member=Component Charger Output  42.5-60v

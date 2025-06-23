@@ -1,0 +1,2 @@
+Change Component Designator: OldDesignator=Charger Input53 NewDesignator=Charger Output
+Change Net Name : Old Net Name=NetCharger Input53_1 New Net Name=NetCharger Output_1

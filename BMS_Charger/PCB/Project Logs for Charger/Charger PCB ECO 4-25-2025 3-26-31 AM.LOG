@@ -1,0 +1,24 @@
+Removed Pin From Net: NetName=LO Pin=Gate Driver -1
+Removed Pin From Net: NetName=GND Pin=Gate Driver -2
+Removed Pin From Net: NetName=PWM Pin=Gate Driver -10
+Removed Pin From Net: NetName=GND Pin=Gate Driver -11
+Removed Pin From Net: NetName=PWM Pin=Gate Driver -12
+Removed Member From Class: ClassName=Charger  Member=Gate Driver 
+Added Component: Designator=4o(PCBComponent_1)
+Added Pin To Net: NetName=LO Pin=4o-1
+Added Pin To Net: NetName=GND Pin=4o-2
+Added Pin To Net: NetName=PWM Pin=4o-10
+Added Pin To Net: NetName=GND Pin=4o-11
+Added Pin To Net: NetName=PWM Pin=4o-12
+Added Pin To Net: NetName=Net4o_3 Pin=4o-3
+Added Pin To Net: NetName=Net4o_3 Pin=12V Regulator IC-2
+Added Pin To Net: NetName=Net4o_3 Pin=C3-1
+Added Net: Name=Net4o_3
+Added Pin To Net: NetName=Net4o_5 Pin=4o-5
+Added Pin To Net: NetName=Net4o_5 Pin=C2-2
+Added Net: Name=Net4o_5
+Added Pin To Net: NetName=Net4o_6 Pin=4o-6
+Added Pin To Net: NetName=Net4o_6 Pin=C2-1
+Added Net: Name=Net4o_6
+Added Member To Class: ClassName=Charger  Member=Component 4o Component_1
+Added Member To Class: ClassName=Charger  Member=Component  Rgate

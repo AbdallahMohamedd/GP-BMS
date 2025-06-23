@@ -1,0 +1,26 @@
+Removed Pin From Net: NetName=LO Pin=Gate Driver -1
+Removed Pin From Net: NetName=GND Pin=Gate Driver -2
+Removed Pin From Net: NetName=Net12V Regulator IC_2 Pin=Gate Driver -3
+Removed Pin From Net: NetName=NetC2_2 Pin=Gate Driver -5
+Removed Pin From Net: NetName=NetC2_1 Pin=Gate Driver -6
+Removed Pin From Net: NetName=PWM Pin=Gate Driver -10
+Removed Pin From Net: NetName=GND Pin=Gate Driver -11
+Removed Pin From Net: NetName=PWM Pin=Gate Driver -12
+Removed Member From Class: ClassName=Charger  Member=Gate Driver 
+Added Component: Designator=IC(PCBComponent_1)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/IR2112/Infineon/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Infineon Technologies"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "IR2112"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "DIP-14 International Rectifier"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/IR2112/Infineon/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=LO Pin=IC-1
+Added Pin To Net: NetName=GND Pin=IC-2
+Added Pin To Net: NetName=Net12V Regulator IC_2 Pin=IC-3
+Added Pin To Net: NetName=NetC2_2 Pin=IC-5
+Added Pin To Net: NetName=NetC2_1 Pin=IC-6
+Added Pin To Net: NetName=PWM Pin=IC-10
+Added Pin To Net: NetName=GND Pin=IC-11
+Added Pin To Net: NetName=PWM Pin=IC-12
+Added Member To Class: ClassName=Charger  Member=Component IC IR2112
+Added Member To Class: ClassName=Charger  Member=Component  Rgate

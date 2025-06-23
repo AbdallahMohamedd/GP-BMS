@@ -1,0 +1,12 @@
+Added Component: Designator=12 Volt Buck Module(PCBComponent_1)
+Added Pin To Net: NetName=Netbuck CIN_P Pin=12 Volt Buck Module-1
+Added Pin To Net: NetName=GND Pin=12 Volt Buck Module-3
+Added Pin To Net: NetName=Netbuck Cout_P Pin=12 Volt Buck Module-4
+Added Pin To Net: NetName=GND Pin=12 Volt Buck Module-5
+Change Net Name : Old Net Name=Netbuck CIN_P New Net Name=Net12 Volt Buck Module_1
+Change Net Name : Old Net Name=Netbuck Cout_P New Net Name=Net12 Volt Buck Module_4
+Added Pin To Net: NetName=Net12 Volt Buck Module_2 Pin=12 Volt Buck Module-2
+Added Pin To Net: NetName=Net12 Volt Buck Module_2 Pin=Buck Inductor-1
+Added Pin To Net: NetName=Net12 Volt Buck Module_2 Pin=D3-C
+Added Net: Name=Net12 Volt Buck Module_2
+Added Member To Class: ClassName=Charger  Member=Component 12 Volt Buck Module

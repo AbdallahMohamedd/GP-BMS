@@ -1,0 +1,11 @@
+Removed Pin From Net: NetName=LO Pin=IC-1
+Removed Pin From Net: NetName=GND Pin=IC-2
+Removed Pin From Net: NetName=Net12V Regulator IC_2 Pin=IC-3
+Removed Pin From Net: NetName=NetC2_1 Pin=IC-6
+Removed Pin From Net: NetName=PWM Pin=IC-10
+Removed Pin From Net: NetName=GND Pin=IC-11
+Removed Pin From Net: NetName=PWM Pin=IC-12
+Removed Member From Class: ClassName=Charger  Member=IC
+Added Component: Designator=LM(PCBComponent_1)
+Added Member To Class: ClassName=Charger  Member=Component LM Component_1
+Added Member To Class: ClassName=Charger  Member=Component  Rgate

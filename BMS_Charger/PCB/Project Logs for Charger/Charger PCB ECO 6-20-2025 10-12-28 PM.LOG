@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=Net12 Volt Buck Module_1 Pin=COIL-1
+Removed Member From Class: ClassName=Charger  Member=COIL
+Added Pin To Net: NetName=NetD1_A Pin=D1-A
+Added Pin To Net: NetName=NetD1_A Pin=Mosfet-D
+Added Net: Name=NetD1_A

@@ -1,0 +1,114 @@
+Removed Pin From Net: NetName=GND Pin=Controller Pins -1
+Removed Pin From Net: NetName=PWM Pin=Controller Pins -2
+Removed Pin From Net: NetName=GND Pin=CS-1
+Removed Pin From Net: NetName=NetCharger input_3 Pin=input R1-1
+Removed Pin From Net: NetName=NetCharger output_1 Pin=Limiting R3-2
+Removed Pin From Net: NetName=NetCOIL_2 Pin=Q1-D
+Removed Pin From Net: NetName=GND Pin=RG-2
+Removed Pin From Net: NetName=PWM Pin=RM1-2
+Removed Pin From Net: NetName=GND Pin=RM2-1
+Removed Member From Class: ClassName=Charger Member=CS
+Removed Member From Class: ClassName=Charger Member=input R1
+Removed Member From Class: ClassName=Charger Member=Limiting R3
+Removed Member From Class: ClassName=Charger Member=Q1
+Removed Member From Class: ClassName=Charger Member=RG
+Removed Member From Class: ClassName=Charger Member=RM1
+Removed Member From Class: ClassName=Charger Member=RM2
+Change Component Comment : Designator=COIL Old Comment= New Comment=Component_1
+Added Component: Designator=12V CONNECTOR(HDR1X3)
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Added Component: Designator=12V Regulator IC (TO-220-3)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/L7812CV/STMicroelectronics/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "STMicroelectronics"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "L7812CV"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "TO-220-3 STMicroelectronics"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/L7812CV/STMicroelectronics/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=C2(CAPR5-4X5)
+Add component (AddParameter): Name = "PackageDescription"; Value = "Capacitor; 2 Leads"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "CAPR5-4X5"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "23-Sep-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = "0.1UF"; VariantName = "[No Variations]"
+Added Component: Designator=C3(CAPR5-4X5)
+Add component (AddParameter): Name = "PackageDescription"; Value = "Capacitor; 2 Leads"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "CAPR5-4X5"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "23-Sep-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = "0.1UF"; VariantName = "[No Variations]"
+Added Component: Designator=Controller Pins(HDR1X3)
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Added Component: Designator=Gate Driver (DIL14)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/IR2112/Infineon/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Infineon Technologies"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "IR2112"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "DIP-14 International Rectifier"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/IR2112/Infineon/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=Mosfet (TO220BV)
+Add component (AddParameter): Name = "Availability"; Value = "In Stock"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/IRF740/Vishay+Siliconix/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Vishay"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "IRF740"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "TO-220-3 Vishay"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Price"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Purchase-URL"; Value = "https://pricing.snapeda.com/search/part/IRF740/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/IRF740/Vishay+Siliconix/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=(AXIAL-0.3)
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Axial Device, Thru-Hole; 2 Leads; 0.3 in Pin Spacing"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "AXIAL-0.3"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = "10"; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=12V CONNECTOR-3
+Added Pin To Net: NetName=GND Pin=12V Regulator IC -3
+Added Pin To Net: NetName=GND Pin=C3-2
+Added Pin To Net: NetName=NetCharger input_3 Pin=Cin-P
+Added Pin To Net: NetName=NetCharger input_3 Pin=COIL-1
+Added Pin To Net: NetName=GND Pin=Controller Pins-1
+Added Pin To Net: NetName=PWM Pin=Controller Pins-2
+Added Pin To Net: NetName=PWM Pin=Controller Pins-3
+Added Pin To Net: NetName=NetCharger output_1 Pin=Cout-P
+Added Pin To Net: NetName=NetCharger output_1 Pin=D1-C
+Added Pin To Net: NetName=GND Pin=Gate Driver -2
+Added Pin To Net: NetName=PWM Pin=Gate Driver -10
+Added Pin To Net: NetName=GND Pin=Gate Driver -11
+Added Pin To Net: NetName=PWM Pin=Gate Driver -12
+Added Pin To Net: NetName=NetCOIL_2 Pin=Mosfet -D
+Added Pin To Net: NetName=GND Pin=Mosfet -S
+Added Pin To Net: NetName=+12 Pin=12V CONNECTOR-1
+Added Pin To Net: NetName=+12 Pin=12V Regulator IC -1
+Added Net: Name=+12
+Added Pin To Net: NetName=LO Pin=-1
+Added Pin To Net: NetName=LO Pin=Gate Driver -1
+Added Net: Name=LO
+Added Pin To Net: NetName=Net12V Regulator IC _2 Pin=12V Regulator IC -2
+Added Pin To Net: NetName=Net12V Regulator IC _2 Pin=C3-1
+Added Pin To Net: NetName=Net12V Regulator IC _2 Pin=Gate Driver -3
+Added Net: Name=Net12V Regulator IC _2
+Added Pin To Net: NetName=Net_2 Pin=-2
+Added Pin To Net: NetName=Net_2 Pin=Mosfet -G
+Added Net: Name=Net_2
+Added Pin To Net: NetName=NetC2_1 Pin=C2-1
+Added Pin To Net: NetName=NetC2_1 Pin=Gate Driver -6
+Added Net: Name=NetC2_1
+Added Pin To Net: NetName=NetC2_2 Pin=C2-2
+Added Pin To Net: NetName=NetC2_2 Pin=Gate Driver -5
+Added Net: Name=NetC2_2
+Change Class Name : Old Net Name=Charger New Net Name=Charger 
+Added Member To Class: ClassName=Charger  Member=Component 12V CONNECTOR Header 3
+Added Member To Class: ClassName=Charger  Member=Component 12V Regulator IC  L7812CV
+Added Member To Class: ClassName=Charger  Member=Component C2
+Added Member To Class: ClassName=Charger  Member=Component C3
+Added Member To Class: ClassName=Charger  Member=Component Controller Pins Header 3
+Added Member To Class: ClassName=Charger  Member=Component Gate Driver  IR2112
+Added Member To Class: ClassName=Charger  Member=Component Mosfet  IRF740
+Added Member To Class: ClassName=Charger  Member=Component  Rgate
+Change Room Name: Old Name=Charger New Name=Charger 

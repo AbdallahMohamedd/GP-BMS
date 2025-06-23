@@ -1,0 +1,22 @@
+Removed Pin From Net: NetName=GND Pin=Controller Pins-1
+Removed Pin From Net: NetName=PWM Pin=Controller Pins-2
+Removed Pin From Net: NetName=PWM Pin=Controller Pins-3
+Change Component Footprint: Designator=Controller Pins Old Footprint=HDR1X3 New Footprint=SAMTEC_ESQ-103-59-S-S
+Change Component Comment : Designator= Old Comment=10ohm  New Comment=Rgate
+Change Component Comment : Designator=Controller Pins Old Comment=Header 3 New Comment=
+Change Component Designator: OldDesignator=Charger Output  NewDesignator=Charger Output
+Change component parameters: Designator = "Controller Pins" ("Controller Pins"); Footprint = "HDR1X3"; UniqueID = "\KHCUWYXI" ("\KHCUWYXI")
+Change component parameters (AddParameter): Name = "Availability"; Value = "Unavailable"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MF"; Value = ""; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MP"; Value = "ESQ-103-59-S-S"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Price"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=Controller Pins-01
+Added Pin To Net: NetName=PWM Pin=Controller Pins-02
+Added Pin To Net: NetName=PWM Pin=Controller Pins-03
+Change Net Name : Old Net Name=NetCharger Output _1 New Net Name=NetCharger Output_1
+Change Class Name : Old Net Name=Charger New Net Name=Charger 
+Added Member To Class: ClassName=Charger  Member=Component Charger Output 42.5-60v
+Added Member To Class: ClassName=Charger  Member=Component  Rgate
+Change Room Name: Old Name=Charger New Name=Charger 

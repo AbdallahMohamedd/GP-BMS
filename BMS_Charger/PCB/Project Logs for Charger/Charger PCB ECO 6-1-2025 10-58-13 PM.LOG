@@ -1,0 +1,4 @@
+Change Component Designator: OldDesignator=hgfdvcs NewDesignator=12 Volt Buck Module
+Change Net Name : Old Net Name=Netbuck CIN_P New Net Name=Net12 Volt Buck Module_1
+Change Net Name : Old Net Name=Netbuck Cout_P New Net Name=Net12 Volt Buck Module_4
+Change Net Name : Old Net Name=NetBuck Inductor_1 New Net Name=Net12 Volt Buck Module_2

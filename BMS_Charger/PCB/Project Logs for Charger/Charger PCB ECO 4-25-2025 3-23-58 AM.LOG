@@ -1,0 +1,13 @@
+Added Component: Designator=Gate Driver (PCBComponent_1)
+Added Pin To Net: NetName=LO Pin=Gate Driver -1
+Added Pin To Net: NetName=GND Pin=Gate Driver -2
+Added Pin To Net: NetName=Net12V Regulator IC_2 Pin=Gate Driver -3
+Added Pin To Net: NetName=NetC2_1 Pin=Gate Driver -6
+Added Pin To Net: NetName=PWM Pin=Gate Driver -10
+Added Pin To Net: NetName=GND Pin=Gate Driver -11
+Added Pin To Net: NetName=PWM Pin=Gate Driver -12
+Added Pin To Net: NetName=NetC2_2 Pin=C2-2
+Added Pin To Net: NetName=NetC2_2 Pin=Gate Driver -5
+Added Net: Name=NetC2_2
+Added Member To Class: ClassName=Charger  Member=Component Gate Driver  Component_1
+Added Member To Class: ClassName=Charger  Member=Component  Rgate

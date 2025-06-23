@@ -1,0 +1,5 @@
+Removed Pin From Net: NetName=GND Pin=Charger Output-3
+Remove Class Member: Failed to remove class member
+Added Pin To Net: NetName=NetCout_P Pin=Cout-P
+Added Pin To Net: NetName=NetCout_P Pin=D1-C
+Added Net: Name=NetCout_P

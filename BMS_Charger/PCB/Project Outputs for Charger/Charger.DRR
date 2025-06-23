@@ -1,0 +1,24 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: Charger.PcbDoc   6/4/2025  10:50:18 PM
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : Charger.TXT
+ASCII RectHoles File : Charger-RectHoles.TXT
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      0.5mm (20mil)                                             Round             14        PTH        53.34mm (2.10inch)
+T2      0.8mm (31mil)                                             Round             6         PTH        58.39mm (2.30inch)
+T3      0.85mm (33mil)                                            Round             4         PTH        62.89mm (2.48inch)
+T4      0.9mm (35mil)                                             Round             3         PTH        5.08mm (0.20inch)
+T5      1.016mm (40mil)                                           Round             3         PTH        5.08mm (0.20inch)
+T6      1.05mm (41mil)                                            Round             8         PTH        129.51mm (5.10inch)
+T7      1.2mm (47mil)                                             Round             2         PTH        21.02mm (0.83inch)
+T8      1.2mm (47mil)                                             Rectangle         6         PTH        212.16mm (8.35inch)
+T9      1.5mm (59mil)                                             Round             6         PTH        104.16mm (4.10inch)
+T10     0.6mm (24mil)                                             Round             1         NPTH       0.00mm (0.00inch)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              53
+
+Total Processing Time (hh:mm:ss) : 00:00:00

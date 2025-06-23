@@ -1,0 +1,24 @@
+Removed Pin From Net: NetName=GND Pin=Charger Input -1
+Removed Pin From Net: NetName=Net12 VOLT BUCK _1 Pin=Charger Input -3
+Change Component Designator: OldDesignator=12 VOLT BUCK  NewDesignator=12 VOLT BUCK
+Change Component Designator: OldDesignator=Buck Inductor  NewDesignator=Buck Inductor
+Change Component Designator: OldDesignator= Cin NewDesignator=Cin
+Added Component: Designator=Charger Input(TE_1977477-3)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/1977477-3/TE+Connectivity+AMP+Connectors/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "TE Connectivity"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "1977477-3"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/1977477-3/TE+Connectivity+AMP+Connectors/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=Charger Input-1
+Added Pin To Net: NetName=Net12 VOLT BUCK _1 Pin=Charger Input-3
+Change Net Name : Old Net Name=Net12 VOLT BUCK _1 New Net Name=Net12 VOLT BUCK_1
+Change Net Name : Old Net Name=Net12 VOLT BUCK _2 New Net Name=Net12 VOLT BUCK_2
+Change Net Name : Old Net Name=Net12 VOLT BUCK _4 New Net Name=Net12 VOLT BUCK_4
+Change Class Name : Old Net Name=Charger New Net Name=Charger 
+Added Member To Class: ClassName=Charger  Member=Component 12 VOLT BUCK LM2596HV-12
+Added Member To Class: ClassName=Charger  Member=Component Buck Inductor
+Added Member To Class: ClassName=Charger  Member=Component Charger Input 1977477-3
+Added Member To Class: ClassName=Charger  Member=Component Cin 220uF
+Added Member To Class: ClassName=Charger  Member=Component  Rgate
+Change Room Name: Old Name=Charger New Name=Charger 

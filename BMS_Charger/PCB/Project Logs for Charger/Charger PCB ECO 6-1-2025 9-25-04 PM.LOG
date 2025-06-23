@@ -1,0 +1,10 @@
+Removed Pin From Net: NetName=Net12 VOLT BUCK_1 Pin=COIL-1
+Removed Member From Class: ClassName=Charger  Member=COIL
+Added Component: Designator=COIL (PCBComponent_1)
+Added Pin To Net: NetName=Net12 VOLT BUCK_1 Pin=COIL -1
+Added Pin To Net: NetName=NetCOIL _2 Pin=COIL -2
+Added Pin To Net: NetName=NetCOIL _2 Pin=D1-A
+Added Pin To Net: NetName=NetCOIL _2 Pin=Mosfet-D
+Added Net: Name=NetCOIL _2
+Added Member To Class: ClassName=Charger  Member=Component buck Cout 470uF
+Added Member To Class: ClassName=Charger  Member=Component COIL  200uH

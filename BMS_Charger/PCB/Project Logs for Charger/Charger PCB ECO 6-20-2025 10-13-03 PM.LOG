@@ -1,0 +1,7 @@
+Added Component: Designator=COIL(PCBComponent_1)
+Added Pin To Net: NetName=Net12 Volt Buck Module_1 Pin=COIL-1
+Added Pin To Net: NetName=NetCOIL_2 Pin=COIL-2
+Added Pin To Net: NetName=NetCOIL_2 Pin=D1-A
+Added Pin To Net: NetName=NetCOIL_2 Pin=Mosfet-D
+Added Net: Name=NetCOIL_2
+Added Member To Class: ClassName=Charger  Member=Component COIL Component_1

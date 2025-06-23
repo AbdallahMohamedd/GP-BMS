@@ -1,0 +1,31 @@
+Removed Pin From Net: NetName=GND Pin=Charger Input-1
+Removed Pin From Net: NetName=Net12 Volt Buck Module_1 Pin=Charger Input-3
+Remove Class Member: Failed to remove class member
+Change Component Comment : Designator= Old Comment=10 ohm New Comment=Rgate
+Change Component Comment : Designator=Charger Output Old Comment=42.5-60 v New Comment=42.5-60v
+Change Component Comment : Designator=COIL  Old Comment=220uH New Comment=200uH
+Change Component Designator: OldDesignator=COIL  NewDesignator=COIL
+Change component parameters: Designator = "C3" ("C3"); Footprint = "CAPR5-4X5"; UniqueID = "\VVIPKHZV" ("\VVIPKHZV")
+Change component parameters (AddParameter): Name = "PackageDescription"; Value = "Capacitor; 2 Leads"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "PackageReference"; Value = "CAPR5-4X5"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Published"; Value = "23-Sep-2002"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=Charger Input.(TE_1977477-3)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/1977477-3/TE+Connectivity+AMP+Connectors/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "TE Connectivity"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "1977477-3"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/1977477-3/TE+Connectivity+AMP+Connectors/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=Charger Input.-1
+Added Pin To Net: NetName=Net12 Volt Buck Module_1 Pin=Charger Input.-3
+Change Net Name : Old Net Name=NetCOIL _2 New Net Name=NetCOIL_2
+Change Class Name : Old Net Name=Charger New Net Name=Charger 
+Added Member To Class: ClassName=Charger  Member=Component 12 Volt Buck Module Component_1
+Added Member To Class: ClassName=Charger  Member=Component buck Cout 470uF
+Added Member To Class: ClassName=Charger  Member=Component C2 0.1UF
+Added Member To Class: ClassName=Charger  Member=Component Charger Input. 42.5v
+Added Member To Class: ClassName=Charger  Member=Component COIL 200uH
+Added Member To Class: ClassName=Charger  Member=Component  Rgate
+Change Room Name: Old Name=Charger New Name=Charger 

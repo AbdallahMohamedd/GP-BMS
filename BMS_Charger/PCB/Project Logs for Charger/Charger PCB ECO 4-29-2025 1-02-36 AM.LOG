@@ -1,0 +1,120 @@
+Removed Pin From Net: NetName=GND Pin=12V CONNECTOR-3
+Removed Pin From Net: NetName=Net12V Regulator IC_2 Pin=12V Regulator IC-2
+Removed Pin From Net: NetName=GND Pin=12V Regulator IC-3
+Removed Pin From Net: NetName=GND Pin=Charger Input-1
+Removed Pin From Net: NetName=GND Pin=Cin-N
+Removed Member From Class: ClassName=Charger Member=12V CONNECTOR
+Removed Member From Class: ClassName=Charger Member=12V Regulator IC
+Removed Member From Class: ClassName=Charger Member=Cin
+Change Component Footprint: Designator=Cout Old Footprint=CAPPRD750W80D1800H1700 New Footprint=CAPPRD500W50D500H1100
+Change Component Footprint: Designator=Charger Output Old Footprint=HDR1X3 New Footprint=TE_1977477-3
+Change Component Comment : Designator=Cout Old Comment=420UF New Comment=470uF
+Change Component Comment : Designator=Charger Output Old Comment=Header 3 New Comment=1977477-3
+Change Component Comment : Designator=D1 Old Comment=SR320 New Comment=SR360
+Change Component Designator: OldDesignator=Gate Driver  NewDesignator=Gate Driver
+Change component parameters: Designator = "Cout" ("Cout"); Footprint = "CAPPRD750W80D1800H1700"; UniqueID = "\NQPHFHXY" ("\NQPHFHXY")
+Change component parameters (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/EEUFS0J221B/Panasonic/view-part/?ref=eda"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MF"; Value = "Panasonic"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MP"; Value = "EEUFS0J221B"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package"; Value = "RADIAL-2 Panasonic"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/EEUFS0J221B/Panasonic/view-part/?ref=snap"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Change component parameters: Designator = "Charger Output" ("Charger Output"); Footprint = "HDR1X3"; UniqueID = "\IFXUKZPR" ("\IFXUKZPR")
+Change component parameters (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/1977477-3/TE+Connectivity+AMP+Connectors/view-part/?ref=eda"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MF"; Value = "TE Connectivity"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "MP"; Value = "1977477-3"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/1977477-3/TE+Connectivity+AMP+Connectors/view-part/?ref=snap"; VariantName = "[No Variations]"
+Change component parameters (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=12 VOLT BUCK (PCBComponent_1)
+Added Component: Designator=buck Cin(CAPPRD500W50D500H1100)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/EEUFS0J221B/Panasonic/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Panasonic"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "EEUFS0J221B"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "RADIAL-2 Panasonic"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/EEUFS0J221B/Panasonic/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=buck Cout(CAPPRD500W50D500H1100)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/EEUFS0J221B/Panasonic/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Panasonic"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "EEUFS0J221B"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "RADIAL-2 Panasonic"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/EEUFS0J221B/Panasonic/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=Buck Inductor (AXIAL-0.4)
+Add component (AddParameter): Name = "LatestRevisionDate"; Value = "17-Jul-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "LatestRevisionNote"; Value = "Re-released for DXP Platform."; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageDescription"; Value = "Axial Device, Thru-Hole; 2 Leads; 0.4 in Pin Spacing"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "AXIAL-0.4"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "8-Jun-2000"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = "33UH "; VariantName = "[No Variations]"
+Added Component: Designator=C4(CAPR5-4X5)
+Add component (AddParameter): Name = "PackageDescription"; Value = "Capacitor; 2 Leads"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "PackageReference"; Value = "CAPR5-4X5"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Published"; Value = "23-Sep-2002"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Publisher"; Value = "Altium Limited"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = "0.1UF"; VariantName = "[No Variations]"
+Added Component: Designator=Charger Input (TE_1977477-3)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/1977477-3/TE+Connectivity+AMP+Connectors/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "TE Connectivity"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "1977477-3"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "None"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/1977477-3/TE+Connectivity+AMP+Connectors/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator= Cin(CAPPRD500W50D500H1100)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/EEUFS0J221B/Panasonic/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Panasonic"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "EEUFS0J221B"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "RADIAL-2 Panasonic"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/EEUFS0J221B/Panasonic/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Component: Designator=D3(DIOAD1990W125L900D530)
+Add component (AddParameter): Name = "Check_prices"; Value = "https://www.snapeda.com/parts/SR320/Taiwan+Semiconductor/view-part/?ref=eda"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MF"; Value = "Taiwan Semiconductor"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "MP"; Value = "SR320"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Package"; Value = "DO-201AD Taiwan Semiconductor"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "SnapEDA_Link"; Value = "https://www.snapeda.com/parts/SR320/Taiwan+Semiconductor/view-part/?ref=snap"; VariantName = "[No Variations]"
+Add component (AddParameter): Name = "Value"; Value = ""; VariantName = "[No Variations]"
+Added Pin To Net: NetName=GND Pin=-1
+Added Pin To Net: NetName=GND Pin=12 VOLT BUCK -3
+Added Pin To Net: NetName=Net12V Regulator IC_2 Pin=12 VOLT BUCK -4
+Added Pin To Net: NetName=GND Pin=12 VOLT BUCK -5
+Added Pin To Net: NetName=GND Pin=buck Cin-N
+Added Pin To Net: NetName=GND Pin=buck Cout-N
+Added Pin To Net: NetName=Net12V Regulator IC_2 Pin=buck Cout-P
+Added Pin To Net: NetName=Net12V Regulator IC_2 Pin=Buck Inductor -2
+Added Pin To Net: NetName=GND Pin=Charger Input -1
+Added Pin To Net: NetName=GND Pin= Cin-N
+Added Pin To Net: NetName=GND Pin=D3-A
+Added Pin To Net: NetName=GND Pin=Gate Driver-1
+Change Net Name : Old Net Name=GND New Net Name=LO
+Change Net Name : Old Net Name=Net12V Regulator IC_2 New Net Name=Net12 VOLT BUCK _4
+Added Pin To Net: NetName=Net12 VOLT BUCK _1 Pin=12 VOLT BUCK -1
+Added Pin To Net: NetName=Net12 VOLT BUCK _1 Pin= Cin-P
+Added Pin To Net: NetName=Net12 VOLT BUCK _1 Pin=buck Cin-P
+Added Pin To Net: NetName=Net12 VOLT BUCK _1 Pin=Charger Input -3
+Added Pin To Net: NetName=Net12 VOLT BUCK _1 Pin=COIL-1
+Added Net: Name=Net12 VOLT BUCK _1
+Added Pin To Net: NetName=Net12 VOLT BUCK _2 Pin=12 VOLT BUCK -2
+Added Pin To Net: NetName=Net12 VOLT BUCK _2 Pin=Buck Inductor -1
+Added Pin To Net: NetName=Net12 VOLT BUCK _2 Pin=D3-C
+Added Net: Name=Net12 VOLT BUCK _2
+Added Pin To Net: NetName=NetC4_1 Pin=C4-1
+Added Pin To Net: NetName=NetC4_1 Pin=Gate Driver-9
+Added Net: Name=NetC4_1
+Added Pin To Net: NetName=NetC4_2 Pin=C4-2
+Added Pin To Net: NetName=NetC4_2 Pin=Gate Driver-13
+Added Net: Name=NetC4_2
+Change Class Name : Old Net Name=Charger New Net Name=Charger 
+Added Member To Class: ClassName=Charger  Member=Component 12 VOLT BUCK  LM2596HV-12
+Added Member To Class: ClassName=Charger  Member=Component buck Cin 470uF
+Added Member To Class: ClassName=Charger  Member=Component buck Cout 470uF
+Added Member To Class: ClassName=Charger  Member=Component Buck Inductor 
+Added Member To Class: ClassName=Charger  Member=Component C4
+Added Member To Class: ClassName=Charger  Member=Component Charger Input  1977477-3
+Added Member To Class: ClassName=Charger  Member=Component  Cin 220uF
+Added Member To Class: ClassName=Charger  Member=Component D3 SR360
+Added Member To Class: ClassName=Charger  Member=Component Gate Driver Component_1
+Added Member To Class: ClassName=Charger  Member=Component  Rgate
+Change Room Name: Old Name=Charger New Name=Charger 

@@ -1,0 +1,5 @@
+Change Component Designator: OldDesignator=12V Regulator IC  NewDesignator=12V Regulator IC
+Change Component Designator: OldDesignator=Mosfet  NewDesignator=Mosfet
+Change Net Name : Old Net Name=Net12V Regulator IC _2 New Net Name=Net12V Regulator IC_2
+Added Member To Class: ClassName=Charger  Member=Component COIL Component_1
+Added Member To Class: ClassName=Charger  Member=Component  Rgate

@@ -1,0 +1,2 @@
+Change Component Comment : Designator=12 VOLT BUCK Old Comment=LM2596HV-12 New Comment=Component_1
+Added Member To Class: ClassName=Charger  Member=Component C2
