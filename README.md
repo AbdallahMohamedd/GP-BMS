@@ -141,12 +141,12 @@ LICENSE
 
 1. Clone the repo  
    ```bash
-   git clone https://github.com/your-username/your-bms-repo.git
+   git clone https://github.com/AbdallahMohamedd/gp.git
    ```
 
 2. Open the Simulink model under `/Matlab_Model` to simulate battery behavior and SOC estimation.
 
-3. For firmware development, use the source files under `/Software_Firmware` with **MCUXpresso** or **Keil** toolchain.
+3. For firmware development, use the source files under `/Software_Firmware` with **MCUXpresso** toolchain.
 
 ---
 
