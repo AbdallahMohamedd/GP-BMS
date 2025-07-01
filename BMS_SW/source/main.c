@@ -11,11 +11,11 @@
 #include "fsl_port.h"
 #include "fsl_pit.h"
 #include "fsl_device_registers.h"
-#include "fsl_adc16.h"
 // ----------------------------------------------------------------------------
 #include "Platform/pcconf.h"
 #include "source/COTs/BMSDataBase/Inc/database.h"
 // ----------------------------------------------------------------------------
+uint16_t falg_temp = 0;
 #define CELL_BATTERY_CAPACITY_AH 1.5
 #define CELL_OCV_FULL 4.2
 #define CELL_OCV_EMPTY 3.0
@@ -63,75 +63,6 @@ static uint32_t prev_time;
 static uint32_t u32msCntDown;
 extern const SsysConf_t CONF33771TPL[];
 
-// ----------------------------------------------------------------------------
-/*! \brief Default Pack Controller Configuration
- *
- * will be used only once after first start. Then the configuration will be stored
- * in the Flash and loaded from Flash afterwards.
- */
-//---------------------------ADC-----------------------------------------------------
-#define DEMO_ADC16_BASE ADC0
-#define DEMO_ADC16_CHANNEL_GROUP 0U
-//#define DEMO_ADC16_USER_CHANNEL 9U  // Choose your channel based on connection
-
-#define SERIES_RESISTOR 100000.0      // 100kΩ fixed resistor
-#define NOMINAL_RESISTANCE 100000.0   // 100kΩ at 25°C
-#define NOMINAL_TEMPERATURE 25.0      // 25°C
-#define BETA_COEFFICIENT 3950.0       // Adjust based on your thermistor spec
-#define ADC_MAX 65535.0               // 16-bit ADC
-#define VREF 3.3                     // Reference voltage (typically 3.3V)
-
-/*******************************************************************************
- * Prototypes
- ******************************************************************************/
-double Thermistor(uint16_t adc_value);
-
-/*******************************************************************************
- * Code
- ******************************************************************************/
-double Thermistor(uint16_t adc_value)
-{
-    double v_in = (adc_value / ADC_MAX) * VREF;
-    double resistance = SERIES_RESISTOR * ((VREF-v_in)/v_in);
-
-    double steinhart = resistance / NOMINAL_RESISTANCE;     // (R/R0)
-    steinhart = log(steinhart);                             // ln(R/R0)
-    steinhart /= BETA_COEFFICIENT;                          // 1/B * ln(R/R0)
-    steinhart += 1.0 / (NOMINAL_TEMPERATURE + 273.15);      // + (1/To)
-    steinhart = 1.0 / steinhart;                            // Invert to Kelvin
-    steinhart -= 273.15;                                    // Convert to Celsius
-
-    return steinhart;
-}
-void ADC_Init(void)
-{
-    adc16_config_t adc16ConfigStruct;
-
-    ADC16_GetDefaultConfig(&adc16ConfigStruct);
-    adc16ConfigStruct.resolution = kADC16_ResolutionSE16Bit;
-    adc16ConfigStruct.referenceVoltageSource = kADC16_ReferenceVoltageSourceVref;  // External Vref (3.3V typical)
-    ADC16_Init(DEMO_ADC16_BASE, &adc16ConfigStruct);
-    ADC16_EnableHardwareTrigger(DEMO_ADC16_BASE, false);  // Software trigger
-}
-uint16_t ADC_Read(uint32_t channel)
-{
-    adc16_channel_config_t adc16ChannelConfigStruct = {0};
-    adc16ChannelConfigStruct.channelNumber = channel;
-    adc16ChannelConfigStruct.enableInterruptOnConversionCompleted = false;
-
-#if defined(FSL_FEATURE_ADC16_HAS_DIFF_MODE) && FSL_FEATURE_ADC16_HAS_DIFF_MODE
-    adc16ChannelConfigStruct.enableDifferentialConversion = false;
-#endif
-
-    ADC16_SetChannelConfig(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP, &adc16ChannelConfigStruct);
-
-    while (0U == (kADC16_ChannelConversionDoneFlag &
-                  ADC16_GetChannelStatusFlags(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP)))
-    {
-    }
-
-    return ADC16_GetChannelConversionValue(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP);
-}
 
 //---------------------------------------------------------
 TYPE_PC_CONFIG const defPCConfig = {
@@ -152,6 +83,7 @@ TYPE_PC_CONFIG const defPCConfig = {
 TYPE_INTERFACE _interface = IntTPL; //!< local copy of interface type
 TYPE_EVB _evb = EVB_TypeArd;		//!< local copy of evb type
 // ----------------------------------------------------------------------------
+
 int main(void)
 {
 	static TYPE_BMS bms;
@@ -167,7 +99,7 @@ int main(void)
 	bool bBCCFault;
 	uint32_t timeStamp;
 
-         	if (FALSE == PackCrtlConfigRead(&pcconf, defPCConfig))
+	if (FALSE == PackCrtlConfigRead(&pcconf, defPCConfig))
 	{
 		while (1)
 			DONOTHING(); // how to handle this error?
@@ -178,23 +110,21 @@ int main(void)
 	Board_InitHW();
 
 	DelayInit();
-	// TPM0_CH1_PWM_Init();
 	fanCtrl_fan1Init();
 	fanCtrl_fan2Init();
-	fanCtrl_fan1SetDuty(59);
-	fanCtrl_fan2SetDuty(95);
-//	fanCtrl_fan1SetDuty(80);
-//	fanCtrl_fan2SetDuty(60);
-	//TPM0->SC |= TPM_SC_CMOD(1); // Start counter when ready
-	// PWM_Init();
-
 	ADC_Init();
-   ScreenIF_Init();
-	//dataMonitor_balancingStatus(0x000F);
-	//Delay(100000000);
-	//uint16_t ocv_values[14] = 	rawResults[0].u16CellVoltage[14];
-	//TPM0->SC |= TPM_SC_CMOD(1); // Start counter when ready
-	// dataMonitor_clearScreen();
+	ScreenIF_Init();
+	DataMonitor_startUp();
+
+	// PIT set lower prio by setting higher value
+	NVICSetIrqPrio(SPI0_IRQ, IP_PRIO_1);
+	NVICSetIrqPrio(SPI1_IRQ, IP_PRIO_1);
+	NVICSetIrqPrio(PIT_IRQ, IP_PRIO_1);
+	// setup pit for 1ms timing
+	PIT_LDVAL0 = BUSFREQ / 1000;						   // timer ch0 every 0.001 second
+	PIT_TCTRL0 |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK; // enable IRQ and timer ch0
+	NVICEnIrq(PIT_IRQ);
+
 	GPIO_PinInit(GPIOE, 20U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
 	GPIO_PinInit(GPIOE, 21U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
 	GPIO_PinInit(GPIOE, 22U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
@@ -202,33 +132,15 @@ int main(void)
 	GPIO_PinInit(GPIOE, 29U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
 	GPIO_PinInit(GPIOE, 30U, &(gpio_pin_config_t){kGPIO_DigitalInput, 0}); // Blue LED
 
-
-	//   GPIO_WritePinOutput(GPIOC, 2U, 0);
-	//   Delayms(3*500);
-	//   GPIO_WritePinOutput(GPIOC, 2U, 1);
-	//GPIO_ReadPinInput(GPIOE, 30U);
 	PRINTF("Board Initialized.\n\r\r");
-	DataMonitor_startUp();
 	bms.Interface = pcconf.IntType;
 	bms.EVB = pcconf.EvbType;
 	bms.NoClusters = pcconf.NoCluster;
 	bms.CIDcurrent = pcconf.CIDcurrent;
 	bms.Status = BMS_Init;
 
-	// PIT set lower prio by setting higher value
-	NVICSetIrqPrio(SPI0_IRQ, IP_PRIO_1);
-	NVICSetIrqPrio(SPI1_IRQ, IP_PRIO_1);
-	NVICSetIrqPrio(PIT_IRQ, IP_PRIO_1);
-
-	// setup pit for 1ms timing
-	PIT_LDVAL0 = BUSFREQ / 1000;						   // timer ch0 every 0.001 second
-	PIT_TCTRL0 |= PIT_TCTRL_TIE_MASK | PIT_TCTRL_TEN_MASK; // enable IRQ and timer ch0
-	NVICEnIrq(PIT_IRQ);
 
 	LED_RED_On();
-	// SOC = initialSOC(30); // Abdullah
-
-	// DataMonitor_lcd(50, 50, 2, 25, 1, 0); // Abdullah
 
 	slaveIF_initDriver(&(bms.Interface));
 	slaveIF_initCluster(&(cluster[0])); // just tag id is needed for slaveIF_readReg()
@@ -236,64 +148,40 @@ int main(void)
 	u4TagID = 1;
 	gu4CIDSelected = 1;
 	cidRoundRobin = 1;
-	uint16_t yarab = 600;
 	float test_cell_volrage[14];
-	//	while(1)
-	//	{
-	//
 
-	//		PRINTF("YARAB:30%d\ \r\r\n",GPIO_ReadPinInput(GPIOE, 30U));
-	//
-	//		PRINTF("YARAB:23%d\ \r\r\n",GPIO_ReadPinInput(GPIOE, 23U));
-	//
-	//		PRINTF("YARAB:29%d\ \r\r\n",GPIO_ReadPinInput(GPIOE, 29U));
-	//		if(GPIO_ReadPinInput(GPIOE, 29U))
-	//					dataMonitor_socDisp(30);
-	//		if(GPIO_ReadPinInput(GPIOE, 23U))
-	//			dataMonitor_socDisp(55);
-	//}
-	while(1)
+	while (1)
 	{
-//		uint16_t adcValue_1 = ADC_Read(9);
-//		uint16_t adcValue_2 = ADC_Read(8);
-//		uint16_t adcValue_3 = ADC_Read(5);
-//
-//    double temperature_1C = Thermistor(adcValue_1);
-   // double temperature_2C = Thermistor(adcValue_2);
-   // double temperature_3C = Thermistor(adcValue_3);
-    //PRINTF("ADC Value1: %5d  →  Temperature1: %.2f °C\r\n", adcValue_1, temperature_1C);
-  //  PRINTF("ADC Value2: %5d  →  Temperature2: %.2f °C\r\n", adcValue_2, temperature_2C);
-  //  PRINTF("ADC Value3: %5d  →  Temperature3: %.2f °C\r\n", adcValue_3, temperature_3C);
+		Abdullah_Temp((TYPE_MEAS_RESULTS_RAW *)&rawResults);
+		if ((bms.Status == BMS_Error)&&(falg_temp))
+		{
+			if (thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[1]) < 40)
+			{
+				falg_temp = 0;
+				bms.Status = BMS_Init;
+				fanCtrl_fan1SetDuty(0);
+				fanCtrl_fan2SetDuty(0);
+			}
+		}
+		if (thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[1]) >= 40)
+		{
+			falg_temp = 1;
+			fanCtrl_fan1SetDuty(0);
+			fanCtrl_fan2SetDuty(51);
+			bms.Status = BMS_Error; // something failed
+			u32msCntDown = 1000;
+		}
 
-		//fanCtrl_fan1SetDuty(80);
-		//fanCtrl_fan2SetDuty(60);
-//		if (faultFlag)
-//		{
-//			fanCtrl_fan1SetDuty(0);
-//			fanCtrl_fan2SetDuty(0);
-//			dataMonitor_faultDisp(FaultStatusActive);
-//			bms.Status = BMS_Error;
-//		}
-//		DebugInfo_PrintFaultReason(&StatusBits[0]);
-//		//		prev_ccounter = rawResults.s32CCCounter;
+
+
+\
+		//		DebugInfo_PrintFaultReason(&StatusBits[0]);
+		//		//		prev_ccounter = rawResults.s32CCCounter;
 		//		prev_samples = rawResults.u16CCSamples;
 		//		PRINTF("Prev sample = %d\r\r\n", prev_samples);
 		//		PRINTF("prev_ccounter = %d\r\r\n", prev_ccounter);
 
-		//		if(yarab >= 100)
-		//		{
-		//			yarab = 0;
-		//			PRINTF("RESET FAN \r\r\n");
-		//		}
-		//
-		//		TPM0_CH1_SetDutyCycle(yarab);
-		//		PRINTF("RUNNING FAN WITH: %d\r\r\n",yarab );
-		//		yarab = yarab+3;
 
-		//				fanCtrl_fan1SetDuty(40);
-		//				fanCtrl_fan2SetDuty(80);
-		// PRINTF("RUNNING FAN 1 WITH: %d\r\r\n", 40);
-		// PRINTF("RUNNING FAN 2 WITH: %d\r\r\n", 80);
 
 		u4TagID++;
 		u4TagID %= 16;
@@ -355,9 +243,6 @@ int main(void)
 			break;
 
 		case BMS_Running:
-			//! \todo how to start conversion? Global versus local? (global might overwrite ADC_CFG content)
-			// chosen to start ADCs individual, to not change ADC_CFG register
-			// in a normal system a global write to all MC33771B would be used
 			timeStamp = msTick;
 
 			slaveIF_clearError();
@@ -388,38 +273,15 @@ int main(void)
 				}
 			}
 
+
 			if (slaveIF_faultPinStatus())
 			{ // check FAULT pin status (after measurement, before Diagnostics)
-
+				DebugInfo_PrintFaultReason(&StatusBits[0]);
 				LEDHandler(Orange);
 			}
 			else
 			{
 				LEDHandler(Green);
-			}
-
-			// for debugging (output to GUI)
-			// only for the selected ID Status, Config and Thresholds are handled
-			if (!MC3377xGetStatus(gu4CIDSelected, &(StatusBits[gu4CIDSelected - 1])))
-			{
-				bms.Status = BMS_Error; // error handling
-				u32msCntDown = 1000;
-				StopOnError();
-			}
-
-			if (!MC3377xGetThresholds(gu4CIDSelected, cluster[gu4CIDSelected - 1].NoCTs, &(Thresholds[gu4CIDSelected - 1])))
-			{
-				bms.Status = BMS_Error; // error handling
-				u32msCntDown = 1000;
-				StopOnError();
-			}
-
-			// for debugging (output to GUI)
-			if (!MC3377xGetConfig(gu4CIDSelected, cluster[gu4CIDSelected - 1].NoCTs, &(ConfigBits[gu4CIDSelected - 1])))
-			{
-				bms.Status = BMS_Error; // error handling
-				u32msCntDown = 1000;
-				StopOnError();
 			}
 			break;
 
@@ -428,21 +290,11 @@ int main(void)
 			if (MC3377xCheck4Wakeup(bms.Interface))
 			{
 				bms.Status = BMS_Running;
-				//					if(bms->Interface==IntSPI)  {
-				//						// SPI-Ard only
-				//						SPIEnable();
-				//						slaveIF_SPICS(1);
-				//					}
-				//					if(bms->Interface==IntTPL)  {
-				//						// SPI-Ard only
-				//						slaveIF_SPICS(0);
-				//						SPITxEnable();
-				//						SPIRxEnable();
-				//					}
 			}
 			break;
 
 		case BMS_Error:
+			DebugInfo_PrintFaultReason(&StatusBits[0]);
 			LEDHandler(Red);
 			if (u32msCntDown == 0)
 			{
@@ -463,34 +315,23 @@ int main(void)
 			// all cids are measured
 			for (cid = 1; cid <= bms.NoClusters; cid++)
 			{
-				// DebugPrintMeasurements(cid, cluster[cid-1].NoCTs, &(rawResults[cid-1]));						// output values to host PC
-				//  DebugPrintMeasurements(1, cluster[0].NoCTs, &(rawResults[0])); // output values to host PC
-
 				uint16_t TeamStackVoltage = (rawResults[0].u16StackVoltage) * 2.44141 * 0.001;
-				//					dataMonitor_clearScreen();
-				//					ScreenIF_SetCursor(0, 1);
-				//					dataMonitor_socDisp(TeamStackVoltage);
-				//					ScreenIF_SetCursor(0, 0);
-				//					uint8_t SOCPack = calculateSOC(rawResults[0], TeamStackVoltage, msTick);
-				//					dataMonitor_socDisp(SOCPack);
-				//					uint8_t soc = initialSOC(TeamStackVoltage);
-				//				     ScreenIF_SetCursor(0, 2);
-				//					dataMonitor_socDisp(soc);
-				if(GPIO_ReadPinInput(GPIOE, 30U)==0)
+
+				if (GPIO_ReadPinInput(GPIOE, 30U) == 0)
 				{
 					dataMonitor_clearScreen();
 					ScreenIF_SetCursor(0, 0);
 					dataMonitor_packvoltage((float)TeamStackVoltage);
 					PRINTF("11\r\r\n");
 				}
-				if(GPIO_ReadPinInput(GPIOE, 29U)==0)
+				if (GPIO_ReadPinInput(GPIOE, 29U) == 0)
 				{
 					dataMonitor_balancingStatus(StatusBits->u16CBStatus);
 					PRINTF("22\r\r\n");
 				}
-				if(GPIO_ReadPinInput(GPIOE, 23U)==0)
+				if (GPIO_ReadPinInput(GPIOE, 23U) == 0)
 				{
-					for (int i= 0; i < 14; i++)
+					for (int i = 0; i < 14; i++)
 					{
 						test_cell_volrage[i] = rawResults->u16CellVoltage[i];
 					}
@@ -498,49 +339,51 @@ int main(void)
 					dataMonitor_packInfo(initialSOC_Pack(test_cell_volrage), 00, 0, 24, NormalMode, FaultStatusNone);
 					PRINTF("33\r\r\n");
 				}
-				if(GPIO_ReadPinInput(GPIOE, 22)==0)
+				if (GPIO_ReadPinInput(GPIOE, 22) == 0)
 				{
 					PRINTF("44\r\r\n");
 					dataMonitor_clearScreen();
 					ScreenIF_SetCursor(0, 0);
-					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
-					ScreenIF_SetCursor(0, 1);
-					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
-					ScreenIF_SetCursor(0, 2);
-					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
-					ScreenIF_SetCursor(10, 3);
-					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
-					ScreenIF_SetCursor(10, 0);
-					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
-					ScreenIF_SetCursor(10, 1);
-					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
-					ScreenIF_SetCursor(10, 2);
-					dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
+					// dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
+					// ScreenIF_SetCursor(0, 1);
+					dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
+					// ScreenIF_SetCursor(0, 2);
+					// dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
+					// ScreenIF_SetCursor(10, 3);
+					// dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
+					// ScreenIF_SetCursor(10, 0);
+					// dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
+					// ScreenIF_SetCursor(10, 1);
+					// dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
+					// ScreenIF_SetCursor(10, 2);
+					// dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
 				}
-				if(GPIO_ReadPinInput(GPIOE, 21)==0)
+				if (GPIO_ReadPinInput(GPIOE, 21) == 0)
 				{
 					dataMonitor_fanInfo(0, 0, ON, ON);
 					PRINTF("55\r\r\n");
 				}
+				// PRINTF("ADC Value1: %5d  →  Temperature1: %.2f °C\r\n", rawResults[0].u16ANVoltage[0], thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
+				//PRINTF("ADC Value1: %5d  →  Temperature1: %.2f °C\r\n", rawResults[0].u16ANVoltage[1], thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
 
-				//SlaveIF_enableCellBalancing(14, false, 0.5, cid);
-				//SlaveIF_enableCellBalancing(8,  false, 0.5, cid);
-//				dataMonitor_clearScreen();
-//				ScreenIF_SetCursor(0, 0);
-//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
-//				ScreenIF_SetCursor(0, 1);
-//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
-//				ScreenIF_SetCursor(0, 2);
-//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
-//				ScreenIF_SetCursor(10, 3);
-//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
-//				ScreenIF_SetCursor(10, 0);
-//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
-//				ScreenIF_SetCursor(10, 1);
-//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
-//				ScreenIF_SetCursor(10, 2);
-//				dataMonitor_tempDisp(tempSensorIf_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
-				// dataMonitor_modeDisp(SleepMode);
+				// SlaveIF_enableCellBalancing(14, false, 0.5, cid);
+				 SlaveIF_enableCellBalancing(8,  false, 0.5, cid);
+				//				dataMonitor_clearScreen();
+				//				ScreenIF_SetCursor(0, 0);
+				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
+				//				ScreenIF_SetCursor(0, 1);
+				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
+				//				ScreenIF_SetCursor(0, 2);
+				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[2]));
+				//				ScreenIF_SetCursor(10, 3);
+				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[3]));
+				//				ScreenIF_SetCursor(10, 0);
+				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[4]));
+				//				ScreenIF_SetCursor(10, 1);
+				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[5]));
+				//				ScreenIF_SetCursor(10, 2);
+				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[6]));
+				//  dataMonitor_modeDisp(SleepMode);
 				//					if (1)
 				//					{
 				//						//DataMonitor_lcd(99, 90, 55.5, 52, NormalMode, FaultStatusNone);
@@ -548,10 +391,9 @@ int main(void)
 				//					}
 				//					yarab++;
 				//					// uint16_t temp1 = rawResults[0].u16ANVoltage[1];
-				// dataMonitor_clearScreen();
-				// ScreenIF_SetCursor(0, 0);
-				// DataMonitor_lcd((tempSensorIf_Raw2Celsius(temp1)), 90, 55, 52, NormalMode, FaultStatusNone);
-
+				//  dataMonitor_clearScreen();
+				//  ScreenIF_SetCursor(0, 0);
+				//  DataMonitor_lcd((thermalManager_Raw2Celsius(temp1)), 90, 55, 52, NormalMode, FaultStatusNone);
 
 				// dataMonitor_socDisp(22);
 				//  calculate average current based on coulombcounter
@@ -655,20 +497,20 @@ uint16_t gu16Len;
 #define MAX_NO_OF_CTx 14 // CT1..14
 #define NO_OF_ANx 7		 // AN0..6
 
-typedef struct {
+typedef struct
+{
 	float soc; // SoC in percentage (0.0 to 100.0)
 	float ocv; // OCV in volts
 } SocOcvPair;
 
-
 // Lookup Table (50 points from Excel data)
 #define TABLE_SIZE 50
 const SocOcvPair soc_ocv_table[TABLE_SIZE] = {
-		{0.0539138, 2.56124}, // SoC = 0.0539138053%, OCV = 2.56124 V
-		{2.0076153, 2.98329}, // SoC = 2.007615325%, OCV = 2.98329 V
-		{4.0428615, 3.22326}, // SoC = 4.0428614752%, OCV = 3.22326 V
-		{6.0981076, 3.27666}, // SoC = 5.9965629949%, OCV = 3.27666 V
-		{8.1133538, 3.30754}, // SoC = 8.1133537757%, OCV = 3.30754 V
+		{0.0539138, 2.56124},  // SoC = 0.0539138053%, OCV = 2.56124 V
+		{2.0076153, 2.98329},  // SoC = 2.007615325%, OCV = 2.98329 V
+		{4.0428615, 3.22326},  // SoC = 4.0428614752%, OCV = 3.22326 V
+		{6.0981076, 3.27666},  // SoC = 5.9965629949%, OCV = 3.27666 V
+		{8.1133538, 3.30754},  // SoC = 8.1133537757%, OCV = 3.30754 V
 		{10.1282620, 3.33135}, // SoC = 10.1282629646%, OCV = 3.33135 V
 		{12.1835091, 3.35966}, // SoC = 12.1835091148%, OCV = 3.35966 V
 		{14.2387553, 3.38732}, // SoC = 14.238755265%, OCV = 3.38732 V
@@ -716,29 +558,35 @@ const SocOcvPair soc_ocv_table[TABLE_SIZE] = {
 		{100.0000000, 4.18398} // SoC = 100.9967314756% (clamped), OCV = 4.18398 V
 };
 
-float initialSOC_Pack(float ocv_values[14]) {
+float initialSOC_Pack(float ocv_values[14])
+{
 	float soc_values[14];
-	for(int i = 0; i < 14; i++)
+	for (int i = 0; i < 14; i++)
 	{
 		ocv_values[i] = ocv_values[i] * 0.00015258789;
 	}
 	// Calculate SOC for each OCV
-	for (uint32_t j = 0; j < 14; j++) {
+	for (uint32_t j = 0; j < 14; j++)
+	{
 		float ocv = ocv_values[j];
 
 		// Handle out-of-bounds OCV
-		if (ocv <= soc_ocv_table[0].ocv) {
+		if (ocv <= soc_ocv_table[0].ocv)
+		{
 			soc_values[j] = soc_ocv_table[0].soc;
 			continue;
 		}
-		if (ocv >= soc_ocv_table[TABLE_SIZE - 1].ocv) {
+		if (ocv >= soc_ocv_table[TABLE_SIZE - 1].ocv)
+		{
 			soc_values[j] = soc_ocv_table[TABLE_SIZE - 1].soc;
 			continue;
 		}
 
 		// Find the interval and perform linear interpolation
-		for (uint32_t i = 0; i < TABLE_SIZE - 1; i++) {
-			if (ocv >= soc_ocv_table[i].ocv && ocv < soc_ocv_table[i + 1].ocv) {
+		for (uint32_t i = 0; i < TABLE_SIZE - 1; i++)
+		{
+			if (ocv >= soc_ocv_table[i].ocv && ocv < soc_ocv_table[i + 1].ocv)
+			{
 				float ocv1 = soc_ocv_table[i].ocv;
 				float ocv2 = soc_ocv_table[i + 1].ocv;
 				float soc1 = soc_ocv_table[i].soc;
@@ -751,21 +599,26 @@ float initialSOC_Pack(float ocv_values[14]) {
 
 	// Calculate average SOC
 	float sum = 0.0;
-	for (uint32_t j = 0; j < 14; j++) {
+	for (uint32_t j = 0; j < 14; j++)
+	{
 		sum += soc_values[j];
 	}
 	return sum / 14.0;
-
 }
 
-float initialSOC_Cell(float ocv) {
+float initialSOC_Cell(float ocv)
+{
 	// Handle out-of-bounds OCV
-	if (ocv <= soc_ocv_table[0].ocv) return soc_ocv_table[0].soc;
-	if (ocv >= soc_ocv_table[TABLE_SIZE - 1].ocv) return soc_ocv_table[TABLE_SIZE - 1].soc;
+	if (ocv <= soc_ocv_table[0].ocv)
+		return soc_ocv_table[0].soc;
+	if (ocv >= soc_ocv_table[TABLE_SIZE - 1].ocv)
+		return soc_ocv_table[TABLE_SIZE - 1].soc;
 
 	// Find the interval
-	for (uint32_t i = 0; i < TABLE_SIZE - 1; i++) {
-		if (ocv >= soc_ocv_table[i].ocv && ocv < soc_ocv_table[i + 1].ocv) {
+	for (uint32_t i = 0; i < TABLE_SIZE - 1; i++)
+	{
+		if (ocv >= soc_ocv_table[i].ocv && ocv < soc_ocv_table[i + 1].ocv)
+		{
 			float ocv1 = soc_ocv_table[i].ocv;
 			float ocv2 = soc_ocv_table[i + 1].ocv;
 			float soc1 = soc_ocv_table[i].soc;
@@ -788,31 +641,31 @@ float initialSOC_Cell(float ocv) {
  */
 /*float calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, uint32_t current_time)
 {
-     float capacityAh;
+	 float capacityAh;
 
-     if (voltage > 10)
-     {
-         capacityAh = PACK_BATTERY_CAPACITY_AH;
-     }
-     else
-     {
-         capacityAh = CELL_BATTERY_CAPACITY_AH;
-     }
+	 if (voltage > 10)
+	 {
+		 capacityAh = PACK_BATTERY_CAPACITY_AH;
+	 }
+	 else
+	 {
+		 capacityAh = CELL_BATTERY_CAPACITY_AH;
+	 }
 
-     // Calculate charge difference using Coulomb counter
-     float delta_charge_coulombs = (float)(rawResults.s32CCCounter) * 0.0001;  // Assuming V2RES = 0.0001V, adjust if different
-     float delta_time_seconds = (current_time - prev_time) / 1000.0;           // Convert ms to seconds
-     float deltaSOC = (delta_charge_coulombs / (capacityAh * 3600.0)) * 100.0; // Convert to Ah and percentage
+	 // Calculate charge difference using Coulomb counter
+	 float delta_charge_coulombs = (float)(rawResults.s32CCCounter) * 0.0001;  // Assuming V2RES = 0.0001V, adjust if different
+	 float delta_time_seconds = (current_time - prev_time) / 1000.0;           // Convert ms to seconds
+	 float deltaSOC = (delta_charge_coulombs / (capacityAh * 3600.0)) * 100.0; // Convert to Ah and percentage
 
-     SOC += deltaSOC;
-     prev_time = current_time;
+	 SOC += deltaSOC;
+	 prev_time = current_time;
 
 //     if (SOC > 100.0)
 //         SOC = 100.0;
 //     else if (SOC < 0.0)
 //         SOC = 0.0;
 
-     return SOC;
+	 return SOC;
  }
  */
 

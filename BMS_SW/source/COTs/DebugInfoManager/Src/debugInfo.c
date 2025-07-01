@@ -35,6 +35,7 @@ extern uint16_t faultFlag;
  */
 void DebugInfo_PrintFaultReason(TYPE_STATUS *faultData)
 {
+	dataMonitor_faultDisp(1);
 	if (faultData == NULL)
 	{
 		PRINTF("[ERROR] DebugInfo: Invalid fault data pointer!\r\r\n");
@@ -65,11 +66,9 @@ void DebugInfo_PrintFaultReason(TYPE_STATUS *faultData)
 		faultFlag++;
 
 	}
-	if (faultData->u16ANOtUt) //edit Abdullah
+	if (falg_temp)
 	{
-		PRINTF("FAULT: Over-Temperature detected. Affected sensors (bitmask): 0x%02X\r\r\n",
-				faultData->u16ANOtUt);
-
+		PRINTF("FAULT: Over-Temperature detected, in sensor no. 7\r\r\n");
 	}
 
 	// Check FAULT2-related faults

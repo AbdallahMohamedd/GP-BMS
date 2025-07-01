@@ -9,7 +9,7 @@
 #define COTS_BMSDATABASE_INC_DATABASE_H_
 #include <COTs/DebugInfoManager/Inc/debugInfo.h> // for memcmp
 #include <COTs/SlaveControlIF/Inc/slaveIF.h>
-#include <COTs/TempSensorIF/Inc/tempSens.h> // table for NTC resistor characteristics
+#include <COTs/ThermalManager/Inc/tempSens.h> // table for NTC resistor characteristics
 #include <tpm1.h>							// for Delay
 
 // ----------------------------------------------------------------------------
@@ -35,6 +35,7 @@
 #define S19SignExtend(s19) ((s19) & BIT(18)) ? (s19) | S19EXTENT : (s19) //!< macro to sign extend s19 bit values to int32_t
 #define S19_NMAX 0x00040000UL											 //!< -2^18   = -262144
 #define S19_MAX 0x0003FFFFUL											 //!< 2^18 -1 = 262143
+extern uint16_t falg_temp ;
 // ----------------------------------------------------------------------------
 /*! \brief enum for BMS modes
 
@@ -172,15 +173,14 @@ bool BMSInit(uint8_t NoOfNodes);
 // ----------------------------------------------------------------------------
 bool MC3377xConfig(uint8_t cid, const SsysConf_t conf[]);
 // ----------------------------------------------------------------------------
-bool MC3377xGetGUID(uint8_t cid, SclusterInfo_t *pCluster);
 bool MC3377xGetSiliconRevision(uint8_t cid, SclusterInfo_t *pCluster);
 bool MC3377xGetSiliconType(uint8_t cid, SclusterInfo_t *pCluster);
 // ----------------------------------------------------------------------------
 bool MC3377xGetRawMeasurements(uint8_t cid, uint8_t u4TagId, uint8_t NoCTs, TYPE_MEAS_RESULTS_RAW *RawMeasResults);
 bool MC3377xGetStatus(uint8_t cid, TYPE_STATUS *Status);
 bool MC3377xGetThresholds(uint8_t cid, uint8_t NoCTs, TYPE_THRESHOLDS *Threshold);
-bool MC3377xGetConfig(uint8_t cid, uint8_t NoCTs, TYPE_CONFIG *Config);
 // ----------------------------------------------------------------------------
 bool MC3377xReadFuseMirror(uint8_t cid, TYPE_FUSE_DATA *fusedata);
+bool Abdullah_Temp(TYPE_MEAS_RESULTS_RAW *RawMeasResults);
 
 #endif /* COTS_BMSDATABASE_INC_DATABASE_H_ */

@@ -57,28 +57,28 @@ volatile const uint8_t RCVALUELIST[] = {0x0, 0x1, 0x3, 0x2};
  */
 const SsysConf_t CONF33771TPL[] = {
     // Over/Under Voltage Thresholds
-    {TH_CT1, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT2, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT3, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT4, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT5, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT6, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT7, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT8, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT9, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT10, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT11, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT12, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT13, TH_OVUV_VALUE(3.5, 1.8)},
-    {TH_CT14, TH_OVUV_VALUE(3.5, 1.8)},
+    {TH_CT1, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT2, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT3, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT4, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT5, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT6, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT7, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT8, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT9, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT10, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT11, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT12, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT13, TH_OVUV_VALUE(4.1, 2.0)},
+    {TH_CT14, TH_OVUV_VALUE(4.1, 2.0)},
     // Over/Under Temperature Thresholds
-    {TH_AN0_OT, DEG30C},
-    {TH_AN1_OT, DEG30C},
-    {TH_AN2_OT, DEG30C},
-    {TH_AN3_OT, DEG30C},
-    {TH_AN4_OT, DEG30C},
-    {TH_AN5_OT, DEG30C},
-    {TH_AN6_OT, DEG30C},
+    {TH_AN0_OT, DEG50C},
+    {TH_AN1_OT, DEG50C},
+    {TH_AN2_OT, DEG50C},
+    {TH_AN3_OT, DEG50C},
+    {TH_AN4_OT, DEG50C},
+    {TH_AN5_OT, DEG50C},
+    {TH_AN6_OT, DEG50C},
     {TH_AN0_UT, DEG0C},
     {TH_AN1_UT, DEG0C},
     {TH_AN2_UT, DEG0C},
@@ -98,7 +98,7 @@ const SsysConf_t CONF33771TPL[] = {
     {OV_UV_EN, 0x3FFF},         // Enable OV & UV handling
     {SYS_CFG1, 0x9280},         // System configuration 1
     {SYS_CFG2, 0x6330},         // System configuration 2
-    {FAULT1_STATUS, 0xC000},    // Clear all bits except POR, Reset
+    {FAULT1_STATUS, 0},         // Clear all bits except POR, Reset
     {FAULT2_STATUS, 0},         // Clear all bits
     {FAULT3_STATUS, 0},         // Clear all bits
     {ADC_CFG, ADC_CFG_SETTING}, // Set ADC configuration

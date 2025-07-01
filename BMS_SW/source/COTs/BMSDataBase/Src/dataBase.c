@@ -29,6 +29,8 @@
 // --------------------------------------------------------------------
 // #include "mc3377x.h"
 #include "source/COTs/BMSDataBase/Inc/database.h"
+#include "fsl_adc16.h"
+
 // ----------------------------------------------------------------------------
 extern const uint16_t _TAGID_BCC14p2[];
 extern const uint16_t _TAGID_BCC14[];
@@ -54,6 +56,62 @@ extern const uint16_t _TAGID_BCC6[];
  * \b Note: works for TPL and SPI (only one node) interface
  *
  */
+
+//---------------------------ADC-----------------------------------------------------
+#define DEMO_ADC16_BASE ADC0
+#define DEMO_ADC16_CHANNEL_GROUP 0U
+// #define DEMO_ADC16_USER_CHANNEL 9U  // Choose your channel based on connection
+
+#define SERIES_RESISTOR 100000.0	// 100kΩ fixed resistor
+#define NOMINAL_RESISTANCE 100000.0 // 100kΩ at 25°C
+#define NOMINAL_TEMPERATURE 25.0	// 25°C
+#define BETA_COEFFICIENT 3950.0		// Adjust based on your thermalManager_Raw2Celsius spec
+#define ADC_MAX 65535.0				// 16-bit ADC
+#define VREF 3.3					// Reference voltage (typically 3.3V)
+#define PTB0_Channel 8
+#define PTB1_Channel 9
+#define PTD1_Channel 5
+#define PTD5_Channel 6
+#define PTD6_Channel 7
+#define PTD0_Channel 14
+
+/*******************************************************************************
+ * Prototypes
+ ******************************************************************************/
+
+/*******************************************************************************
+ * Code
+ ******************************************************************************/
+
+void ADC_Init(void)
+{
+	adc16_config_t adc16ConfigStruct;
+
+	ADC16_GetDefaultConfig(&adc16ConfigStruct);
+	adc16ConfigStruct.resolution = kADC16_ResolutionSE16Bit;
+	adc16ConfigStruct.referenceVoltageSource = kADC16_ReferenceVoltageSourceVref; // External Vref (3.3V typical)
+	ADC16_Init(DEMO_ADC16_BASE, &adc16ConfigStruct);
+	ADC16_EnableHardwareTrigger(DEMO_ADC16_BASE, false); // Software trigger
+}
+uint16_t ADC_Read(uint32_t channel)
+{
+	adc16_channel_config_t adc16ChannelConfigStruct = {0};
+	adc16ChannelConfigStruct.channelNumber = channel;
+	adc16ChannelConfigStruct.enableInterruptOnConversionCompleted = false;
+
+#if defined(FSL_FEATURE_ADC16_HAS_DIFF_MODE) && FSL_FEATURE_ADC16_HAS_DIFF_MODE
+	adc16ChannelConfigStruct.enableDifferentialConversion = false;
+#endif
+
+	ADC16_SetChannelConfig(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP, &adc16ChannelConfigStruct);
+
+	while (0U == (kADC16_ChannelConversionDoneFlag &
+				  ADC16_GetChannelStatusFlags(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP)))
+	{
+	}
+
+	return ADC16_GetChannelConversionValue(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP);
+}
 bool BMSInit(uint8_t NoOfNodes)
 {
 	uint8_t cid;
@@ -180,6 +238,18 @@ bool MC3377xADCIsConverting(uint8_t cid)
 	}
 }
 // ----------------------------------------------------------------------------
+
+bool Abdullah_Temp(TYPE_MEAS_RESULTS_RAW *RawMeasResults)
+{
+	RawMeasResults->u16ANVoltage[0] = ADC_Read(PTB0_Channel);
+	RawMeasResults->u16ANVoltage[1] = ADC_Read(PTB1_Channel);
+	RawMeasResults->u16ANVoltage[2] = ADC_Read(PTD1_Channel);
+	RawMeasResults->u16ANVoltage[3] = ADC_Read(PTD5_Channel);
+	RawMeasResults->u16ANVoltage[4] = ADC_Read(PTD6_Channel);
+	RawMeasResults->u16ANVoltage[5] = ADC_Read(PTD6_Channel);
+	RawMeasResults->u16ANVoltage[6] = ADC_Read(PTD0_Channel);
+}
+
 /*! \brief reads the measurement registers and return them as raw data in RawMeasResults
  *
  * @param cid        		cluster (CID) to handle
@@ -226,16 +296,6 @@ bool MC3377xGetRawMeasurements(uint8_t cid, uint8_t tagId, uint8_t NoCTs, TYPE_M
 			RawMeasResults->u16CellVoltage[u8Idx] = rdData[NoCTs - 1 - u8Idx] & 0x7FFF; // reverse order
 		}
 	}
-	// -----  MEAS_AN[6..0]  -----
-	if (slaveIF_readReg(cid, MEAS_AN6, 0x7, &rdData[0]))
-	{
-		u8Idx = 7;
-		while (u8Idx)
-		{
-			u8Idx--;
-			RawMeasResults->u16ANVoltage[u8Idx] = rdData[7 - 1 - u8Idx] & 0x7FFF; // reverse order
-		}
-	}
 
 	if (slaveIF_readReg(cid, MEAS_IC_TEMP, 0x3, &rdData[0]))
 	{
@@ -253,190 +313,7 @@ bool MC3377xGetRawMeasurements(uint8_t cid, uint8_t tagId, uint8_t NoCTs, TYPE_M
 
 	return !slaveIF_getError(NULL);
 }
-// ------------------------------------------------------------------
-/*! \brief Reads the General Universal ID (GUID)
- *
- * Reads the GUID (37 bit) of the cluster cid from Fuse Mirror memory (address 0x17..0x19).
- * Data is returned in pCluster.Guid
- *
- \b MC33771 RevA:
- |  UID [36:30]   |  UID [29:14]   |  UID [13:0]    |
- |:--------------:|:--------------:|:--------------:|
- | 0x17 [15:9]    | 0x18 [15:0]    | 0x19 [13:0]    |
- |  (7 bit)       |  (16 bit)      |  (14 bit)      |
 
-
-
-\b MC33772 RevA:
- |  UID [36:30]   |  UID [29:14]   |  UID [13:0]    |
- |:--------------:|:--------------:|:--------------:|
- | 0x13 [15:9]    | 0x14 [15:0]    | 0x15 [13:0]    |
- |  (7 bit)       |  (16 bit)      |  (5 bit)       |
-
-
-
- \b MC33771 RevB:
- |  UID [36:21]   |  UID [20:5]    |  UID [4:0]     |
- |:--------------:|:--------------:|:--------------:|
- | 0x18 [15:0]    | 0x19 [15:0]    | 0x1A [4:0]     |
- |  (16 bit)      |  (16 bit)      |  (5 bit)       |
-
-
- \b MC33772 RevB:
- |  UID [36:21]   |  UID [20:5]    |  UID [4:0]     |
- |:--------------:|:--------------:|:--------------:|
- | 0x10 [15:0]    | 0x11 [15:0]    | 0x12 [4:0]     |
- |  (16 bit)      |  (16 bit)      |  (5 bit)       |
-
- *
- *
- *
- *
- * @param cid		 cluster (CID) to handle
- * @param pCluster   pointer to cluster (only modifies pCluster.Guid)
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
- * \remarks
- * The clusters type and silicon revision must be known! (MC3377xGetSiliconRevision() must be called \b first!)
-  *
- * In case of not successful execution Guid is set to = 0x0000_0000
- *
- */
-bool MC3377xGetGUID(uint8_t cid, SclusterInfo_t *pCluster)
-{
-	uint16_t rdData[3];
-	uint8_t u8Adr;
-
-	pCluster->Guid = 0L;
-
-	if (CheckCID(cid))
-		return slaveIF_setError(ERR_WrongParam);
-	if (pCluster->Chip == Chip_Unknown)
-
-		return slaveIF_setError(ERR_WrongParam);
-
-	switch (pCluster->Chip)
-	{
-	case Chip_MC33771A:
-	case Chip_MC33771BM:
-		//		 \b MC33771 RevA:
-		//		 |  UID [36:30]   |  UID [29:14]   |  UID [13:0]    |
-		//		 |:--------------:|:--------------:|:--------------:|
-		//		 | 0x17 [15:9]    | 0x18 [15:0]    | 0x19 [13:0]    |
-		//		 |  (7 bit)       |  (16 bit)      |  (14 bit)      |
-
-		for (u8Adr = 0x17; u8Adr <= 0x19; u8Adr++)
-		{
-			slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
-			slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x17]);
-		}
-		if (slaveIF_getError(NULL))
-		{
-			pCluster->Guid = 0L;
-			return false;
-		}
-		else
-		{
-			pCluster->Guid = ((uint64_t)(rdData[0] & 0xFE00) << 21) | ((rdData[1] & 0xFFFF) << 14) | ((rdData[2] & 0x3FFF) << 0);
-			return true;
-		}
-		break;
-
-	case Chip_MC33771B:
-		//		 \b MC33771 RevB:
-		//		 |  UID [36:21]   |  UID [20:5]    |  UID [4:0]     |
-		//		 |:--------------:|:--------------:|:--------------:|
-		//		 | 0x18 [15:0]    | 0x19 [15:0]    | 0x1A [4:0]     |
-		//		 |  (16 bit)      |  (16 bit)      |  (5 bit)       |
-		for (u8Adr = 0x18; u8Adr <= 0x1A; u8Adr++)
-		{
-			slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
-			slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x18]);
-		}
-		if (slaveIF_getError(NULL))
-		{
-			pCluster->Guid = 0L;
-			return false;
-		}
-		else
-		{
-			pCluster->Guid = ((uint64_t)(rdData[0] & 0xFFFF) << 21) | ((rdData[1] & 0xFFFF) << 5) | ((rdData[2] & 0x001F) << 0);
-			return true;
-		}
-		break;
-
-	case Chip_MC33772A:
-	case Chip_MC33772BM:
-		//		\b MC33772 RevA:
-		//		 |  UID [36:30]   |  UID [29:14]   |  UID [13:0]    |
-		//		 |:--------------:|:--------------:|:--------------:|
-		//		 | 0x13 [15:9]    | 0x14 [15:0]    | 0x15 [13:0]    |
-		//		 |  (7 bit)       |  (16 bit)      |  (14 bit)       |
-
-		for (u8Adr = 0x13; u8Adr <= 0x15; u8Adr++)
-		{
-			slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
-			slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x13]);
-		}
-		if (slaveIF_getError(NULL))
-		{
-			pCluster->Guid = 0L;
-			return false;
-		}
-		else
-		{
-			pCluster->Guid = ((uint64_t)(rdData[0] & 0xFE00) << 21) | ((rdData[1] & 0xFFFF) << 14) | ((rdData[2] & 0x3FFF) << 0);
-			return true;
-		}
-		break;
-
-	case Chip_MC33772B:
-		//		\b MC33772 RevB:
-		//		 |  UID [36:21]   |  UID [20:5]    |  UID [4:0]     |
-		//		 |:--------------:|:--------------:|:--------------:|
-		//		 | 0x10 [15:0]    | 0x11 [15:0]    | 0x12 [4:0]     |
-		//		 |  (16 bit)      |  (16 bit)      |  (5 bit)       |
-		for (u8Adr = 0x10; u8Adr <= 0x12; u8Adr++)
-		{
-			slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
-			slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x10]);
-		}
-		if (slaveIF_getError(NULL))
-		{
-			pCluster->Guid = 0L;
-			return false;
-		}
-		else
-		{
-			pCluster->Guid = ((uint64_t)(rdData[0] & 0xFFFF) << 21) | ((rdData[1] & 0xFFFF) << 5) | ((rdData[2] & 0x001F) << 0);
-			return true;
-		}
-		break;
-
-	case Chip_Unknown:
-	default:
-		return slaveIF_setError(ERR_WrongParam);
-		break;
-	}
-
-	for (u8Adr = 0x17; u8Adr <= 0x19; u8Adr++)
-	{
-		slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), NULL);
-		slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &rdData[u8Adr - 0x17]);
-	}
-	if (slaveIF_getError(NULL))
-	{
-		pCluster->Guid = 0L;
-		return false;
-	}
-	else
-	{
-		pCluster->Guid = ((uint64_t)(rdData[0] & 0xFE00) << 21) | ((rdData[1] & 0xFFFF) << 14) | ((rdData[2] & 0x3FFF) << 0);
-		return true;
-	}
-}
 // ----------------------------------------------------------------------------
 /*! \brief Reads the silicon revision of the device
  *
@@ -647,18 +524,18 @@ bool MC3377xGetStatus(uint8_t cid, TYPE_STATUS *Status)
 	}
 	if (slaveIF_readReg(cid, CB_OPEN_FLT, 13, &rdData[0]))
 	{
-		Status->u16CBOpen = rdData[0];
-		Status->u16CBShort = rdData[1];
-		Status->u16CBStatus = rdData[2];
+		Status->u16CBOpen     = 0;
+		Status->u16CBShort    = 0;
+		Status->u16CBStatus   = rdData[2];
 
-		Status->u16GPIOStatus = rdData[5];
-		Status->u16ANOtUt = rdData[6];
-		Status->u16GPIOOpen = rdData[7];
-		Status->u16IStatus = rdData[8];
-		Status->u16Comm = rdData[9];
-		Status->u16Fault1 = rdData[10];
-		Status->u16Fault2 = rdData[11];
-		Status->u16Fault3 = rdData[12];
+		Status->u16GPIOStatus = 0;
+		Status->u16ANOtUt     = falg_temp;
+		Status->u16GPIOOpen   = 0;
+		Status->u16IStatus    = 0;
+		Status->u16Comm   	  = 0;
+		Status->u16Fault1 	  = rdData[10];
+		Status->u16Fault2     = rdData[11];
+		Status->u16Fault3     = 0;
 	}
 	if (slaveIF_readReg(cid, MEAS_ISENSE2, 1, &rdData[0]))
 	{
@@ -730,62 +607,7 @@ bool MC3377xGetThresholds(uint8_t cid, uint8_t NoCTs, TYPE_THRESHOLDS *Threshold
 	}
 	return !slaveIF_getError(NULL);
 }
-// ----------------------------------------------------------------------------
-/*! \brief reads the configuration registers and return them in Config
- *
- * @param cid         cluster (CID) to handle
- * @param NoCTs       number of cell terminals to handle
- * @param *Config     pointer to Config (return data)
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
- * \remarks
- * The Configuration data is only value if successfully executed (true).
- */
-bool MC3377xGetConfig(uint8_t cid, uint8_t NoCTs, TYPE_CONFIG *Config)
-{
-	uint16_t rdData[0x1A];
-	uint8_t u8Idx;
 
-	// burst read data
-	if (slaveIF_readReg(cid, INIT, 0xF, &rdData[0]))
-	{
-		Config->u16Init = rdData[0];
-		Config->u16SysCfgGlobal = rdData[1];
-		Config->u16SysCfg1 = rdData[2];
-		Config->u16SysCfg2 = rdData[3];
-		Config->u16SysDiag = rdData[4];
-		Config->u16AdcCfg = rdData[5];
-		Config->u16Adc2Comp = rdData[6];
-		Config->u16OvUvEn = rdData[7];
-	}
-	// burst read data
-	if (slaveIF_readReg(cid, GPIO_CFG1, 3, &rdData[0]))
-	{
-		Config->u16GPIOCfg1 = rdData[0];
-		Config->u16GPIOCfg2 = rdData[1];
-		Config->u16GPIOSts = rdData[2];
-	}
-	// burst read data
-	if (slaveIF_readReg(cid, FAULT_MASK1, 6, &rdData[0]))
-	{
-		Config->u16FaultMask1 = rdData[0];
-		Config->u16FaultMask2 = rdData[1];
-		Config->u16FaultMask3 = rdData[2];
-		Config->u16WakeupMask1 = rdData[3];
-		Config->u16WakeupMask2 = rdData[4];
-		Config->u16WakeupMask3 = rdData[5];
-	}
-	if (slaveIF_readReg(cid, CB1_CFG, NoCTs, &rdData[0]))
-	{
-		for (u8Idx = 0; u8Idx < NoCTs; u8Idx++)
-		{
-			Config->u16CBCfg[u8Idx] = rdData[u8Idx];
-		}
-	}
-	return !slaveIF_getError(NULL);
-}
 // ----------------------------------------------------------------------------
 /*! \brief Transitions to sleep mode.
  *
