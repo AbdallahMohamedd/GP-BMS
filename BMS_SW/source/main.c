@@ -4,6 +4,7 @@
 #include <COTs/FanControlManager/Inc/fanCtrl.h>
 #include <COTs/SlaveControlIF/Inc/slaveIF.h>
 #include <COTs/ FuSa/Inc/FuSa.h>
+#include <source/COTs/CellBalancigManager/BalancingModel_24a_ert_rtw/BalancingModel_24a.h>
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
@@ -328,6 +329,8 @@ int main(void)
 
 				// SlaveIF_enableCellBalancing(14, false, 0.5, cid);
 				SlaveIF_enableCellBalancing(8, false, 0.5, cid);
+				BalancingModel_24a_step(&rawResults[0]);
+				
 				//				dataMonitor_clearScreen();
 				//				ScreenIF_SetCursor(0, 0);
 				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[0]));

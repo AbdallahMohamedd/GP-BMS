@@ -14,6 +14,7 @@
  *    2. RAM efficiency
  * Validation result: Not run
  */
+#include <source/COTs/BMSDataBase/Inc/database.h>
 
 #ifndef BalancingModel_24a_h_
 #define BalancingModel_24a_h_
@@ -58,7 +59,7 @@ extern DW rtDW;
 
 /* Model entry point functions */
 extern void BalancingModel_24a_initialize(void);
-extern void BalancingModel_24a_step(void);
+extern void BalancingModel_24a_step(TYPE_MEAS_RESULTS_RAW *rawResults);
 
 /* Real-time Model object */
 extern RT_MODEL *const rtM;
