@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BalancingModel_24a'.
  *
- * Model version                  : 1.0
+ * Model version                  : 1.1
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Tue Jul  1 16:17:01 2025
+ * C/C++ source code generated on : Tue Jul  1 17:19:48 2025
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: NXP->Cortex-M0/M0+
@@ -71,7 +71,7 @@ void BalancingModel_24a_step(void)
   if (rtDW.is_active_c7_BalancingModel_24a == 0U) {
     rtDW.is_active_c7_BalancingModel_24a = 1U;
     rtDW.is_c7_BalancingModel_24a = IN_initialization;
-    memset(&rtDW.balance_enable[0], 0, 14U * sizeof(real_T));
+    memset(&rtDW.Ganna[0], 0, 14U * sizeof(real_T));
     rtDW.i = 1.0;
     rtDW.G = 1.0;
     rtDW.H = 1.0;
@@ -92,12 +92,12 @@ void BalancingModel_24a_step(void)
           tmp = rtb_TmpSignalConversionAtSFunct[tmp_0];
           if (tmp > rtDW.cell_reference) {
             if (tmp > 1.6) {
-              rtDW.balance_enable[tmp_0] = (tmp - rtDW.cell_reference > 0.25);
+              rtDW.Ganna[tmp_0] = (tmp - rtDW.cell_reference > 0.25);
             } else {
-              rtDW.balance_enable[tmp_0] = 0.0;
+              rtDW.Ganna[tmp_0] = 0.0;
             }
           } else {
-            rtDW.balance_enable[tmp_0] = 0.0;
+            rtDW.Ganna[tmp_0] = 0.0;
           }
         }
       }
@@ -130,12 +130,12 @@ void BalancingModel_24a_step(void)
           tmp = rtb_TmpSignalConversionAtSFunct[tmp_0];
           if (tmp > rtDW.cell_reference) {
             if (tmp > 1.6) {
-              rtDW.balance_enable[tmp_0] = (tmp - rtDW.cell_reference > 0.25);
+              rtDW.Ganna[tmp_0] = (tmp - rtDW.cell_reference > 0.25);
             } else {
-              rtDW.balance_enable[tmp_0] = 0.0;
+              rtDW.Ganna[tmp_0] = 0.0;
             }
           } else {
-            rtDW.balance_enable[tmp_0] = 0.0;
+            rtDW.Ganna[tmp_0] = 0.0;
           }
         }
       } else if (rtDW.abdullah == 1.0) {
@@ -184,7 +184,7 @@ void BalancingModel_24a_step(void)
         rtDW.G = 1.0;
         for (i = 0; i < 14; i++) {
           rtDW.G = (real_T)i + 1.0;
-          if (rtDW.balance_enable[(int32_T)rtDW.G - 1] == 1.0) {
+          if (rtDW.Ganna[(int32_T)rtDW.G - 1] == 1.0) {
             rtDW.idx++;
           }
         }

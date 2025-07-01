@@ -3,9 +3,9 @@
  *
  * Code generated for Simulink model 'BalancingModel_24a'.
  *
- * Model version                  : 1.0
+ * Model version                  : 1.1
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Tue Jul  1 16:17:01 2025
+ * C/C++ source code generated on : Tue Jul  1 17:19:48 2025
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: NXP->Cortex-M0/M0+
@@ -36,7 +36,7 @@ typedef struct tag_RTM RT_MODEL;
 
 /* Block signals and states (default storage) for system '<Root>' */
 typedef struct {
-  real_T balance_enable[14];           /* '<S1>/Chart1' */
+  real_T Ganna[14];                    /* '<S1>/Chart1' */
   real_T i;                            /* '<S1>/Chart1' */
   real_T G;                            /* '<S1>/Chart1' */
   real_T H;                            /* '<S1>/Chart1' */
