@@ -3,6 +3,7 @@
 #include <COTs/BatteryStatusMonitor/Inc/dataMonitor.h>
 #include <COTs/FanControlManager/Inc/fanCtrl.h>
 #include <COTs/SlaveControlIF/Inc/slaveIF.h>
+#include <COTs/ FuSa/Inc/FuSa.h>
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
@@ -112,7 +113,7 @@ int main(void)
 	DelayInit();
 	fanCtrl_fan1Init();
 	fanCtrl_fan2Init();
-	ADC_Init();
+	thermalManager_Init();
 	ScreenIF_Init();
 	DataMonitor_startUp();
 

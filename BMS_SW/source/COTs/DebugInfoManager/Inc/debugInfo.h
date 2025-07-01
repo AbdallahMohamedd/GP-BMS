@@ -76,6 +76,12 @@
 // #define SLAVEIF_DEBUG_GPIO      ///< Enable SlaveIF GPIO status prints
 // #define SLAVEIF_DEBUG
 
+//  --- DataMonitor Module Debug Switches ---
+/**
+ * @brief Define these macros to enable specific debug print categories within DataMonitor.c.
+ * @details Uncomment the desired lines to activate the corresponding PRINTF statements
+ *          in the DataMonitor driver implementation. Keep them commented out to disable.
+ */
 // #define DATAMONITOR_DEBUG_CONVERSION ///< Enable DataMonitor float-to-string conversion debug prints
 // #define DATAMONITOR_DEBUG_SOC        ///< Enable DataMonitor SOC display debug prints
 // #define DATAMONITOR_DEBUG_SOH        ///< Enable DataMonitor SOH display debug prints
@@ -85,30 +91,36 @@
 // #define DATAMONITOR_DEBUG_MODE       ///< Enable DataMonitor operating mode display debug prints
 // #define DATAMONITOR_DEBUG_DATA       ///< Enable DataMonitor all parameters display debug prints
 
+//  --- ScreenIF Module Debug Switches ---
+/**
+ * @brief Define these macros to enable specific debug print categories within ScreenIF.c.
+ * @details Uncomment the desired lines to activate the corresponding PRINTF statements
+ *          in the ScreenIF driver implementation. Keep them commented out to disable.
+ */
 // #define SCREENIF_DEBUG_INIT    ///< Enable ScreenIF initialization and setup debug prints
 // #define SCREENIF_DEBUG_I2C     ///< Enable ScreenIF I2C communication debug prints
 // #define SCREENIF_DEBUG_CMD     ///< Enable ScreenIF LCD command execution debug prints
 // #define SCREENIF_DEBUG_DATA    ///< Enable ScreenIF data (character/string) display debug prints
 
+//  --- FanCtrl Module Debug Switches ---
+/**
+ * @brief Define these macros to enable specific debug print categories within FanCtrl.c.
+ * @details Uncomment the desired lines to activate the corresponding PRINTF statements
+ *          in the FanCtrl driver implementation. Keep them commented out to disable.
+ */
 // #define FANCTRL_DEBUG_INIT    ///< Enable FanCtrl initialization debug prints
 // #define FANCTRL_DEBUG_PWM     ///< Enable FanCtrl PWM duty cycle debug prints
 
-//#define TEMPSENSORIF_DEBUG_CONVERT    ///< Enable TempSensorIF temperature conversion debug prints
-//=============================================================================
-// Public Function Declarations
-//=============================================================================
+//  --- TempSensorIF Module Debug Switches ---
 /**
- * @brief Prints detailed fault reasons to the serial console.
- * @param[in] faultData Pointer to the FaultData structure containing fault status.
- * @details This function checks all fault flags in the provided FaultData and
- *          prints specific messages for each detected fault. It covers faults
- *          from FAULT1, FAULT2, FAULT3 registers and their detailed status.
- *          Messages are prefixed with a timestamp (systick_count) for tracking.
+ * @brief Define these macros to enable specific debug print categories within TempSensorIF.c.
+ * @details Uncomment the desired lines to activate the corresponding PRINTF statements
+ *          in the TempSensorIF driver implementation. Keep them commented out to disable.
  */
-// void DebugInfo_PrintFaultReason(const FaultData *faultData);
+//#define TEMPSENSORIF_DEBUG_CONVERT    ///< Enable TempSensorIF temperature conversion debug prints
+
 
 #endif /* DEBUG_INFO_MANAGER */
-
 //=============================================================================
 // End of File
 //=============================================================================

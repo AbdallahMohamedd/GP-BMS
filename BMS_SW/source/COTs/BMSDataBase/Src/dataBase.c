@@ -1,35 +1,6 @@
-// --------------------------------------------------------------------
-//  Copyright (c) 2015, NXP Semiconductors.
-//  All rights reserved.
-//
-//  Redistribution and use in source and binary forms, with or without modification,
-//  are permitted provided that the following conditions are met:
-//
-//  o Redistributions of source code must retain the above copyright notice, this list
-//    of conditions and the following disclaimer.
-//
-//  o Redistributions in binary form must reproduce the above copyright notice, this
-//    list of conditions and the following disclaimer in the documentation and/or
-//    other materials provided with the distribution.
-//
-//  o Neither the name of NXP Semiconductors nor the names of its
-//    contributors may be used to endorse or promote products derived from this
-//    software without specific prior written permission.
-//
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-//  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-//  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-//  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-//  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-//  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-//  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-//  ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-//  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-//  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// --------------------------------------------------------------------
-// #include "mc3377x.h"
+
 #include "source/COTs/BMSDataBase/Inc/database.h"
-#include "fsl_adc16.h"
+
 
 // ----------------------------------------------------------------------------
 extern const uint16_t _TAGID_BCC14p2[];
@@ -58,22 +29,6 @@ extern const uint16_t _TAGID_BCC6[];
  */
 
 //---------------------------ADC-----------------------------------------------------
-#define DEMO_ADC16_BASE ADC0
-#define DEMO_ADC16_CHANNEL_GROUP 0U
-// #define DEMO_ADC16_USER_CHANNEL 9U  // Choose your channel based on connection
-
-#define SERIES_RESISTOR 100000.0	// 100kΩ fixed resistor
-#define NOMINAL_RESISTANCE 100000.0 // 100kΩ at 25°C
-#define NOMINAL_TEMPERATURE 25.0	// 25°C
-#define BETA_COEFFICIENT 3950.0		// Adjust based on your thermalManager_Raw2Celsius spec
-#define ADC_MAX 65535.0				// 16-bit ADC
-#define VREF 3.3					// Reference voltage (typically 3.3V)
-#define PTB0_Channel 8
-#define PTB1_Channel 9
-#define PTD1_Channel 5
-#define PTD5_Channel 6
-#define PTD6_Channel 7
-#define PTD0_Channel 14
 
 /*******************************************************************************
  * Prototypes
@@ -83,35 +38,6 @@ extern const uint16_t _TAGID_BCC6[];
  * Code
  ******************************************************************************/
 
-void ADC_Init(void)
-{
-	adc16_config_t adc16ConfigStruct;
-
-	ADC16_GetDefaultConfig(&adc16ConfigStruct);
-	adc16ConfigStruct.resolution = kADC16_ResolutionSE16Bit;
-	adc16ConfigStruct.referenceVoltageSource = kADC16_ReferenceVoltageSourceVref; // External Vref (3.3V typical)
-	ADC16_Init(DEMO_ADC16_BASE, &adc16ConfigStruct);
-	ADC16_EnableHardwareTrigger(DEMO_ADC16_BASE, false); // Software trigger
-}
-uint16_t ADC_Read(uint32_t channel)
-{
-	adc16_channel_config_t adc16ChannelConfigStruct = {0};
-	adc16ChannelConfigStruct.channelNumber = channel;
-	adc16ChannelConfigStruct.enableInterruptOnConversionCompleted = false;
-
-#if defined(FSL_FEATURE_ADC16_HAS_DIFF_MODE) && FSL_FEATURE_ADC16_HAS_DIFF_MODE
-	adc16ChannelConfigStruct.enableDifferentialConversion = false;
-#endif
-
-	ADC16_SetChannelConfig(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP, &adc16ChannelConfigStruct);
-
-	while (0U == (kADC16_ChannelConversionDoneFlag &
-				  ADC16_GetChannelStatusFlags(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP)))
-	{
-	}
-
-	return ADC16_GetChannelConversionValue(DEMO_ADC16_BASE, DEMO_ADC16_CHANNEL_GROUP);
-}
 bool BMSInit(uint8_t NoOfNodes)
 {
 	uint8_t cid;
@@ -241,13 +167,13 @@ bool MC3377xADCIsConverting(uint8_t cid)
 
 bool Abdullah_Temp(TYPE_MEAS_RESULTS_RAW *RawMeasResults)
 {
-	RawMeasResults->u16ANVoltage[0] = ADC_Read(PTB0_Channel);
-	RawMeasResults->u16ANVoltage[1] = ADC_Read(PTB1_Channel);
-	RawMeasResults->u16ANVoltage[2] = ADC_Read(PTD1_Channel);
-	RawMeasResults->u16ANVoltage[3] = ADC_Read(PTD5_Channel);
-	RawMeasResults->u16ANVoltage[4] = ADC_Read(PTD6_Channel);
-	RawMeasResults->u16ANVoltage[5] = ADC_Read(PTD6_Channel);
-	RawMeasResults->u16ANVoltage[6] = ADC_Read(PTD0_Channel);
+	RawMeasResults->u16ANVoltage[0] = thermalManager_readRawData(PTB0_Channel);
+	RawMeasResults->u16ANVoltage[1] = thermalManager_readRawData(PTB1_Channel);
+	RawMeasResults->u16ANVoltage[2] = thermalManager_readRawData(PTD1_Channel);
+	RawMeasResults->u16ANVoltage[3] = thermalManager_readRawData(PTD5_Channel);
+	RawMeasResults->u16ANVoltage[4] = thermalManager_readRawData(PTD6_Channel);
+	RawMeasResults->u16ANVoltage[5] = thermalManager_readRawData(PTD6_Channel);
+	RawMeasResults->u16ANVoltage[6] = thermalManager_readRawData(PTD0_Channel);
 }
 
 /*! \brief reads the measurement registers and return them as raw data in RawMeasResults
@@ -313,7 +239,49 @@ bool MC3377xGetRawMeasurements(uint8_t cid, uint8_t tagId, uint8_t NoCTs, TYPE_M
 
 	return !slaveIF_getError(NULL);
 }
+/*! \brief reads the status registers and return them in Status
+ *
+ * @param cid        cluster (CID) to handle
+ * @param *Status    pointer to status (return data)
+ *
+ * @return \b true   if successful executed
+ * @return \b false  if not successful executed
+ *
+ * \remarks
+ * The Status data is only value if successfully executed (true).
+ */
+bool MC3377xGetStatus(uint8_t cid, TYPE_STATUS *Status)
+{
+	uint16_t rdData[13];
 
+	// burst read data
+	if (slaveIF_readReg(cid, CELL_OV_FLT, 2, &rdData[0]))
+	{
+		Status->u16CellOV = rdData[0];
+		Status->u16CellUV = rdData[1];
+	}
+	if (slaveIF_readReg(cid, CB_OPEN_FLT, 13, &rdData[0]))
+	{
+		Status->u16CBOpen = 0;
+		Status->u16CBShort = 0;
+		Status->u16CBStatus = rdData[2];
+
+		Status->u16GPIOStatus = 0;
+		Status->u16ANOtUt = falg_temp;
+		Status->u16GPIOOpen = 0;
+		Status->u16IStatus = 0;
+		Status->u16Comm = 0;
+		Status->u16Fault1 = rdData[10];
+		Status->u16Fault2 = rdData[11];
+		Status->u16Fault3 = 0;
+	}
+	if (slaveIF_readReg(cid, MEAS_ISENSE2, 1, &rdData[0]))
+	{
+		Status->u16MeasIsense2 = rdData[0];
+	}
+
+	return !slaveIF_getError(NULL);
+}
 // ----------------------------------------------------------------------------
 /*! \brief Reads the silicon revision of the device
  *
@@ -501,49 +469,7 @@ bool MC3377xGetSiliconType(uint8_t cid, SclusterInfo_t *pCluster)
 	return !slaveIF_getError(NULL);
 }
 // ----------------------------------------------------------------------------
-/*! \brief reads the status registers and return them in Status
- *
- * @param cid        cluster (CID) to handle
- * @param *Status    pointer to status (return data)
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
- * \remarks
- * The Status data is only value if successfully executed (true).
- */
-bool MC3377xGetStatus(uint8_t cid, TYPE_STATUS *Status)
-{
-	uint16_t rdData[13];
 
-	// burst read data
-	if (slaveIF_readReg(cid, CELL_OV_FLT, 2, &rdData[0]))
-	{
-		Status->u16CellOV = rdData[0];
-		Status->u16CellUV = rdData[1];
-	}
-	if (slaveIF_readReg(cid, CB_OPEN_FLT, 13, &rdData[0]))
-	{
-		Status->u16CBOpen     = 0;
-		Status->u16CBShort    = 0;
-		Status->u16CBStatus   = rdData[2];
-
-		Status->u16GPIOStatus = 0;
-		Status->u16ANOtUt     = falg_temp;
-		Status->u16GPIOOpen   = 0;
-		Status->u16IStatus    = 0;
-		Status->u16Comm   	  = 0;
-		Status->u16Fault1 	  = rdData[10];
-		Status->u16Fault2     = rdData[11];
-		Status->u16Fault3     = 0;
-	}
-	if (slaveIF_readReg(cid, MEAS_ISENSE2, 1, &rdData[0]))
-	{
-		Status->u16MeasIsense2 = rdData[0];
-	}
-
-	return !slaveIF_getError(NULL);
-}
 // ----------------------------------------------------------------------------
 /*! \brief reads the threshold registers and return them in Threshold
  *

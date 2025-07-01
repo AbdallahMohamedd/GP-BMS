@@ -1,22 +1,5 @@
-/**
- * @file    DebugInfo.c
- * @brief   Debug information manager for the Battery Management System (BMS).
- *
- * @details This module provides functions to print detailed debug messages,
- *          particularly for fault conditions, to assist in diagnostics and
- *          troubleshooting. It interfaces with the FuSa module to interpret
- *          fault data and outputs messages via the serial console.
- *
- * @note Project: Graduation Project - Battery Management System
- * @note Engineer: Abdullah Mohamed
- * @note Dependencies: Relies on FuSa module for fault data.
- */
+#include <COTs/ FuSa/Inc/FuSa.h>
 
-//=============================================================================
-// Includes
-//=============================================================================
-#include <COTS/DebugInfoManager/Inc/DebugInfo.h>
-#include <source/COTs/BMSDataBase/Inc/database.h>
 #define READ_BIT(address, bit)		     ((address & (1 << bit)) >> bit)
 extern uint16_t faultFlag;
 //=============================================================================
@@ -113,7 +96,3 @@ void DebugInfo_PrintFaultReason(TYPE_STATUS *faultData)
 	PRINTF("ACTION: Battery disconnected to ensure safety.\r\r\n");
 }
 
-
-//=============================================================================
-// End of File
-//=============================================================================

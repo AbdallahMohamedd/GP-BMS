@@ -1,14 +1,15 @@
-/**
+ /**
  * @file       TempSensorIF.h
  * @brief      Public interface header for the Temperature Sensor Interface driver.
  *
  * @details    This header defines the public APIs for converting raw ADC values
- *             from an NTC thermalManager_Raw2Celsius (10kOhm, Beta: 3900) to temperature in Celsius
+ *             from an NTC thermistor (10kOhm, Beta: 3900) to temperature in Celsius
  *             and Kelvin using a precomputed lookup table. The table covers a range
  *             from -40°C to 125°C with a 10000Ohm reference resistor.
  *
  * @note       Project: Graduation Project - Battery Management System
  * @note       Component: Temperature Sensor Interface driver
+ * @note       Author: Amr Ahmed
  */
 
 #ifndef TEMPSENSORIF_H_
@@ -18,12 +19,13 @@
 // Includes
 //=============================================================================
 #include "COTs/DebugInfoManager/Inc/debugInfo.h"
+#include "fsl_adc16.h"
 
 //=============================================================================
 // Definitions and Lookup Table
 //=============================================================================
 // Generated with CalcNTCTable.py
-// NTC 10000Ohm  Beta: 3900
+// NTC 10000Ohm, Beta: 3900
 // Rpre 10000Ohm
 // Temperature range NTC [-40..125]
 #define DEGm40C (1001)
@@ -57,115 +59,115 @@
 #define DEGm12C (888)
 #define DEGm11C (881)
 #define DEGm10C (874)
-#define DEGm9C (866)
-#define DEGm8C (859)
-#define DEGm7C (851)
-#define DEGm6C (843)
-#define DEGm5C (834)
-#define DEGm4C (826)
-#define DEGm3C (817)
-#define DEGm2C (808)
-#define DEGm1C (798)
-#define DEG0C (789)
-#define DEG1C (779)
-#define DEG2C (769)
-#define DEG3C (759)
-#define DEG4C (749)
-#define DEG5C (739)
-#define DEG6C (728)
-#define DEG7C (718)
-#define DEG8C (707)
-#define DEG9C (696)
-#define DEG10C (685)
-#define DEG11C (674)
-#define DEG12C (662)
-#define DEG13C (651)
-#define DEG14C (640)
-#define DEG15C (628)
-#define DEG16C (617)
-#define DEG17C (605)
-#define DEG18C (594)
-#define DEG19C (582)
-#define DEG20C (571)
-#define DEG21C (559)
-#define DEG22C (548)
-#define DEG23C (536)
-#define DEG24C (525)
-#define DEG25C (513)
-#define DEG26C (502)
-#define DEG27C (491)
-#define DEG28C (480)
-#define DEG29C (469)
-#define DEG30C (458)
-#define DEG31C (448)
-#define DEG32C (437)
-#define DEG33C (426)
-#define DEG34C (416)
-#define DEG35C (406)
-#define DEG36C (396)
-#define DEG37C (386)
-#define DEG38C (376)
-#define DEG39C (367)
-#define DEG40C (358)
-#define DEG41C (348)
-#define DEG42C (339)
-#define DEG43C (330)
-#define DEG44C (322)
-#define DEG45C (313)
-#define DEG46C (305)
-#define DEG47C (297)
-#define DEG48C (289)
-#define DEG49C (281)
-#define DEG50C (274)
-#define DEG51C (266)
-#define DEG52C (259)
-#define DEG53C (252)
-#define DEG54C (245)
-#define DEG55C (238)
-#define DEG56C (232)
-#define DEG57C (225)
-#define DEG58C (219)
-#define DEG59C (213)
-#define DEG60C (207)
-#define DEG61C (201)
-#define DEG62C (196)
-#define DEG63C (190)
-#define DEG64C (185)
-#define DEG65C (180)
-#define DEG66C (175)
-#define DEG67C (170)
-#define DEG68C (165)
-#define DEG69C (161)
-#define DEG70C (156)
-#define DEG71C (152)
-#define DEG72C (148)
-#define DEG73C (144)
-#define DEG74C (140)
-#define DEG75C (136)
-#define DEG76C (132)
-#define DEG77C (128)
-#define DEG78C (125)
-#define DEG79C (121)
-#define DEG80C (118)
-#define DEG81C (115)
-#define DEG82C (112)
-#define DEG83C (109)
-#define DEG84C (106)
-#define DEG85C (103)
-#define DEG86C (100)
-#define DEG87C (97)
-#define DEG88C (95)
-#define DEG89C (92)
-#define DEG90C (90)
-#define DEG91C (87)
-#define DEG92C (85)
-#define DEG93C (83)
-#define DEG94C (80)
-#define DEG95C (78)
-#define DEG96C (76)
-#define DEG97C (74)
-#define DEG98C (72)
-#define DEG99C (70)
+#define DEGm9C  (866)
+#define DEGm8C  (859)
+#define DEGm7C  (851)
+#define DEGm6C  (843)
+#define DEGm5C  (834)
+#define DEGm4C  (826)
+#define DEGm3C  (817)
+#define DEGm2C  (808)
+#define DEGm1C  (798)
+#define DEG0C   (789)
+#define DEG1C   (779)
+#define DEG2C   (769)
+#define DEG3C   (759)
+#define DEG4C   (749)
+#define DEG5C   (739)
+#define DEG6C   (728)
+#define DEG7C   (718)
+#define DEG8C   (707)
+#define DEG9C   (696)
+#define DEG10C  (685)
+#define DEG11C  (674)
+#define DEG12C  (662)
+#define DEG13C  (651)
+#define DEG14C  (640)
+#define DEG15C  (628)
+#define DEG16C  (617)
+#define DEG17C  (605)
+#define DEG18C  (594)
+#define DEG19C  (582)
+#define DEG20C  (571)
+#define DEG21C  (559)
+#define DEG22C  (548)
+#define DEG23C  (536)
+#define DEG24C  (525)
+#define DEG25C  (513)
+#define DEG26C  (502)
+#define DEG27C  (491)
+#define DEG28C  (480)
+#define DEG29C  (469)
+#define DEG30C  (458)
+#define DEG31C  (448)
+#define DEG32C  (437)
+#define DEG33C  (426)
+#define DEG34C  (416)
+#define DEG35C  (406)
+#define DEG36C  (396)
+#define DEG37C  (386)
+#define DEG38C  (376)
+#define DEG39C  (367)
+#define DEG40C  (358)
+#define DEG41C  (348)
+#define DEG42C  (339)
+#define DEG43C  (330)
+#define DEG44C  (322)
+#define DEG45C  (313)
+#define DEG46C  (305)
+#define DEG47C  (297)
+#define DEG48C  (289)
+#define DEG49C  (281)
+#define DEG50C  (274)
+#define DEG51C  (266)
+#define DEG52C  (259)
+#define DEG53C  (252)
+#define DEG54C  (245)
+#define DEG55C  (238)
+#define DEG56C  (232)
+#define DEG57C  (225)
+#define DEG58C  (219)
+#define DEG59C  (213)
+#define DEG60C  (207)
+#define DEG61C  (201)
+#define DEG62C  (196)
+#define DEG63C  (190)
+#define DEG64C  (185)
+#define DEG65C  (180)
+#define DEG66C  (175)
+#define DEG67C  (170)
+#define DEG68C  (165)
+#define DEG69C  (161)
+#define DEG70C  (156)
+#define DEG71C  (152)
+#define DEG72C  (148)
+#define DEG73C  (144)
+#define DEG74C  (140)
+#define DEG75C  (136)
+#define DEG76C  (132)
+#define DEG77C  (128)
+#define DEG78C  (125)
+#define DEG79C  (121)
+#define DEG80C  (118)
+#define DEG81C  (115)
+#define DEG82C  (112)
+#define DEG83C  (109)
+#define DEG84C  (106)
+#define DEG85C  (103)
+#define DEG86C  (100)
+#define DEG87C  (97)
+#define DEG88C  (95)
+#define DEG89C  (92)
+#define DEG90C  (90)
+#define DEG91C  (87)
+#define DEG92C  (85)
+#define DEG93C  (83)
+#define DEG94C  (80)
+#define DEG95C  (78)
+#define DEG96C  (76)
+#define DEG97C  (74)
+#define DEG98C  (72)
+#define DEG99C  (70)
 #define DEG100C (69)
 #define DEG101C (67)
 #define DEG102C (65)
@@ -193,32 +195,65 @@
 #define DEG124C (37)
 #define DEG125C (37)
 
+//=============================================================================
+// Configuration Constants
+//=============================================================================
+// Fixed resistor in the voltage divider circuit
 #define SERIES_RESISTOR 100000.0    // 100kΩ fixed resistor
+
+// Nominal resistance of the NTC thermistor at 25°C
 #define NOMINAL_RESISTANCE 100000.0 // 100kΩ at 25°C
+
+// Nominal temperature for the NTC thermistor
 #define NOMINAL_TEMPERATURE 25.0    // 25°C
-#define BETA_COEFFICIENT 3950.0     // Adjust based on your thermalManager_Raw2Celsius spec
+
+// Beta coefficient of the NTC thermistor
+#define BETA_COEFFICIENT 3950.0     // Adjust based on your thermistor spec
+
+// Maximum ADC value for 16-bit resolution
 #define ADC_MAX 65535.0             // 16-bit ADC
-#define VREF 3.3
+
+// Reference voltage for ADC conversion
+#define VREF 3.3                    // Reference voltage (typically 3.3V)
+
+// ADC module and channel configuration
+#define DEMO_ADC16_BASE ADC0
+#define DEMO_ADC16_CHANNEL_GROUP 0U
+// #define DEMO_ADC16_USER_CHANNEL 9U  // Choose your channel based on connection
+
+// Additional channel definitions
+#define PTB0_Channel 8
+#define PTB1_Channel 9
+#define PTD1_Channel 5
+#define PTD5_Channel 6
+#define PTD6_Channel 7
+#define PTD0_Channel 14
+
 //=============================================================================
 // Public Function Prototypes
 //=============================================================================
+/**
+ * @brief      Initializes the ADC module for temperature sensing.
+ * @details    Configures the ADC16 module for temperature measurements.
+ */
+void thermalManager_Init(void);
+
+/**
+ * @brief      Reads raw ADC data from the specified channel.
+ * @details    Configures the ADC channel and returns the raw conversion value.
+ * @param      channel The ADC channel number to read from.
+ * @return     Raw ADC value (uint16_t).
+ */
+uint16_t thermalManager_readRawData(uint32_t channel);
 
 /**
  * @brief      Converts a raw ADC value to temperature in Celsius.
- * @details    Searches the NTC lookup table to find the corresponding temperature
- *             index and converts it to Celsius (-40°C to 125°C range).
- * @param      u16RawValue Raw ADC value from the NTC thermalManager_Raw2Celsius.
- * @return     Temperature in degrees Celsius (int8_t).
+ * @details    Uses the Steinhart-Hart equation to convert the raw ADC value
+ *             to temperature in Celsius based on NTC thermistor characteristics.
+ * @param      u16RawValue Raw ADC value from the NTC thermistor.
+ * @return     Temperature in degrees Celsius (float).
  */
 float thermalManager_Raw2Celsius(uint16_t adc_value);
-
-/**
- * @brief      Converts a raw ADC value to temperature in Kelvin.
- * @details    Converts the raw ADC value to Celsius and adds 273 to get Kelvin.
- * @param      u16RawValue Raw ADC value from the NTC thermalManager_Raw2Celsius.
- * @return     Temperature in degrees Kelvin (uint16_t).
- */
-uint16_t tempSensorIf_Raw2Kelvin(uint16_t rawValue);
 
 #endif /* TEMPSENSORIF_H_ */
 //=============================================================================
