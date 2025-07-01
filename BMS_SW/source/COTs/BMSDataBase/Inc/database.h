@@ -1,42 +1,68 @@
-/*
- * database.h
+/**
+ * @file        database.h
+ * @brief       Public interface header for the BMS Database module.
  *
- *  Created on: Jun 1, 2025
- *      Author: abdal
+ * @details     This header defines the data structures, enums, and function prototypes
+ *              used for managing Battery Management System (BMS) data, including
+ *              measurement results, status information, configuration, and thresholds.
+ *
+ * @note        Project: Graduation Project - Battery Management System
+ * @note        Engineer: Abdullah Mohamed
+ * @note        Component: BMS DataBase module
  */
 
 #ifndef COTS_BMSDATABASE_INC_DATABASE_H_
 #define COTS_BMSDATABASE_INC_DATABASE_H_
+
+//=============================================================================
+// Includes
+//=============================================================================
 #include <COTs/DebugInfoManager/Inc/debugInfo.h> // for memcmp
 #include <COTs/SlaveControlIF/Inc/slaveIF.h>
 #include <COTs/ThermalManager/Inc/tempSens.h> // table for NTC resistor characteristics
-#include <tpm1.h>							// for Delay
+#include <tpm1.h>							  // for Delay
 
-// ----------------------------------------------------------------------------
-#define NO_CLUSTER (15u) //!< macro for readability
-#define NO_CELLS (14u)	 //!< macro for readability
-#define NO_AN (7u)		 //!< macro for readability
-#define CELL1 (0U)		 //!< macro for readability
-#define CELL2 (1U)		 //!< macro for readability
-#define CELL3 (2U)		 //!< macro for readability
-#define CELL4 (3U)		 //!< macro for readability
-#define CELL5 (4U)		 //!< macro for readability
-#define CELL6 (5U)		 //!< macro for readability
-#define CELL7 (6U)		 //!< macro for readability
-#define CELL8 (7U)		 //!< macro for readability
-#define CELL9 (8U)		 //!< macro for readability
-#define CELL10 (9U)		 //!< macro for readability
-#define CELL11 (10U)	 //!< macro for readability
-#define CELL12 (11U)	 //!< macro for readability
-#define CELL13 (12U)	 //!< macro for readability
-#define CELL14 (13U)	 //!< macro for readability
-// ----------------------------------------------------------------------------
+//=============================================================================
+// Defines and Macros
+//=============================================================================
+#define NO_CLUSTER (15u)												 //!< macro for readability
+#define NO_CELLS (14u)													 //!< macro for readability
+#define NO_AN (7u)														 //!< macro for readability
+#define CELL1 (0U)														 //!< macro for readability
+#define CELL2 (1U)														 //!< macro for readability
+#define CELL3 (2U)														 //!< macro for readability
+#define CELL4 (3U)														 //!< macro for readability
+#define CELL5 (4U)														 //!< macro for readability
+#define CELL6 (5U)														 //!< macro for readability
+#define CELL7 (6U)														 //!< macro for readability
+#define CELL8 (7U)														 //!< macro for readability
+#define CELL9 (8U)														 //!< macro for readability
+#define CELL10 (9U)														 //!< macro for readability
+#define CELL11 (10U)													 //!< macro for readability
+#define CELL12 (11U)													 //!< macro for readability
+#define CELL13 (12U)													 //!< macro for readability
+#define CELL14 (13U)													 //!< macro for readability
+#define CheckCID(v) (((v) < 1) || ((v) > MAX_CLUSTER))					 //!< Macro to check if CID is within the valid range {1..MAX_CLUSTER}.
 #define S19EXTENT (0xFFF80000UL)										 //!< macro to extend negative s19 to int32_t
 #define S19SignExtend(s19) ((s19) & BIT(18)) ? (s19) | S19EXTENT : (s19) //!< macro to sign extend s19 bit values to int32_t
 #define S19_NMAX 0x00040000UL											 //!< -2^18   = -262144
 #define S19_MAX 0x0003FFFFUL											 //!< 2^18 -1 = 262143
-extern uint16_t falg_temp ;
-// ----------------------------------------------------------------------------
+#define CELL_BATTERY_CAPACITY_AH 1.5
+#define CELL_OCV_FULL 4.2
+#define CELL_OCV_EMPTY 3.0
+#define PACK_BATTERY_CAPACITY_AH 21.0
+#define PACK_OCV_FULL 58.8
+#define PACK_OCV_EMPTY 25
+//=============================================================================
+// External Variables
+//=============================================================================
+extern uint16_t falg_temp;
+extern const uint16_t _TAGID_BCC14p2[];
+extern const uint16_t _TAGID_BCC14[];
+extern const uint16_t _TAGID_BCC6[];
+//=============================================================================
+// Typedefs
+//=============================================================================
 /*! \brief enum for BMS modes
 
 The graph below shows to typical BMS state machine and transistions:
@@ -64,7 +90,7 @@ typedef enum
 	BMS_Error = 5,	  //!< error phase
 	BMS_Idle = 6	  //!< BMS_Idle
 } TYPE_BMS_STATUS;
-// ----------------------------------------------------------------------------
+
 //! \brief structure to hold the BMS status
 typedef struct
 {
@@ -74,7 +100,7 @@ typedef struct
 	uint8_t NoClusters;		  //!< no of clusters attached (1..14)
 	uint8_t CIDcurrent;		  //!< CID(S) which measure current (not used for demo)
 } TYPE_BMS;
-// ----------------------------------------------------------------------------
+
 //! \brief structure to hold measurement results (read only) information.
 typedef struct
 {
@@ -88,7 +114,7 @@ typedef struct
 	uint16_t u16CCSamples;			   //!< number of CC samples
 	int32_t s32CCCounter;			   //!< CC counter value
 } TYPE_MEAS_RESULTS_RAW;
-// ----------------------------------------------------------------------------
+
 //! \brief structure to hold status (read only / clearable) information.
 typedef struct
 {
@@ -107,7 +133,7 @@ typedef struct
 	uint16_t u16Fault3;		 //!< Fault3 status
 	uint16_t u16MeasIsense2; //!< 0x31 register
 } TYPE_STATUS;
-// ----------------------------------------------------------------------------
+
 //! \brief structure to hold configuration information.
 typedef struct
 {
@@ -130,7 +156,7 @@ typedef struct
 	uint16_t u16WakeupMask3;	 //!<   0x2C register
 	uint16_t u16CBCfg[NO_CELLS]; //!<   0x0C..0x19  registers
 } TYPE_CONFIG;
-// ----------------------------------------------------------------------------
+
 //! \brief structure to hold threshold information.
 typedef struct
 {
@@ -143,44 +169,159 @@ typedef struct
 	uint16_t u12ThIsenseOC;		 //!<  0x68 register
 	uint32_t u32ThCoulombCnt;	 //!<  0x69..6A registers
 } TYPE_THRESHOLDS;
-// ----------------------------------------------------------------------------
-////! \brief structure to debug diagnostic test results
-// typedef struct{
-//	// OV/UV functional verification
-//	uint16_t u16OvOdd;          	                                    				//!< for debugging
-//	uint16_t u16UvOdd;          	                                    				//!< for debugging
-//	uint16_t u16OvEven;         	                                    				//!< for debugging
-//	uint16_t u16UvEven;         	                                    				//!< for debugging
-//	// CTx open detect
-//	uint16_t u16CTOpen;  															//!< CT1 -> bit0
-//	uint16_t u16CTResults[NO_CELLS];													//!< actual measurements
-// }TYPE_DIAGNOSTICS;
-//  ----------------------------------------------------------------------------
+
 //! \brief structure to hold Fuse Mirror Memory data 32 x 16 bits
 typedef struct
 {
 	uint16_t u16Data[32]; //!< ram buffer to store fuse mirror memory
 } TYPE_FUSE_DATA;
-// ----------------------------------------------------------------------------
-bool MC3377xSleepMode(TYPE_INTERFACE interface);
-bool MC3377xNormalMode(TYPE_INTERFACE interface);
-bool MC3377xCheck4Wakeup(TYPE_INTERFACE interface);
-// ----------------------------------------------------------------------------
-bool MC3377xADCStartConversion(uint8_t cid, uint8_t u4TagID);
-bool MC3377xADCIsConverting(uint8_t cid);
-// ----------------------------------------------------------------------------
-bool BMSInit(uint8_t NoOfNodes);
-// ----------------------------------------------------------------------------
-bool MC3377xConfig(uint8_t cid, const SsysConf_t conf[]);
-// ----------------------------------------------------------------------------
-bool MC3377xGetSiliconRevision(uint8_t cid, SclusterInfo_t *pCluster);
-bool MC3377xGetSiliconType(uint8_t cid, SclusterInfo_t *pCluster);
-// ----------------------------------------------------------------------------
-bool MC3377xGetRawMeasurements(uint8_t cid, uint8_t u4TagId, uint8_t NoCTs, TYPE_MEAS_RESULTS_RAW *RawMeasResults);
-bool MC3377xGetStatus(uint8_t cid, TYPE_STATUS *Status);
-bool MC3377xGetThresholds(uint8_t cid, uint8_t NoCTs, TYPE_THRESHOLDS *Threshold);
-// ----------------------------------------------------------------------------
-bool MC3377xReadFuseMirror(uint8_t cid, TYPE_FUSE_DATA *fusedata);
-bool Abdullah_Temp(TYPE_MEAS_RESULTS_RAW *RawMeasResults);
+
+//=============================================================================
+// Function Prototypes
+//=============================================================================
+/**
+ * @brief Calculation of SOC using OCV method at startup and before connection of load.
+ * @param ocv_values Array of open circuit voltage values for each cell.
+ * @return float Initial State of Charge (SOC) for the pack.
+ */
+float dataBase_initialSOC_Pack(float ocv_values[14]);
+
+/**
+ * @brief Calculation of SOC using OCV method for a single cell.
+ * @param ocv Open circuit voltage of the cell.
+ * @return float Initial State of Charge (SOC) for the cell.
+ */
+float dataBase_initialSOC_Cell(float ocv);
+
+/**
+ * @brief Calculation of SOC using Coulomb counting at runtime and after connection of load.
+ * @param rawResults Raw measurement data including Coulomb counter.
+ * @param voltage Current voltage reading of the battery.
+ * @param current_time Current timestamp.
+ * @return float Calculated State of Charge (SOC).
+ */
+float dataBase_calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, uint16_t voltage, uint32_t current_time);
+
+/**
+ * @brief Calculation of SOH using Coulomb counter data.
+ * @param rawResults Raw measurement data including Coulomb counter.
+ * @param voltage Current voltage reading of the battery.
+ * @param nominal_capacity_mAh Nominal capacity of the battery in mAh.
+ * @param v2res Reference voltage resolution.
+ * @param current_time Current timestamp.
+ * @param prev_time Previous timestamp.
+ * @return float Calculated State of Health (SOH).
+ */
+float dataBase_calculateSOH(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, float nominal_capacity_mAh,
+							float v2res, uint32_t current_time, uint32_t prev_time);
+
+/**
+ * @brief Puts the MC3377x device into sleep mode.
+ * @param interface The communication interface (e.g., SPI, TPL).
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_sleepMode(TYPE_INTERFACE interface);
+
+/**
+ * @brief Puts the MC3377x device into normal operating mode.
+ * @param interface The communication interface (e.g., SPI, TPL).
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_normalMode(TYPE_INTERFACE interface);
+
+/**
+ * @brief Checks if the MC3377x device has woken up from sleep mode.
+ * @param interface The communication interface (e.g., SPI, TPL).
+ * @return bool True if the device has woken up, false otherwise.
+ */
+bool dataBase_check4Wakeup(TYPE_INTERFACE interface);
+
+/**
+ * @brief Starts an ADC conversion on the MC3377x device.
+ * @param cid Cluster ID.
+ * @param u4TagID TagID for ADC measurement.
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_startConvADC(uint8_t cid, uint8_t u4TagID);
+
+/**
+ * @brief Checks if the ADC conversion on the MC3377x device is still ongoing.
+ * @param cid Cluster ID.
+ * @return bool True if conversion is ongoing, false if complete or an error occurred.
+ */
+bool dataBase_ADCIsConverting(uint8_t cid);
+
+/**
+ * @brief Initializes the BMS system with a specified number of nodes.
+ * @param NoOfNodes Number of nodes in the chain (1..15).
+ * @return bool True if successful, false in case of errors.
+ */
+bool dataBase_BMSInit(uint8_t NoOfNodes);
+
+/**
+ * @brief Configures the MC3377x device with a list of settings.
+ * @param cid Cluster ID to be configured.
+ * @param conf Pointer to the configuration list.
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_bmsConfig(uint8_t cid, const SsysConf_t conf[]);
+
+/**
+ * @brief Reads the silicon revision of the MC3377x device.
+ * @param cid Cluster ID.
+ * @param pCluster Pointer to a structure to fill with cluster information.
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_getSiliconRevision(uint8_t cid, SclusterInfo_t *pCluster);
+
+/**
+ * @brief Reads the silicon type of the MC3377x device.
+ * @param cid Cluster ID.
+ * @param pCluster Pointer to a structure to fill with cluster information.
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_getSiliconType(uint8_t cid, SclusterInfo_t *pCluster);
+
+/**
+ * @brief Reads raw measurement data from the MC3377x device.
+ * @param cid Cluster ID.
+ * @param tagId TagID to be used to check reading against.
+ * @param NoCTs Number of cell terminals to handle.
+ * @param RawMeasResults Pointer to a structure to store raw measurement results.
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_getRawData(uint8_t cid, uint8_t tagId, uint8_t NoCTs, TYPE_MEAS_RESULTS_RAW *RawMeasResults);
+
+/**
+ * @brief Reads status registers from the MC3377x device.
+ * @param cid Cluster ID.
+ * @param Status Pointer to a structure to store status information.
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_getStatus(uint8_t cid, TYPE_STATUS *Status);
+
+/**
+ * @brief Reads threshold registers from the MC3377x device.
+ * @param cid Cluster ID.
+ * @param NoCTs Number of cell terminals to handle.
+ * @param Threshold Pointer to a structure to store threshold information.
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_getThresholds(uint8_t cid, uint8_t NoCTs, TYPE_THRESHOLDS *Threshold);
+
+/**
+ * @brief Reads fuse mirror memory data from the MC3377x device.
+ * @param cid Cluster ID.
+ * @param fusedata Pointer to a structure to store fuse data.
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_readFuseMirror(uint8_t cid, TYPE_FUSE_DATA *fusedata);
+
+/**
+ * @brief Reads temperature data from thermal sensors.
+ * @param RawMeasResults Pointer to a structure to store raw measurement results.
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_getTempRawData(TYPE_MEAS_RESULTS_RAW *RawMeasResults);
 
 #endif /* COTS_BMSDATABASE_INC_DATABASE_H_ */

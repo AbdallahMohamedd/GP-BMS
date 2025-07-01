@@ -17,41 +17,8 @@
 #include "source/COTs/BMSDataBase/Inc/database.h"
 // ----------------------------------------------------------------------------
 uint16_t falg_temp = 0;
-#define CELL_BATTERY_CAPACITY_AH 1.5
-#define CELL_OCV_FULL 4.2
-#define CELL_OCV_EMPTY 3.0
 uint16_t faultFlag;
-#define PACK_BATTERY_CAPACITY_AH 21.0
-#define PACK_OCV_FULL 58.8
-#define PACK_OCV_EMPTY 25
-// Global variables to store previous values
-static uint32_t prev_time = 0;
-static uint8_t SOC;
-static long prev_ccounter = 0;	  // Static variable to store previous Coulomb counter value
-static uint16_t prev_samples = 0; // Static variable to store previous samples value
-/*
-@ brief calculation of SOC using OCV method at startup and before connection of load
-@ param volage voltage reading of battery
- */
-float initialSOC_Pack(float ocv_values[14]);
-float initialSOC_Cell(float ocv);
 
-/*
-@ brief calculation of SOC using coloumb counting at runtime and after connection of load
-@ param currentA current drawn by the load in Amps
-@ param deltaTimeH difference in time between current and previous SOC estimation
- */
-float calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, uint16_t voltage, uint32_t current_time);
-
-/*
-@ brief calculation of SOH using Coulomb counter data
-@ param rawResults Raw measurement data including Coulomb counter
-@ param nominal_capacity_mAh Nominal capacity of the battery in mAh
-@ param v2res Reference voltage resolution
-@ param delta_t_seconds Time interval between samples in seconds
- */
-float calculate_soh(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, float nominal_capacity_mAh,
-		float v2res, uint32_t current_time, uint32_t prev_time);
 #define SW_VER 4
 #define SW_SUB 0
 void BMSEnableISense(uint8_t cidex);
@@ -64,23 +31,22 @@ static uint32_t prev_time;
 static uint32_t u32msCntDown;
 extern const SsysConf_t CONF33771TPL[];
 
-
 //---------------------------------------------------------
 TYPE_PC_CONFIG const defPCConfig = {
-		PC_CONFIG_VALID,
-		IntTPL,
-		EVB_TypeArd,
-		1,					   // no of clusters
-		6,					   // no of cells
-		MODE_NORMAL_OPERATION, // mode
-		0,					   // all CIDs measures the current
-		0,					   // measurement period 1 = 100ms
-		0					   // test features
+	PC_CONFIG_VALID,
+	IntTPL,
+	EVB_TypeArd,
+	1,					   // no of clusters
+	6,					   // no of cells
+	MODE_NORMAL_OPERATION, // mode
+	0,					   // all CIDs measures the current
+	0,					   // measurement period 1 = 100ms
+	0					   // test features
 };
 // ----------------------------------------------------------------------------
 #define StopOnError() \
-		{                 \
-		}
+	{                 \
+	}
 TYPE_INTERFACE _interface = IntTPL; //!< local copy of interface type
 TYPE_EVB _evb = EVB_TypeArd;		//!< local copy of evb type
 // ----------------------------------------------------------------------------
@@ -140,7 +106,6 @@ int main(void)
 	bms.CIDcurrent = pcconf.CIDcurrent;
 	bms.Status = BMS_Init;
 
-
 	LED_RED_On();
 
 	slaveIF_initDriver(&(bms.Interface));
@@ -153,8 +118,8 @@ int main(void)
 
 	while (1)
 	{
-		Abdullah_Temp((TYPE_MEAS_RESULTS_RAW *)&rawResults);
-		if ((bms.Status == BMS_Error)&&(falg_temp))
+		dataBase_getTempRawData((TYPE_MEAS_RESULTS_RAW *)&rawResults);
+		if ((bms.Status == BMS_Error) && (falg_temp))
 		{
 			if (thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[1]) < 40)
 			{
@@ -173,16 +138,11 @@ int main(void)
 			u32msCntDown = 1000;
 		}
 
-
-
-\
 		//		DebugInfo_PrintFaultReason(&StatusBits[0]);
 		//		//		prev_ccounter = rawResults.s32CCCounter;
 		//		prev_samples = rawResults.u16CCSamples;
 		//		PRINTF("Prev sample = %d\r\r\n", prev_samples);
 		//		PRINTF("prev_ccounter = %d\r\r\n", prev_ccounter);
-
-
 
 		u4TagID++;
 		u4TagID %= 16;
@@ -209,13 +169,13 @@ int main(void)
 				cluster[cid - 1].NoCTs = 0;
 			}
 
-			if (BMSInit(bms.NoClusters))
+			if (dataBase_BMSInit(bms.NoClusters))
 			{
 				for (cid = 1; cid <= bms.NoClusters; cid++)
 				{
 					slaveIF_clearError();
-					MC3377xGetSiliconRevision(cid, &(cluster[cid - 1])); // the sequence / order is required
-					MC3377xGetSiliconType(cid, &(cluster[cid - 1]));	 // the sequence / order is required
+					dataBase_getSiliconRevision(cid, &(cluster[cid - 1])); // the sequence / order is required
+					dataBase_getSiliconType(cid, &(cluster[cid - 1]));	   // the sequence / order is required
 				}
 				bms.Status = BMS_Config;
 			}
@@ -226,7 +186,7 @@ int main(void)
 			LEDHandler(Off);
 			for (cid = 1; cid <= bms.NoClusters; cid++)
 			{
-				MC3377xConfig(cid, CONF33771TPL);
+				dataBase_bmsConfig(cid, CONF33771TPL);
 			}
 
 			slaveIF_clearError();
@@ -250,30 +210,29 @@ int main(void)
 
 			for (cid = 1; cid <= bms.NoClusters; cid++)
 			{
-				MC3377xADCStartConversion(cid, u4TagID);
+				dataBase_startConvADC(cid, u4TagID);
 			}
 			Delay(DELAY_325us);
-			while (MC3377xADCIsConverting(gu4CIDSelected))
+			while (dataBase_ADCIsConverting(gu4CIDSelected))
 				DONOTHING(); // wait till ready
 
 			// all cids are measured and status is requested
 			for (cid = 1; cid <= bms.NoClusters; cid++)
 			{
-				if (!MC3377xGetRawMeasurements(cid, u4TagID, cluster[cid - 1].NoCTs, &(rawResults[cid - 1])))
+				if (!dataBase_getRawData(cid, u4TagID, cluster[cid - 1].NoCTs, &(rawResults[cid - 1])))
 				{
-					// PRINTF("MC3377xGetRawMeasurements failed for CID %d\n", cid);
+					// PRINTF("dataBase_getRawData failed for CID %d\n", cid);
 					bms.Status = BMS_Error; // error handling
 					u32msCntDown = 1000;
 					StopOnError();
 				}
-				if (!MC3377xGetStatus(cid, &(StatusBits[cid - 1])))
+				if (!dataBase_getStatus(cid, &(StatusBits[cid - 1])))
 				{
 					bms.Status = BMS_Error; // error handling
 					u32msCntDown = 1000;
 					StopOnError();
 				}
 			}
-
 
 			if (slaveIF_faultPinStatus())
 			{ // check FAULT pin status (after measurement, before Diagnostics)
@@ -288,7 +247,7 @@ int main(void)
 
 		case BMS_Sleeping:
 			LEDHandler(Blue);
-			if (MC3377xCheck4Wakeup(bms.Interface))
+			if (dataBase_check4Wakeup(bms.Interface))
 			{
 				bms.Status = BMS_Running;
 			}
@@ -337,7 +296,7 @@ int main(void)
 						test_cell_volrage[i] = rawResults->u16CellVoltage[i];
 					}
 
-					dataMonitor_packInfo(initialSOC_Pack(test_cell_volrage), 00, 0, 24, NormalMode, FaultStatusNone);
+					dataMonitor_packInfo(dataBase_initialSOC_Pack(test_cell_volrage), 00, 0, 24, NormalMode, FaultStatusNone);
 					PRINTF("33\r\r\n");
 				}
 				if (GPIO_ReadPinInput(GPIOE, 22) == 0)
@@ -365,10 +324,10 @@ int main(void)
 					PRINTF("55\r\r\n");
 				}
 				// PRINTF("ADC Value1: %5d  →  Temperature1: %.2f °C\r\n", rawResults[0].u16ANVoltage[0], thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
-				//PRINTF("ADC Value1: %5d  →  Temperature1: %.2f °C\r\n", rawResults[0].u16ANVoltage[1], thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
+				// PRINTF("ADC Value1: %5d  →  Temperature1: %.2f °C\r\n", rawResults[0].u16ANVoltage[1], thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
 
 				// SlaveIF_enableCellBalancing(14, false, 0.5, cid);
-				 SlaveIF_enableCellBalancing(8,  false, 0.5, cid);
+				SlaveIF_enableCellBalancing(8, false, 0.5, cid);
 				//				dataMonitor_clearScreen();
 				//				ScreenIF_SetCursor(0, 0);
 				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
@@ -497,252 +456,3 @@ uint16_t gu16Len;
 // ----------------------------------------------------------------------------
 #define MAX_NO_OF_CTx 14 // CT1..14
 #define NO_OF_ANx 7		 // AN0..6
-
-typedef struct
-{
-	float soc; // SoC in percentage (0.0 to 100.0)
-	float ocv; // OCV in volts
-} SocOcvPair;
-
-// Lookup Table (50 points from Excel data)
-#define TABLE_SIZE 50
-const SocOcvPair soc_ocv_table[TABLE_SIZE] = {
-		{0.0539138, 2.56124},  // SoC = 0.0539138053%, OCV = 2.56124 V
-		{2.0076153, 2.98329},  // SoC = 2.007615325%, OCV = 2.98329 V
-		{4.0428615, 3.22326},  // SoC = 4.0428614752%, OCV = 3.22326 V
-		{6.0981076, 3.27666},  // SoC = 5.9965629949%, OCV = 3.27666 V
-		{8.1133538, 3.30754},  // SoC = 8.1133537757%, OCV = 3.30754 V
-		{10.1282620, 3.33135}, // SoC = 10.1282629646%, OCV = 3.33135 V
-		{12.1835091, 3.35966}, // SoC = 12.1835091148%, OCV = 3.35966 V
-		{14.2387553, 3.38732}, // SoC = 14.238755265%, OCV = 3.38732 V
-		{16.2940014, 3.41563}, // SoC = 16.2940014152%, OCV = 3.41563 V
-		{18.3492476, 3.44201}, // SoC = 18.3492476347%, OCV = 3.44201 V
-		{20.4044938, 3.46710}, // SoC = 20.4044938444%, OCV = 3.46710 V
-		{22.4597400, 3.48447}, // SoC = 22.4597405738%, OCV = 3.48447 V
-		{24.5149862, 3.50313}, // SoC = 24.5149867241%, OCV = 3.50313 V
-		{26.5702323, 3.51985}, // SoC = 26.5702325435%, OCV = 3.51985 V
-		{28.6254785, 3.53401}, // SoC = 28.6254787325%, OCV = 3.53401 V
-		{30.6807247, 3.54752}, // SoC = 30.6807245519%, OCV = 3.54752 V
-		{32.7359709, 3.55910}, // SoC = 32.7359704822%, OCV = 3.55910 V
-		{34.7912171, 3.57068}, // SoC = 34.7912171218%, OCV = 3.57068 V
-		{36.8464633, 3.58162}, // SoC = 36.846463372%, OCV = 3.58162 V
-		{38.9017094, 3.59320}, // SoC = 38.9017091915%, OCV = 3.59320 V
-		{40.9569556, 3.60413}, // SoC = 40.956955011%, OCV = 3.60413 V
-		{43.0122018, 3.61571}, // SoC = 42.9732688614%, OCV = 3.61571 V
-		{45.0674480, 3.62794}, // SoC = 44.9897226809%, OCV = 3.62794 V
-		{47.1226942, 3.64145}, // SoC = 47.0249688311%, OCV = 3.64145 V
-		{49.1779403, 3.65560}, // SoC = 49.1414226505%, OCV = 3.65560 V
-		{51.2331865, 3.67104}, // SoC = 51.1766688008%, OCV = 3.67104 V
-		{53.2884327, 3.68713}, // SoC = 53.1303703205%, OCV = 3.68713 V
-		{55.3436789, 3.70643}, // SoC = 55.0028641709%, OCV = 3.70643 V
-		{57.3989250, 3.73731}, // SoC = 57.6075748896%, OCV = 3.73731 V
-		{59.4541712, 3.75854}, // SoC = 59.4800687401%, OCV = 3.75854 V
-		{61.5094174, 3.77849}, // SoC = 61.4337702598%, OCV = 3.77849 V
-		{63.5646636, 3.80165}, // SoC = 63.8760656401%, OCV = 3.80165 V
-		{65.6199098, 3.81837}, // SoC = 65.7482225292%, OCV = 3.81837 V
-		{67.6751559, 3.83382}, // SoC = 67.6207163797%, OCV = 3.83382 V
-		{69.7304021, 3.85183}, // SoC = 69.6556255686%, OCV = 3.85183 V
-		{71.7856483, 3.86727}, // SoC = 71.6093270883%, OCV = 3.86727 V
-		{73.8408945, 3.88207}, // SoC = 73.6002763083%, OCV = 3.88207 V
-		{75.8961407, 3.89880}, // SoC = 75.517067089%, OCV = 3.89880 V
-		{77.9513868, 3.91617}, // SoC = 77.5523132392%, OCV = 3.91617 V
-		{80.0066330, 3.94705}, // SoC = 79.8899147488%, OCV = 3.94705 V
-		{82.0618792, 3.95927}, // SoC = 82.0295178084%, OCV = 3.95927 V
-		{84.1171254, 3.98050}, // SoC = 84.0647639586%, OCV = 3.98050 V
-		{86.1723716, 4.00366}, // SoC = 86.1000101088%, OCV = 4.00366 V
-		{88.2276177, 4.02618}, // SoC = 88.1349192978%, OCV = 4.02618 V
-		{90.2828639, 4.04741}, // SoC = 90.170165448%, OCV = 4.04741 V
-		{92.3381101, 4.06800}, // SoC = 92.5309161977%, OCV = 4.06800 V
-		{94.3933563, 4.08280}, // SoC = 94.4034100482%, OCV = 4.08280 V
-		{96.4486024, 4.09824}, // SoC = 96.3571115679%, OCV = 4.09824 V
-		{98.5038486, 4.12076}, // SoC = 98.4735653873%, OCV = 4.12076 V
-		{100.0000000, 4.18398} // SoC = 100.9967314756% (clamped), OCV = 4.18398 V
-};
-
-float initialSOC_Pack(float ocv_values[14])
-{
-	float soc_values[14];
-	for (int i = 0; i < 14; i++)
-	{
-		ocv_values[i] = ocv_values[i] * 0.00015258789;
-	}
-	// Calculate SOC for each OCV
-	for (uint32_t j = 0; j < 14; j++)
-	{
-		float ocv = ocv_values[j];
-
-		// Handle out-of-bounds OCV
-		if (ocv <= soc_ocv_table[0].ocv)
-		{
-			soc_values[j] = soc_ocv_table[0].soc;
-			continue;
-		}
-		if (ocv >= soc_ocv_table[TABLE_SIZE - 1].ocv)
-		{
-			soc_values[j] = soc_ocv_table[TABLE_SIZE - 1].soc;
-			continue;
-		}
-
-		// Find the interval and perform linear interpolation
-		for (uint32_t i = 0; i < TABLE_SIZE - 1; i++)
-		{
-			if (ocv >= soc_ocv_table[i].ocv && ocv < soc_ocv_table[i + 1].ocv)
-			{
-				float ocv1 = soc_ocv_table[i].ocv;
-				float ocv2 = soc_ocv_table[i + 1].ocv;
-				float soc1 = soc_ocv_table[i].soc;
-				float soc2 = soc_ocv_table[i + 1].soc;
-				soc_values[j] = soc1 + (soc2 - soc1) * (ocv - ocv1) / (ocv2 - ocv1);
-				break;
-			}
-		}
-	}
-
-	// Calculate average SOC
-	float sum = 0.0;
-	for (uint32_t j = 0; j < 14; j++)
-	{
-		sum += soc_values[j];
-	}
-	return sum / 14.0;
-}
-
-float initialSOC_Cell(float ocv)
-{
-	// Handle out-of-bounds OCV
-	if (ocv <= soc_ocv_table[0].ocv)
-		return soc_ocv_table[0].soc;
-	if (ocv >= soc_ocv_table[TABLE_SIZE - 1].ocv)
-		return soc_ocv_table[TABLE_SIZE - 1].soc;
-
-	// Find the interval
-	for (uint32_t i = 0; i < TABLE_SIZE - 1; i++)
-	{
-		if (ocv >= soc_ocv_table[i].ocv && ocv < soc_ocv_table[i + 1].ocv)
-		{
-			float ocv1 = soc_ocv_table[i].ocv;
-			float ocv2 = soc_ocv_table[i + 1].ocv;
-			float soc1 = soc_ocv_table[i].soc;
-			float soc2 = soc_ocv_table[i + 1].soc;
-			// Linear interpolation
-			return soc1 + (soc2 - soc1) * (ocv - ocv1) / (ocv2 - ocv1);
-		}
-	}
-	return 0.0; // Should not reach here
-}
-
-/*
- * Function: calculateSOC
- * Description: Calculates SOC using a hybrid method (OCV initialization + Coulomb counting)
- * Parameters:
- *   - rawResults: Raw measurement data including Coulomb counter and current
- *   - voltage: Stack voltage reading
- *   - current_time: Current timestamp in milliseconds
- * Returns: Updated SOC percentage
- */
-/*float calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, uint32_t current_time)
-{
-	 float capacityAh;
-
-	 if (voltage > 10)
-	 {
-		 capacityAh = PACK_BATTERY_CAPACITY_AH;
-	 }
-	 else
-	 {
-		 capacityAh = CELL_BATTERY_CAPACITY_AH;
-	 }
-
-	 // Calculate charge difference using Coulomb counter
-	 float delta_charge_coulombs = (float)(rawResults.s32CCCounter) * 0.0001;  // Assuming V2RES = 0.0001V, adjust if different
-	 float delta_time_seconds = (current_time - prev_time) / 1000.0;           // Convert ms to seconds
-	 float deltaSOC = (delta_charge_coulombs / (capacityAh * 3600.0)) * 100.0; // Convert to Ah and percentage
-
-	 SOC += deltaSOC;
-	 prev_time = current_time;
-
-//     if (SOC > 100.0)
-//         SOC = 100.0;
-//     else if (SOC < 0.0)
-//         SOC = 0.0;
-
-	 return SOC;
- }
- */
-
-/*
- * Function: calculate_soh
- * Description: Calculates the State of Health (SOH) of the battery based on Coulomb counter data
- * Parameters:
- *   - rawResults: Raw measurement data including Coulomb counter and samples
- *   - voltage: Stack voltage reading to determine pack or cell context
- *   - nominal_capacity_mAh: Nominal capacity of the battery in milliamp-hours (mAh)
- *   - v2res: Reference voltage resolution (V2RES) in volts per LSB
- *   - current_time: Current timestamp in milliseconds
- *   - prev_time: Previous timestamp in milliseconds for time difference
- * Returns: SOH percentage (0.0 to 100.0)
- */
-float calculate_soh(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, float nominal_capacity_mAh,
-		float v2res, uint32_t current_time, uint32_t prev_time)
-{
-	float capacityAh;
-
-	// Determine nominal capacity based on voltage (pack or cell)
-	if (voltage > 10)
-	{
-		capacityAh = nominal_capacity_mAh / 1000.0; // Convert mAh to Ah for pack (21 Ah for 14 cells)
-	}
-	else
-	{
-		capacityAh = nominal_capacity_mAh / (1000.0 * 14.0); // Convert mAh to Ah per cell (1.5 Ah)
-	}
-
-	// Initialize prev_time and prev values on first call
-	if (prev_time == 0)
-	{
-		prev_time = current_time;
-		prev_ccounter = rawResults.s32CCCounter;
-		prev_samples = rawResults.u16CCSamples;
-		return 100.0; // Initial SOH assumed 100% until measured
-	}
-
-	// Calculate time difference in seconds
-	float delta_time_seconds = (current_time - prev_time) / 1000.0;
-
-	// Check if samples are available to avoid division by zero
-	if (rawResults.u16CCSamples > 0 && prev_samples > 0)
-	{
-		// Calculate change in Coulomb counter and samples
-		long delta_ccounter = rawResults.s32CCCounter - prev_ccounter;
-		uint16_t delta_samples = rawResults.u16CCSamples - prev_samples;
-
-		// Calculate average current in Amps using V2RES
-		float average_current = (delta_ccounter * v2res) / delta_samples;
-		float charge_ah = (average_current * delta_time_seconds) / 3600.0; // Convert to Ah
-
-		// Calculate current capacity based on accumulated charge
-		float current_capacity_ah = capacityAh - (charge_ah / 1000.0); // Adjust based on discharge
-
-		// Calculate SOH as a percentage of nominal capacity
-		float soh = (current_capacity_ah / capacityAh) * 100.0;
-
-		// Ensure SOH is within valid range
-		if (soh > 100.0)
-			soh = 100.0;
-		else if (soh < 0.0)
-			soh = 0.0;
-
-		// Update previous values
-		prev_ccounter = rawResults.s32CCCounter;
-		prev_samples = rawResults.u16CCSamples;
-		prev_time = current_time;
-
-		// Return SOH
-		return soh;
-	}
-	else
-	{
-		// Return previous SOH if no valid samples
-		return 100.0; // Default to 100% if no change detected
-	}
-}

@@ -1,44 +1,108 @@
-
-#include "source/COTs/BMSDataBase/Inc/database.h"
-
-
-// ----------------------------------------------------------------------------
-extern const uint16_t _TAGID_BCC14p2[];
-extern const uint16_t _TAGID_BCC14[];
-extern const uint16_t _TAGID_BCC6[];
-// ----------------------------------------------------------------------------
-#define CheckCID(v) (((v) < 1) || ((v) > MAX_CLUSTER)) //!< macro to check if CID is in {1..MAX_CLUSTER}
-// ----------------------------------------------------------------------------
-/*! \brief Initialises the BMS system
+/**
+ * @file        dataBase.c
+ * @brief       Implementation of the BMS Database module.
  *
- * Initialises the BMS system with NoOfNodes.
+ * @details     This file contains the implementation for managing Battery Management System (BMS) data,
+ *              including initialization, configuration, measurement reading, and status retrieval
+ *              from MC3377x devices.
  *
- * <b>For all nodes</b>
- * - Clear errors (\ref slaveIF_clearError)
- * - Send wakeup
- * - Check if unassigned node present
- * 		- Assigns CID (starting with 1, counting up)
- * 		- Close the TPL bus switch (except for last CID in chain)
- *
- * @param NoOfNodes	 1..15 number of nodes in the chain
- * @return \b true   if successful
- * @return \b false  in case of errors
- *
- * \b Note: works for TPL and SPI (only one node) interface
- *
+ * @note        Project: Graduation Project - Battery Management System
+ * @note        Engineer: Abdullah Mohamed
+ * @note        Component: BMS DataBase module
  */
 
-//---------------------------ADC-----------------------------------------------------
+//=============================================================================
+// Includes
+//=============================================================================
+#include "source/COTs/BMSDataBase/Inc/database.h"
 
-/*******************************************************************************
- * Prototypes
- ******************************************************************************/
+//=============================================================================
+// Lookup table
+//=============================================================================
+typedef struct
+{
+	float soc; // SoC in percentage (0.0 to 100.0)
+	float ocv; // OCV in volts
+} SOC_OCV_Pair;
 
-/*******************************************************************************
- * Code
- ******************************************************************************/
+// Lookup Table (50 points from Excel data)
+#define TABLE_SIZE 50
+SOC_OCV_Pair soc_ocv_table[TABLE_SIZE] = {
+	{0.0539138, 2.56124},  // SoC = 0.0539138053%, OCV = 2.56124 V
+	{2.0076153, 2.98329},  // SoC = 2.007615325%, OCV = 2.98329 V
+	{4.0428615, 3.22326},  // SoC = 4.0428614752%, OCV = 3.22326 V
+	{6.0981076, 3.27666},  // SoC = 5.9965629949%, OCV = 3.27666 V
+	{8.1133538, 3.30754},  // SoC = 8.1133537757%, OCV = 3.30754 V
+	{10.1282620, 3.33135}, // SoC = 10.1282629646%, OCV = 3.33135 V
+	{12.1835091, 3.35966}, // SoC = 12.1835091148%, OCV = 3.35966 V
+	{14.2387553, 3.38732}, // SoC = 14.238755265%, OCV = 3.38732 V
+	{16.2940014, 3.41563}, // SoC = 16.2940014152%, OCV = 3.41563 V
+	{18.3492476, 3.44201}, // SoC = 18.3492476347%, OCV = 3.44201 V
+	{20.4044938, 3.46710}, // SoC = 20.4044938444%, OCV = 3.46710 V
+	{22.4597400, 3.48447}, // SoC = 22.4597405738%, OCV = 3.48447 V
+	{24.5149862, 3.50313}, // SoC = 24.5149867241%, OCV = 3.50313 V
+	{26.5702323, 3.51985}, // SoC = 26.5702325435%, OCV = 3.51985 V
+	{28.6254785, 3.53401}, // SoC = 28.6254787325%, OCV = 3.53401 V
+	{30.6807247, 3.54752}, // SoC = 30.6807245519%, OCV = 3.54752 V
+	{32.7359709, 3.55910}, // SoC = 32.7359704822%, OCV = 3.55910 V
+	{34.7912171, 3.57068}, // SoC = 34.7912171218%, OCV = 3.57068 V
+	{36.8464633, 3.58162}, // SoC = 36.846463372%, OCV = 3.58162 V
+	{38.9017094, 3.59320}, // SoC = 38.9017091915%, OCV = 3.59320 V
+	{40.9569556, 3.60413}, // SoC = 40.956955011%, OCV = 3.60413 V
+	{43.0122018, 3.61571}, // SoC = 42.9732688614%, OCV = 3.61571 V
+	{45.0674480, 3.62794}, // SoC = 44.9897226809%, OCV = 3.62794 V
+	{47.1226942, 3.64145}, // SoC = 47.0249688311%, OCV = 3.64145 V
+	{49.1779403, 3.65560}, // SoC = 49.1414226505%, OCV = 3.65560 V
+	{51.2331865, 3.67104}, // SoC = 51.1766688008%, OCV = 3.67104 V
+	{53.2884327, 3.68713}, // SoC = 53.1303703205%, OCV = 3.68713 V
+	{55.3436789, 3.70643}, // SoC = 55.0028641709%, OCV = 3.70643 V
+	{57.3989250, 3.73731}, // SoC = 57.6075748896%, OCV = 3.73731 V
+	{59.4541712, 3.75854}, // SoC = 59.4800687401%, OCV = 3.75854 V
+	{61.5094174, 3.77849}, // SoC = 61.4337702598%, OCV = 3.77849 V
+	{63.5646636, 3.80165}, // SoC = 63.8760656401%, OCV = 3.80165 V
+	{65.6199098, 3.81837}, // SoC = 65.7482225292%, OCV = 3.81837 V
+	{67.6751559, 3.83382}, // SoC = 67.6207163797%, OCV = 3.83382 V
+	{69.7304021, 3.85183}, // SoC = 69.6556255686%, OCV = 3.85183 V
+	{71.7856483, 3.86727}, // SoC = 71.6093270883%, OCV = 3.86727 V
+	{73.8408945, 3.88207}, // SoC = 73.6002763083%, OCV = 3.88207 V
+	{75.8961407, 3.89880}, // SoC = 75.517067089%, OCV = 3.89880 V
+	{77.9513868, 3.91617}, // SoC = 77.5523132392%, OCV = 3.91617 V
+	{80.0066330, 3.94705}, // SoC = 79.8899147488%, OCV = 3.94705 V
+	{82.0618792, 3.95927}, // SoC = 82.0295178084%, OCV = 3.95927 V
+	{84.1171254, 3.98050}, // SoC = 84.0647639586%, OCV = 3.98050 V
+	{86.1723716, 4.00366}, // SoC = 86.1000101088%, OCV = 4.00366 V
+	{88.2276177, 4.02618}, // SoC = 88.1349192978%, OCV = 4.02618 V
+	{90.2828639, 4.04741}, // SoC = 90.170165448%, OCV = 4.04741 V
+	{92.3381101, 4.06800}, // SoC = 92.5309161977%, OCV = 4.06800 V
+	{94.3933563, 4.08280}, // SoC = 94.4034100482%, OCV = 4.08280 V
+	{96.4486024, 4.09824}, // SoC = 96.3571115679%, OCV = 4.09824 V
+	{98.5038486, 4.12076}, // SoC = 98.4735653873%, OCV = 4.12076 V
+	{100.0000000, 4.18398} // SoC = 100.9967314756% (clamped), OCV = 4.18398 V
+};
+//=============================================================================
+// Global Variables
+//=============================================================================
+static uint32_t prev_time = 0;	  //!< Static variable to store previous timestamp for SOC/SOH calculations.
+static uint8_t SOC;				  //!< Static variable to store State of Charge.
+static long prev_ccounter = 0;	  //!< Static variable to store previous Coulomb counter value.
+static uint16_t prev_samples = 0; //!< Static variable to store previous samples value for Coulomb counter.
 
-bool BMSInit(uint8_t NoOfNodes)
+//=============================================================================
+// Function Definitions
+//=============================================================================
+/**
+ * @brief Initializes the BMS system.
+ * @details Initializes the BMS system with the specified number of nodes.
+ *          For all nodes:
+ *          - Clears errors (slaveIF_clearError).
+ *          - Sends wakeup command.
+ *          - Checks for unassigned nodes and assigns CID (starting with 1, counting up).
+ *          - Closes the TPL bus switch (except for the last CID in the chain).
+ * @param NoOfNodes Number of nodes in the chain (1..15).
+ * @return bool True if successful, false in case of errors.
+ * @note Works for TPL and SPI (only one node) interface.
+ */
+bool dataBase_BMSInit(uint8_t NoOfNodes)
 {
 	uint8_t cid;
 
@@ -50,38 +114,31 @@ bool BMSInit(uint8_t NoOfNodes)
 	for (cid = 1; cid <= NoOfNodes; cid++)
 	{
 		slaveIF_clearError();
-		slaveIF_wakeUp(); // send wakeup in case next device is in idle mode
+		slaveIF_wakeUp(); // Send wakeup in case next device is in idle mode
 		if (slaveIF_readReg(CIDunassiged, INIT, 1, NULL))
-		{															   // check if somebody is there / read Init register
-			slaveIF_writeReg(CIDunassiged, INIT, (uint16_t)cid, NULL); // assign CID
+		{															   // Check if somebody is there / read Init register
+			slaveIF_writeReg(CIDunassiged, INIT, (uint16_t)cid, NULL); // Assign CID
 			if (cid < NoOfNodes)
-			{													// all nodes except last one
-				slaveIF_writeReg(cid, INIT, INIT_BUS_SW, NULL); // close switch	(except last node)
+			{													// All nodes except last one
+				slaveIF_writeReg(cid, INIT, INIT_BUS_SW, NULL); // Close switch	(except last node)
 			}
 			else
 			{
-				slaveIF_writeReg(cid, INIT, 0x0000, NULL); // open switch	(last node)
+				slaveIF_writeReg(cid, INIT, 0x0000, NULL); // Open switch	(last node)
 			}
 		}
 	}
 	return !slaveIF_getError(NULL);
 }
-// ----------------------------------------------------------------------------
-/*! \brief Performs basic MC33771B configuration.
- *
- * Loads the configuration list conf into the node cid registers.
- *
- * @param  cid        CID to be configured
- * @param  conf       pointer to the configuration list
- *
- * @return \b true    if successful
- * @return \b false   if not successful
- *
- * \note
- * A list entry with register address equal to 0 terminates the list.
- *
+
+/**
+ * @brief Performs basic MC33771B configuration.
+ * @details Loads the configuration list `conf` into the registers of the node specified by `cid`.
+ * @param cid Cluster ID to be configured.
+ * @param conf Pointer to the configuration list. A list entry with `regAdr` equal to 0 terminates the list.
+ * @return bool True if successful, false if not successful.
  */
-bool MC3377xConfig(uint8_t cid, const SsysConf_t conf[])
+bool dataBase_bmsConfig(uint8_t cid, const SsysConf_t conf[])
 {
 	uint16_t n;
 
@@ -96,17 +153,15 @@ bool MC3377xConfig(uint8_t cid, const SsysConf_t conf[])
 	}
 	return !slaveIF_getError(NULL);
 }
-// ----------------------------------------------------------------------------
-/*! \brief starts a ADC conversion (set SOC bit in ADC_CFG register),
- *
- * @param cid         cluster ID
- * @param tagID       TagID for ADC measurement
- *
- * @return \b true    if successful
- * @return \b false   if not successful
- *
+
+/**
+ * @brief Starts an ADC conversion.
+ * @details Sets the SOC bit in the ADC_CFG register to initiate an ADC conversion.
+ * @param cid Cluster ID.
+ * @param tagID TagID for ADC measurement.
+ * @return bool True if successful, false if not successful.
  */
-bool MC3377xADCStartConversion(uint8_t cid, uint8_t tagID)
+bool dataBase_startConvADC(uint8_t cid, uint8_t tagID)
 {
 	uint16_t adcCfg;
 
@@ -131,23 +186,18 @@ bool MC3377xADCStartConversion(uint8_t cid, uint8_t tagID)
 		return true;
 	}
 }
-// ----------------------------------------------------------------------------
-/*! \brief checks status of End Of Conversion.
- *
- * Checks the status of the conversion of the cluster CID by reading
- * the SOC/nEOC bit in ADC_CFG register.
- *
- * \note
- * Also returns \b false in case of errors:
- * - cid out of range \ref CheckCID  (sets \ref ERR_WrongParam)
- * - read ADC_CFG register failed
- *
- * @param cid       cluster ID
 
- * @return \b true    if conversion still ongoing
- * @return \b false   if Conversion complete, or in case of errors
+/**
+ * @brief Checks the status of End Of Conversion (EOC).
+ * @details Checks the status of the conversion of the cluster `cid` by reading
+ *          the SOC/nEOC bit in the ADC_CFG register.
+ * @param cid Cluster ID.
+ * @return bool True if conversion is still ongoing, false if conversion is complete or an error occurred.
+ * @note Returns false in case of errors:
+ *       - `cid` out of range (sets ERR_WrongParam).
+ *       - Reading ADC_CFG register failed.
  */
-bool MC3377xADCIsConverting(uint8_t cid)
+bool dataBase_ADCIsConverting(uint8_t cid)
 {
 	uint16_t adcCfg;
 
@@ -163,9 +213,15 @@ bool MC3377xADCIsConverting(uint8_t cid)
 		return false;
 	}
 }
-// ----------------------------------------------------------------------------
 
-bool Abdullah_Temp(TYPE_MEAS_RESULTS_RAW *RawMeasResults)
+/**
+ * @brief Reads temperature data from thermal sensors.
+ * @details This function reads raw data from various thermal channels and stores them
+ *          in the `u16ANVoltage` array of the `RawMeasResults` structure.
+ * @param RawMeasResults Pointer to a `TYPE_MEAS_RESULTS_RAW` structure to store the raw measurement results.
+ * @return bool Always returns true, as error handling for `thermalManager_readRawData` is not implemented here.
+ */
+bool dataBase_getTempRawData(TYPE_MEAS_RESULTS_RAW *RawMeasResults)
 {
 	RawMeasResults->u16ANVoltage[0] = thermalManager_readRawData(PTB0_Channel);
 	RawMeasResults->u16ANVoltage[1] = thermalManager_readRawData(PTB1_Channel);
@@ -176,21 +232,18 @@ bool Abdullah_Temp(TYPE_MEAS_RESULTS_RAW *RawMeasResults)
 	RawMeasResults->u16ANVoltage[6] = thermalManager_readRawData(PTD0_Channel);
 }
 
-/*! \brief reads the measurement registers and return them as raw data in RawMeasResults
- *
- * @param cid        		cluster (CID) to handle
- * @param tagId      		TagID to be used to check reading against
- * @param NoCTs      		number of cell termianls to handle
- * @param *RawMeasResults   pointer to RawMeasResults (return data)
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
- * \remarks
- * The Measurement data is only valid, if successfully executed (true).
- * There is no check of DataReady (Bit15) implemented!
+/**
+ * @brief Reads measurement registers and returns them as raw data.
+ * @details Reads various measurement registers (current, stack voltage, cell voltages, IC temperature, band gap) and
+ *          Coulomb counter data from the MC3377x device and populates the `RawMeasResults` structure.
+ * @param cid Cluster ID to handle.
+ * @param tagId TagID to be used to check reading against.
+ * @param NoCTs Number of cell terminals to handle.
+ * @param RawMeasResults Pointer to a `TYPE_MEAS_RESULTS_RAW` structure to store the raw measurement results.
+ * @return bool True if successful, false if not successful.
+ * @remarks The Measurement data is only valid if successfully executed (true). There is no check of DataReady (Bit15) implemented!
  */
-bool MC3377xGetRawMeasurements(uint8_t cid, uint8_t tagId, uint8_t NoCTs, TYPE_MEAS_RESULTS_RAW *RawMeasResults)
+bool dataBase_getRawData(uint8_t cid, uint8_t tagId, uint8_t NoCTs, TYPE_MEAS_RESULTS_RAW *RawMeasResults)
 {
 	uint16_t rdData[0x1B];
 	uint8_t u8Idx;
@@ -239,18 +292,17 @@ bool MC3377xGetRawMeasurements(uint8_t cid, uint8_t tagId, uint8_t NoCTs, TYPE_M
 
 	return !slaveIF_getError(NULL);
 }
-/*! \brief reads the status registers and return them in Status
- *
- * @param cid        cluster (CID) to handle
- * @param *Status    pointer to status (return data)
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
- * \remarks
- * The Status data is only value if successfully executed (true).
+
+/**
+ * @brief Reads the status registers and returns them in the Status structure.
+ * @details Reads various status registers (cell OV/UV, CB faults, GPIO status, AN temp, ISense, Comm, Faults) and
+ *          populates the `Status` structure.
+ * @param cid Cluster ID to handle.
+ * @param Status Pointer to a `TYPE_STATUS` structure to store the status information.
+ * @return bool True if successful, false if not successful.
+ * @remarks The Status data is only valid if successfully executed (true).
  */
-bool MC3377xGetStatus(uint8_t cid, TYPE_STATUS *Status)
+bool dataBase_getStatus(uint8_t cid, TYPE_STATUS *Status)
 {
 	uint16_t rdData[13];
 
@@ -282,21 +334,16 @@ bool MC3377xGetStatus(uint8_t cid, TYPE_STATUS *Status)
 
 	return !slaveIF_getError(NULL);
 }
-// ----------------------------------------------------------------------------
-/*! \brief Reads the silicon revision of the device
- *
- * Reads the \ref SILICON_REV register and retrieves full and mask revisions of the device.
- *
- * @param cid         cluster (CID) to handle
- * @param pCluster    fills the pCluster FRev and MRev
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
- * \remarks
- * In case of not successful execution Frev and Mrev will be set to 0
+
+/**
+ * @brief Reads the silicon revision of the device.
+ * @details Reads the SILICON_REV register and retrieves full and mask revisions of the device.
+ * @param cid Cluster ID to handle.
+ * @param pCluster Pointer to a `SclusterInfo_t` structure to fill with FRev and MRev.
+ * @return bool True if successful, false if not successful.
+ * @remarks In case of not successful execution, FRev and MRev will be set to 0.
  */
-bool MC3377xGetSiliconRevision(uint8_t cid, SclusterInfo_t *pCluster)
+bool dataBase_getSiliconRevision(uint8_t cid, SclusterInfo_t *pCluster)
 {
 	uint16_t rdData;
 
@@ -313,44 +360,36 @@ bool MC3377xGetSiliconRevision(uint8_t cid, SclusterInfo_t *pCluster)
 	}
 	return !slaveIF_getError(NULL);
 }
-// ----------------------------------------------------------------------------
-/*! \brief Reads the silicon type of the cid.
+
+/**
+ * @brief Reads the silicon type of the CID.
+ * @details Evaluates the silicon type of the CID. The routine uses a different algorithm
+ *          depending on whether the device is in reset state (registers are in reset state)
+ *          or if it has to be assumed that the registers might already be modified.
  *
- * Evaluates the silicon type of the cid. The routine is using a different
- * algorithm depending if the device is in reset state (registers are in reset state)
- * or if it has to be assumed the the registers might already be modified.
+ *          <b>Register in Reset state (cid = 0)</b>
+ *          - Reads OV_UV_EN and SYS_CFG2 registers.
+ *          - If OV_UV_EN = 0x3FFF => MC33771 (otherwise MC33772).
+ *          - If SYS_CFG2 bit14 = 1 => Rev A (otherwise Rev B).
  *
- * <b>Register in Reset state (cid = 0)</b> \n
- * Reads \ref OV_UV_EN and \ref SYS_CFG2 registers.
- * - if \ref OV_UV_EN = 0x3FFF => MC33771 (otherwise MC33772)
- * - if \ref SYS_CFG2 bit14 = 1 => Rev A (otherwise Rev B)
- *
- * <b>Register state unknown</b> \n
- * store \ref OV_UV_EN, attempt to write 0x3FFF, read and compare with 0x3FFF, restore \ref OV_UV_EN
- * - if \ref OV_UV_EN = 0x3FFF => MC33771 (otherwise MC33772)
- *
- * store \ref INIT, attempt to set bit 5, read and compare with 0x3FFF, restore \ref INIT
- * - if \ref INIT bit5 = 0 => Rev A (otherwise Rev B)
- *
- * @param cid         cluster (CID) to handle
- * @param pCluster    fills the pCluster.Chip, pCluster.tagIDlist and pCluster.NoCTS
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
- * \remarks
- * The clusters silicon revision must be known! (MC3377xGetSiliconRevision() must be called \b first!)
- *
- * Also translates engineering versions to normal versions:\n
- * | device  | engineering version | translated version |
- * |:-------:|:-------------------:|:------------------:|
- * | MC33771 |       7.7           |        1.0         |
- * | MC33771 |       7.2, 7.3      |        2.0         |
- * | MC33771 |       6.2, 6.6      |        3.1         |
- * | MC33771 |       6.1           |        3.2         |
- *
+ *          <b>Register state unknown</b>
+ *          - Stores OV_UV_EN, attempts to write 0x3FFF, reads and compares with 0x3FFF, restores OV_UV_EN.
+ *          - If OV_UV_EN = 0x3FFF => MC33771 (otherwise MC33772).
+ *          - Stores INIT, attempts to set bit 5, reads and compares with 0x3FFF, restores INIT.
+ *          - If INIT bit5 = 0 => Rev A (otherwise Rev B).
+ * @param cid Cluster ID to handle.
+ * @param pCluster Pointer to a `SclusterInfo_t` structure to fill with Chip, TagIDlist, and NoCTs.
+ * @return bool True if successful, false if not successful.
+ * @remarks The cluster's silicon revision must be known! (`dataBase_getSiliconRevision()` must be called first!)
+ *          Also translates engineering versions to normal versions:
+ *          | device  | engineering version | translated version |
+ *          |:-------:|:-------------------:|:-------------------|
+ *          | MC33771 |       7.7           |        1.0         |
+ *          | MC33771 |       7.2, 7.3      |        2.0         |
+ *          | MC33771 |       6.2, 6.6      |        3.1         |
+ *          | MC33771 |       6.1           |        3.2         |
  */
-bool MC3377xGetSiliconType(uint8_t cid, SclusterInfo_t *pCluster)
+bool dataBase_getSiliconType(uint8_t cid, SclusterInfo_t *pCluster)
 {
 	TypeReturn_t res;
 	uint16_t rdData, bakData;
@@ -468,22 +507,18 @@ bool MC3377xGetSiliconType(uint8_t cid, SclusterInfo_t *pCluster)
 	}
 	return !slaveIF_getError(NULL);
 }
-// ----------------------------------------------------------------------------
 
-// ----------------------------------------------------------------------------
-/*! \brief reads the threshold registers and return them in Threshold
- *
- * @param cid         cluster (CID) to handle
- * @param NoCTs       number of cell terminals to handle
- * @param *Threshold  pointer to thresholds (return data)
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
- * \remarks
- * The Threshold data is only value if successfully executed (true).
+/**
+ * @brief Reads the threshold registers and returns them in the Threshold structure.
+ * @details Reads various threshold registers (cell OV/UV, ANx OT/UT, ISense OC, Coulomb Counter) and
+ *          populates the `Threshold` structure.
+ * @param cid Cluster ID to handle.
+ * @param NoCTs Number of cell terminals to handle.
+ * @param Threshold Pointer to a `TYPE_THRESHOLDS` structure to store the thresholds.
+ * @return bool True if successful, false if not successful.
+ * @remarks The Threshold data is only valid if successfully executed (true).
  */
-bool MC3377xGetThresholds(uint8_t cid, uint8_t NoCTs, TYPE_THRESHOLDS *Threshold)
+bool dataBase_getThresholds(uint8_t cid, uint8_t NoCTs, TYPE_THRESHOLDS *Threshold)
 {
 	uint16_t rdData[29];
 	uint8_t u8Idx;
@@ -534,25 +569,34 @@ bool MC3377xGetThresholds(uint8_t cid, uint8_t NoCTs, TYPE_THRESHOLDS *Threshold
 	return !slaveIF_getError(NULL);
 }
 
-// ----------------------------------------------------------------------------
-/*! \brief Transitions to sleep mode.
- *
- * Implementation is interface dependent.
- *
- * <b>SPI interface</b> \n
- * - Write an 1 to Go2Sleep in SYS_CFG_GLOBAL register (CID = CIDassigned)
- *
- * <b>TPL interface</b> \n
- * - Global Write an 1 to Go2Sleep in SYS_CFG_GLOBAL register (CID = GLOBAL_CID)
- * - Disables TPL
- *
- * @param interface  Interface used (SPI or TPL)
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
+/**
+ * @brief Reads fuse mirror memory data from the MC3377x device.
+ * @details Reads 32 words (16-bit) of fuse mirror memory data from the device.
+ * @param cid Cluster ID to handle.
+ * @param fusedata Pointer to a `TYPE_FUSE_DATA` structure to store the fuse data.
+ * @return bool True if successful, false if not successful.
  */
-bool MC3377xSleepMode(TYPE_INTERFACE interface)
+bool dataBase_readFuseMirror(uint8_t cid, TYPE_FUSE_DATA *fusedata)
+{
+	uint16_t rdData;
+	uint8_t u8Adr;
+
+#define FUSE_MIRROR_CTRL_FSTM BIT(4)
+
+	for (u8Adr = 0; u8Adr < 32; u8Adr++)
+	{
+		slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), &rdData);
+		slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &(fusedata->u16Data[u8Adr]));
+	}
+	return !slaveIF_getError(NULL);
+}
+
+/**
+ * @brief Puts the MC3377x device into sleep mode.
+ * @param interface The communication interface (e.g., SPI, TPL).
+ * @return bool True if successful, false otherwise.
+ */
+bool dataBase_sleepMode(TYPE_INTERFACE interface)
 {
 
 	if (interface == IntSPI)
@@ -573,28 +617,13 @@ bool MC3377xSleepMode(TYPE_INTERFACE interface)
 		return slaveIF_setError(ERR_WrongInterface);
 	}
 }
-// ----------------------------------------------------------------------------
-/*! \brief Transitions to normal mode.
- *
- * Implementation is interface dependent.
- *
- * <b>SPI interface</b> \n
- * - Calls \ref slaveIF_wakeUp
- *
- * <b>TPL interface</b> \n
- * - Calls \ref slaveIF_transceiverEnable
- * - Calls \ref slaveIF_wakeUp
- *
- * @param interface  Interface used (SPI or TPL)
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
- * \remarks
- * Does not handle the WAIT_AFTER_WAKEUP time! \n
- * Sets \ref ERR_WrongInterface in case interface is unknown.
+
+/**
+ * @brief Puts the MC3377x device into normal operating mode.
+ * @param interface The communication interface (e.g., SPI, TPL).
+ * @return bool True if successful, false otherwise.
  */
-bool MC3377xNormalMode(TYPE_INTERFACE interface)
+bool dataBase_normalMode(TYPE_INTERFACE interface)
 {
 
 	if (interface == IntSPI)
@@ -615,36 +644,20 @@ bool MC3377xNormalMode(TYPE_INTERFACE interface)
 		return slaveIF_setError(ERR_WrongInterface);
 	}
 }
-// ----------------------------------------------------------------------------
-/*! \brief Checks if a MC33771B has woken up.
- *
- * Implementation is interface dependent.
- *
- * <b>SPI interface</b> \n
- * - Wake-up has occurred if FAULT pin is high (\ref slaveIF_faultPinStatus)
- *
- * <b>TPL interface</b> \n
- * - Wake-up has occurred if INTB pin is low (\ref slaveIF_IntbPinStatus)
- * 		- waits for 150us
- * 		- enables TPL (\ref slaveIF_transceiverEnable)
- * 		- send wakeup pattern (\ref slaveIF_wakeUp)
- *
- * @param interface  Interface used (SPI or TPL)
- *
- * @return \b true   if wakeup was detected
- * @return \b false  if no wakeup was detected or in case of errors
- *
- * \remarks
- * Sets \ref ERR_WrongInterface in case interface is unknown.
+
+/**
+ * @brief Checks if the MC3377x device has woken up from sleep mode.
+ * @param interface The communication interface (e.g., SPI, TPL).
+ * @return bool True if the device has woken up, false otherwise.
  */
-bool MC3377xCheck4Wakeup(TYPE_INTERFACE interface)
+bool dataBase_check4Wakeup(TYPE_INTERFACE interface)
 {
 
 	if (interface == IntSPI)
 	{
 		if (slaveIF_faultPinStatus())
 		{
-			//		slaveIF_wakeUp();													// wakeup BCC e.g. required if FAULT is enabled but WAKEUP is not
+			//		slaveIF_wakeUp();	// wakeup BCC e.g. required if FAULT is enabled but WAKEUP is not
 			return true;
 		}
 		return false;
@@ -665,27 +678,198 @@ bool MC3377xCheck4Wakeup(TYPE_INTERFACE interface)
 		return slaveIF_setError(ERR_WrongInterface);
 	}
 }
-// ----------------------------------------------------------------------------
-/*! \brief reads the FUSE Mirror data.
- *
- * @param cid		CID to read from
- * @param *fusedata  pointer to fuse data
- *
- * @return \b true   if successful executed
- * @return \b false  if not successful executed
- *
+
+/**
+ * @brief Calculates the initial State of Charge (SOC) for the battery pack using the Open Circuit Voltage (OCV) method.
+ * @param ocv_values Array of open circuit voltage values for each cell (14 cells).
+ * @return float Initial State of Charge (SOC) for the pack.
  */
-bool MC3377xReadFuseMirror(uint8_t cid, TYPE_FUSE_DATA *fusedata)
+float dataBase_initialSOC_Pack(float ocv_values[14])
 {
-	uint16_t rdData;
-	uint8_t u8Adr;
-
-#define FUSE_MIRROR_CTRL_FSTM BIT(4)
-
-	for (u8Adr = 0; u8Adr < 32; u8Adr++)
+	float soc_values[14];
+	for (int i = 0; i < 14; i++)
 	{
-		slaveIF_writeReg(cid, FUSE_MIRROR_CTRL, (u8Adr << 8), &rdData);
-		slaveIF_readReg(cid, FUSE_MIRROR_DATA, 1, &(fusedata->u16Data[u8Adr]));
+		ocv_values[i] = ocv_values[i] * 0.00015258789;
 	}
-	return !slaveIF_getError(NULL);
+	// Calculate SOC for each OCV
+	for (uint32_t j = 0; j < 14; j++)
+	{
+		float ocv = ocv_values[j];
+
+		// Handle out-of-bounds OCV
+		if (ocv <= soc_ocv_table[0].ocv)
+		{
+			soc_values[j] = soc_ocv_table[0].soc;
+			continue;
+		}
+		if (ocv >= soc_ocv_table[TABLE_SIZE - 1].ocv)
+		{
+			soc_values[j] = soc_ocv_table[TABLE_SIZE - 1].soc;
+			continue;
+		}
+
+		// Find the interval and perform linear interpolation
+		for (uint32_t i = 0; i < TABLE_SIZE - 1; i++)
+		{
+			if (ocv >= soc_ocv_table[i].ocv && ocv < soc_ocv_table[i + 1].ocv)
+			{
+				float ocv1 = soc_ocv_table[i].ocv;
+				float ocv2 = soc_ocv_table[i + 1].ocv;
+				float soc1 = soc_ocv_table[i].soc;
+				float soc2 = soc_ocv_table[i + 1].soc;
+				soc_values[j] = soc1 + (soc2 - soc1) * (ocv - ocv1) / (ocv2 - ocv1);
+				break;
+			}
+		}
+	}
+
+	// Calculate average SOC
+	float sum = 0.0;
+	for (uint32_t j = 0; j < 14; j++)
+	{
+		sum += soc_values[j];
+	}
+	return sum / 14.0;
+}
+
+/**
+ * @brief Calculates the initial State of Charge (SOC) for a single cell using the Open Circuit Voltage (OCV) method.
+ * @param ocv Open circuit voltage of the cell.
+ * @return float Initial State of Charge (SOC) for the cell.
+ */
+float dataBase_initialSOC_Cell(float ocv)
+{
+	// Handle out-of-bounds OCV
+	if (ocv <= soc_ocv_table[0].ocv)
+		return soc_ocv_table[0].soc;
+	if (ocv >= soc_ocv_table[TABLE_SIZE - 1].ocv)
+		return soc_ocv_table[TABLE_SIZE - 1].soc;
+
+	// Find the interval
+	for (uint32_t i = 0; i < TABLE_SIZE - 1; i++)
+	{
+		if (ocv >= soc_ocv_table[i].ocv && ocv < soc_ocv_table[i + 1].ocv)
+		{
+			float ocv1 = soc_ocv_table[i].ocv;
+			float ocv2 = soc_ocv_table[i + 1].ocv;
+			float soc1 = soc_ocv_table[i].soc;
+			float soc2 = soc_ocv_table[i + 1].soc;
+			// Linear interpolation
+			return soc1 + (soc2 - soc1) * (ocv - ocv1) / (ocv2 - ocv1);
+		}
+	}
+	return 0.0; // Should not reach here
+}
+
+/**
+ * @brief Calculates the State of Charge (SOC) using Coulomb counting.
+ * @details This function estimates the SOC based on current measurements and time.
+ * @param rawResults Raw measurement data including Coulomb counter.
+ * @param voltage Current voltage reading of the battery.
+ * @param current_time Current timestamp.
+ * @return float Calculated State of Charge (SOC).
+ */
+float dataBase_calculateSOC(TYPE_MEAS_RESULTS_RAW rawResults, uint16_t voltage, uint32_t current_time)
+{
+	float capacityAh;
+
+	if (voltage > 10)
+	{
+		capacityAh = PACK_BATTERY_CAPACITY_AH;
+	}
+	else
+	{
+		capacityAh = CELL_BATTERY_CAPACITY_AH;
+	}
+
+	// Calculate charge difference using Coulomb counter
+	float delta_charge_coulombs = (float)(rawResults.s32CCCounter) * 0.0001;  // Assuming V2RES = 0.0001V, adjust if different
+	float delta_time_seconds = (current_time - prev_time) / 1000.0;			  // Convert ms to seconds
+	float deltaSOC = (delta_charge_coulombs / (capacityAh * 3600.0)) * 100.0; // Convert to Ah and percentage
+
+	SOC += deltaSOC;
+	prev_time = current_time;
+
+	//     if (SOC > 100.0)
+	//         SOC = 100.0;
+	//     else if (SOC < 0.0)
+	//         SOC = 0.0;
+
+	return SOC;
+}
+
+/**
+ * @brief Calculates the State of Health (SOH) using Coulomb counter data.
+ * @details This function estimates the SOH based on the accumulated charge/discharge and nominal capacity.
+ * @param rawResults Raw measurement data including Coulomb counter.
+ * @param voltage Current voltage reading of the battery.
+ * @param nominal_capacity_mAh Nominal capacity of the battery in mAh.
+ * @param v2res Reference voltage resolution (e.g., for converting raw ADC values).
+ * @param current_time Current timestamp.
+ * @param prev_time Previous timestamp.
+ * @return float Calculated State of Health (SOH).
+ */
+float dataBase_calculateSOH(TYPE_MEAS_RESULTS_RAW rawResults, float voltage, float nominal_capacity_mAh,
+							float v2res, uint32_t current_time, uint32_t prev_time)
+{
+	float capacityAh;
+
+	// Determine nominal capacity based on voltage (pack or cell)
+	if (voltage > 10)
+	{
+		capacityAh = nominal_capacity_mAh / 1000.0; // Convert mAh to Ah for pack (21 Ah for 14 cells)
+	}
+	else
+	{
+		capacityAh = nominal_capacity_mAh / (1000.0 * 14.0); // Convert mAh to Ah per cell (1.5 Ah)
+	}
+
+	// Initialize prev_time and prev values on first call
+	if (prev_time == 0)
+	{
+		prev_time = current_time;
+		prev_ccounter = rawResults.s32CCCounter;
+		prev_samples = rawResults.u16CCSamples;
+		return 100.0; // Initial SOH assumed 100% until measured
+	}
+
+	// Calculate time difference in seconds
+	float delta_time_seconds = (current_time - prev_time) / 1000.0;
+
+	// Check if samples are available to avoid division by zero
+	if (rawResults.u16CCSamples > 0 && prev_samples > 0)
+	{
+		// Calculate change in Coulomb counter and samples
+		long delta_ccounter = rawResults.s32CCCounter - prev_ccounter;
+		uint16_t delta_samples = rawResults.u16CCSamples - prev_samples;
+
+		// Calculate average current in Amps using V2RES
+		float average_current = (delta_ccounter * v2res) / delta_samples;
+		float charge_ah = (average_current * delta_time_seconds) / 3600.0; // Convert to Ah
+
+		// Calculate current capacity based on accumulated charge
+		float current_capacity_ah = capacityAh - (charge_ah / 1000.0); // Adjust based on discharge
+
+		// Calculate SOH as a percentage of nominal capacity
+		float soh = (current_capacity_ah / capacityAh) * 100.0;
+
+		// Ensure SOH is within valid range
+		if (soh > 100.0)
+			soh = 100.0;
+		else if (soh < 0.0)
+			soh = 0.0;
+
+		// Update previous values
+		prev_ccounter = rawResults.s32CCCounter;
+		prev_samples = rawResults.u16CCSamples;
+		prev_time = current_time;
+
+		// Return SOH
+		return soh;
+	}
+	else
+	{
+		// Return previous SOH if no valid samples
+		return 100.0; // Default to 100% if no change detected
+	}
 }
