@@ -1,0 +1,81 @@
+%implements "chartSource" "C"
+%function ChartConfig(block, system) void
+  %createrecord chartConfiguration { ...
+          executeAtInitialization  0 ...
+  }
+  %return chartConfiguration
+%endfunction
+%function ChartDataMap(block, system) void
+  %createrecord ChartDataElements {\
+    NumChartData   9 \
+    ChartDataDefaults {\
+      RecordType   "ChartData"\
+      Dimensions   []\
+      IsTestPoint  0\
+    }\
+    ChartData {\
+      Name         "i"\
+      Description  "ChartLocal"\
+      SFName       ""\
+      Path         "i"\
+      SrcLocation  ""\
+    }\
+    ChartData {\
+      Name         "G"\
+      Description  "ChartLocal"\
+      SFName       ""\
+      Path         "G"\
+      SrcLocation  ""\
+    }\
+    ChartData {\
+      Name         "H"\
+      Description  "ChartLocal"\
+      SFName       ""\
+      Path         "H"\
+      SrcLocation  ""\
+    }\
+    ChartData {\
+      Name         "cell_reference"\
+      Description  "ChartLocal"\
+      SFName       ""\
+      Path         "cell_reference"\
+      SrcLocation  ""\
+    }\
+    ChartData {\
+      Name         "idx"\
+      Description  "ChartLocal"\
+      SFName       ""\
+      Path         "idx"\
+      SrcLocation  ""\
+    }\
+    ChartData {\
+      Name         "abdullah"\
+      Description  "ChartLocal"\
+      SFName       ""\
+      Path         "abdullah"\
+      SrcLocation  ""\
+    }\
+    ChartData {\
+      Name         "is_active_c7_BalancingModel_24a"\
+      Description  "StateIsActive"\
+      SFName       ""\
+      Path         ""\
+      SrcLocation  ""\
+    }\
+    ChartData {\
+      Name         "is_c7_BalancingModel_24a"\
+      Description  "StateActiveChild"\
+      SFName       ""\
+      Path         ""\
+      SrcLocation  ""\
+    }\
+    ChartData {\
+      Name         "temporalCounter_i1"\
+      Description  "TemporalCounter"\
+      SFName       ""\
+      Path         ""\
+      SrcLocation  ""\
+    }\
+  }
+  %return ChartDataElements
+%endfunction
