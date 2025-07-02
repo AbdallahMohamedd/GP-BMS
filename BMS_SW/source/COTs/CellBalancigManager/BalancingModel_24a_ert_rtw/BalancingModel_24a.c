@@ -46,20 +46,20 @@ void BalancingModel_24a_step(TYPE_MEAS_RESULTS_RAW *rawResults)
   /* SignalConversion generated from: '<S2>/ SFunction ' incorporates:
    *  Chart: '<S1>/Chart1'
    */
-  Cell_Voltage[0] = rawResults->u16CellVoltage[0];
-  Cell_Voltage[1] = rawResults->u16CellVoltage[1];
-  Cell_Voltage[2] = rawResults->u16CellVoltage[2];
-  Cell_Voltage[3] = rawResults->u16CellVoltage[3];
-  Cell_Voltage[4] = rawResults->u16CellVoltage[4];
-  Cell_Voltage[5] = rawResults->u16CellVoltage[5];
-  Cell_Voltage[6] = rawResults->u16CellVoltage[6];
-  Cell_Voltage[7] = rawResults->u16CellVoltage[7];
-  Cell_Voltage[8] = rawResults->u16CellVoltage[8];
-  Cell_Voltage[9] = rawResults->u16CellVoltage[9];
-  Cell_Voltage[10] = rawResults->u16CellVoltage[10];
-  Cell_Voltage[11] = rawResults->u16CellVoltage[11];
-  Cell_Voltage[12] = rawResults->u16CellVoltage[12];
-  Cell_Voltage[13] = rawResults->u16CellVoltage[13];
+  Cell_Voltage[0] = (rawResults->u16CellVoltage[0])*CT_Resolution;
+  Cell_Voltage[1] = (rawResults->u16CellVoltage[1])*CT_Resolution;
+  Cell_Voltage[2] = (rawResults->u16CellVoltage[2])*CT_Resolution;
+  Cell_Voltage[3] = (rawResults->u16CellVoltage[3])*CT_Resolution;
+  Cell_Voltage[4] = (rawResults->u16CellVoltage[4])*CT_Resolution;
+  Cell_Voltage[5] = (rawResults->u16CellVoltage[5])*CT_Resolution;
+  Cell_Voltage[6] = (rawResults->u16CellVoltage[6])*CT_Resolution;
+  Cell_Voltage[7] = (rawResults->u16CellVoltage[7])*CT_Resolution;
+  Cell_Voltage[8] = (rawResults->u16CellVoltage[8])*CT_Resolution;
+  Cell_Voltage[9] = (rawResults->u16CellVoltage[9])*CT_Resolution;
+  Cell_Voltage[10] = (rawResults->u16CellVoltage[10])*CT_Resolution;
+  Cell_Voltage[11] = (rawResults->u16CellVoltage[11])*CT_Resolution;
+  Cell_Voltage[12] = (rawResults->u16CellVoltage[12])*CT_Resolution;
+  Cell_Voltage[13] = (rawResults->u16CellVoltage[13])*CT_Resolution;
 
   /* Chart: '<S1>/Chart1' incorporates:
    *  SignalConversion generated from: '<S2>/ SFunction '
@@ -69,14 +69,14 @@ void BalancingModel_24a_step(TYPE_MEAS_RESULTS_RAW *rawResults)
     rtDW.temporalCounter_i1++;
   }
 
-  if (rtDW.is_active_c7_BalancingModel_24a == 0U)
+  if (rtDW.is_active_c7_BalancingModel_24a == 0U) //IN_initialization state
   {
     rtDW.is_active_c7_BalancingModel_24a = 1U;
     rtDW.is_c7_BalancingModel_24a = IN_initialization;
-    memset(&rtDW.Ganna[0], 0, 14U * sizeof(real_T));
-    rtDW.i = 1.0;
-    rtDW.G = 1.0;
-    rtDW.H = 1.0;
+    memset(&rtDW.Ganna[0], 0, 14U * sizeof(real_T)); // Ganna=zeros(1,14);
+    rtDW.i = 1.0; // i=1;
+    rtDW.G = 1.0; // G=1;
+    rtDW.H = 1.0; // H=1;
   }
   else
   {
@@ -99,11 +99,11 @@ void BalancingModel_24a_step(TYPE_MEAS_RESULTS_RAW *rawResults)
 
           /* SignalConversion generated from: '<S2>/ SFunction ' */
           tmp = Cell_Voltage[tmp_0];
-          if (tmp > rtDW.cell_reference)
+          if (tmp > rtDW.cell_reference) //(Cell_Volt(i) > cell_reference)
           {
-            if (tmp > 1.6)
+            if (tmp > 1.6) // (Cell_Volt(i) > 1.6) //Abdullah_flag
             {
-              rtDW.Ganna[tmp_0] = (tmp - rtDW.cell_reference > 0.25);
+              rtDW.Ganna[tmp_0] = ((tmp - rtDW.cell_reference) > 0.25); //Abdullah_flag
             }
             else
             {
@@ -119,9 +119,9 @@ void BalancingModel_24a_step(TYPE_MEAS_RESULTS_RAW *rawResults)
       break;
 
     case IN_Discharge_Time_interval:
-      if ((rtDW.temporalCounter_i1 >= 30000U) && (rtDW.H == 14.0))
+      if ((rtDW.temporalCounter_i1 >= 30000U) && (rtDW.H == 14.0)) // exit condition
       {
-        rtDW.H = 1.0;
+        rtDW.H = 1.0;// H=1;
         rtDW.is_c7_BalancingModel_24a = IN_Get_balance_reference;
         rtDW.i = 1.0;
         rtDW.cell_reference = 10.0;

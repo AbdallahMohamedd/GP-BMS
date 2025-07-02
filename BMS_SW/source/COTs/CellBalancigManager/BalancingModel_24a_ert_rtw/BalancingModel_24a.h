@@ -34,7 +34,7 @@
 
 /* Forward declaration for rtModel */
 typedef struct tag_RTM RT_MODEL;
-
+#define CT_Resolution 0.00015258789 
 /* Block signals and states (default storage) for system '<Root>' */
 typedef struct {
   real_T Ganna[14];                    /* '<S1>/Chart1' */
@@ -46,7 +46,7 @@ typedef struct {
   real_T abdullah;                     /* '<S1>/Chart1' */
   uint16_T temporalCounter_i1;         /* '<S1>/Chart1' */
   uint8_T is_active_c7_BalancingModel_24a;/* '<S1>/Chart1' */
-  uint8_T is_c7_BalancingModel_24a;    /* '<S1>/Chart1' */
+  uint8_T is_c7_BalancingModel_24a;    /* '<S1>/Chart1' */ //--> determine state in stateflow 
 } DW;
 
 /* Real-time Model Data Structure */

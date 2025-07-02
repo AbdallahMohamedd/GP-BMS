@@ -330,7 +330,14 @@ int main(void)
 				// SlaveIF_enableCellBalancing(14, false, 0.5, cid);
 				SlaveIF_enableCellBalancing(8, false, 0.5, cid);
 				BalancingModel_24a_step(&rawResults[0]);
-				
+				PRINTF("cell 1 = %f \r\r\n", (float)((rawResults->u16CellVoltage[0])*CT_Resolution));
+				PRINTF("cell 2 = %f \r\r\n", (float)((rawResults->u16CellVoltage[1])*CT_Resolution));
+				PRINTF("cell 3 = %f \r\r\n", (float)((rawResults->u16CellVoltage[2])*CT_Resolution));
+				PRINTF("cell 4 = %f \r\r\n", (float)((rawResults->u16CellVoltage[3])*CT_Resolution));
+				PRINTF("cell 5 = %f \r\r\n", (float)((rawResults->u16CellVoltage[4])*CT_Resolution));
+				PRINTF("cell 6 = %f \r\r\n", (float)((rawResults->u16CellVoltage[5])*CT_Resolution));
+				PRINTF("cell 7 = %f \r\r\n", (float)((rawResults->u16CellVoltage[6])*CT_Resolution));
+				PRINTF("cell 8 = %f \r\r\n", (float)((rawResults->u16CellVoltage[7])*CT_Resolution));
 				//				dataMonitor_clearScreen();
 				//				ScreenIF_SetCursor(0, 0);
 				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[0]));
