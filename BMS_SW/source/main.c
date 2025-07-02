@@ -4,7 +4,7 @@
 #include <COTs/FanControlManager/Inc/fanCtrl.h>
 #include <COTs/SlaveControlIF/Inc/slaveIF.h>
 #include <COTs/ FuSa/Inc/FuSa.h>
-#include <source/COTs/CellBalancigManager/BalancingModel_24a_ert_rtw/BalancingModel_24a.h>
+#include <COTs/CellBalancigManager/Generated_Code/BalancingModel_24a_ert_rtw/BalancingModel_24a.h>
 #include "peripherals.h"
 #include "pin_mux.h"
 #include "clock_config.h"
@@ -13,6 +13,8 @@
 #include "fsl_port.h"
 #include "fsl_pit.h"
 #include "fsl_device_registers.h"
+#include <stddef.h>
+#include "stdio.h"
 // ----------------------------------------------------------------------------
 #include "Platform/pcconf.h"
 #include "source/COTs/BMSDataBase/Inc/database.h"
@@ -328,8 +330,9 @@ int main(void)
 				// PRINTF("ADC Value1: %5d  →  Temperature1: %.2f °C\r\n", rawResults[0].u16ANVoltage[1], thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[1]));
 
 				// SlaveIF_enableCellBalancing(14, false, 0.5, cid);
-				SlaveIF_enableCellBalancing(8, false, 0.5, cid);
+				//SlaveIF_enableCellBalancing(8, false, 0.5, cid);
 				BalancingModel_24a_step(&rawResults[0]);
+				//SlaveIF_enableCellBalancing(10, 1, 0.5, 1);
 				PRINTF("cell 1 = %f \r\r\n", (float)((rawResults->u16CellVoltage[0])*CT_Resolution));
 				PRINTF("cell 2 = %f \r\r\n", (float)((rawResults->u16CellVoltage[1])*CT_Resolution));
 				PRINTF("cell 3 = %f \r\r\n", (float)((rawResults->u16CellVoltage[2])*CT_Resolution));
@@ -338,6 +341,13 @@ int main(void)
 				PRINTF("cell 6 = %f \r\r\n", (float)((rawResults->u16CellVoltage[5])*CT_Resolution));
 				PRINTF("cell 7 = %f \r\r\n", (float)((rawResults->u16CellVoltage[6])*CT_Resolution));
 				PRINTF("cell 8 = %f \r\r\n", (float)((rawResults->u16CellVoltage[7])*CT_Resolution));
+				PRINTF("cell 9 = %f \r\r\n", (float)((rawResults->u16CellVoltage[8])*CT_Resolution));
+				PRINTF("cell 10 = %f \r\r\n", (float)((rawResults->u16CellVoltage[9])*CT_Resolution));
+				PRINTF("cell 11 = %f \r\r\n", (float)((rawResults->u16CellVoltage[10])*CT_Resolution));
+				PRINTF("cell 12 = %f \r\r\n", (float)((rawResults->u16CellVoltage[11])*CT_Resolution));
+				PRINTF("cell 13 = %f \r\r\n", (float)((rawResults->u16CellVoltage[12])*CT_Resolution));
+				PRINTF("cell 14 = %f \r\r\n", (float)((rawResults->u16CellVoltage[13])*CT_Resolution));
+
 				//				dataMonitor_clearScreen();
 				//				ScreenIF_SetCursor(0, 0);
 				//				dataMonitor_tempDisp(thermalManager_Raw2Celsius(rawResults[0].u16ANVoltage[0]));

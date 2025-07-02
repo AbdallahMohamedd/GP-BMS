@@ -43,7 +43,7 @@
  *          defined by the `DebugInfo` macro throughout the project.
  *          Leave it commented out to disable them (reducing code size and execution time).
  */
-// #define DebugInfoManager
+ #define DebugInfoManager
 
 /**
  * @brief Prints standard debug context information (function, file, line).

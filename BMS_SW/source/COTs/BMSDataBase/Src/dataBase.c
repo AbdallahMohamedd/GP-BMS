@@ -314,18 +314,18 @@ bool dataBase_getStatus(uint8_t cid, TYPE_STATUS *Status)
 	}
 	if (slaveIF_readReg(cid, CB_OPEN_FLT, 13, &rdData[0]))
 	{
-		Status->u16CBOpen = 0;
-		Status->u16CBShort = 0;
-		Status->u16CBStatus = rdData[2];
+		Status->u16CBOpen     = rdData[0];
+		Status->u16CBShort    = rdData[1];
+		Status->u16CBStatus   = rdData[2];
 
-		Status->u16GPIOStatus = 0;
-		Status->u16ANOtUt = falg_temp;
-		Status->u16GPIOOpen = 0;
-		Status->u16IStatus = 0;
-		Status->u16Comm = 0;
-		Status->u16Fault1 = rdData[10];
-		Status->u16Fault2 = rdData[11];
-		Status->u16Fault3 = 0;
+		Status->u16GPIOStatus = rdData[5];
+		Status->u16ANOtUt     = rdData[6];
+		Status->u16GPIOOpen   = rdData[7];
+		Status->u16IStatus    = rdData[8];
+		Status->u16Comm   	  = rdData[9];
+		Status->u16Fault1 	  = rdData[10];
+		Status->u16Fault2     = rdData[11];
+		Status->u16Fault3     = rdData[12];
 	}
 	if (slaveIF_readReg(cid, MEAS_ISENSE2, 1, &rdData[0]))
 	{

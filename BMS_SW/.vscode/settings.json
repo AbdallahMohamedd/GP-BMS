@@ -24,7 +24,9 @@
     "fsl_adc16.h": "c",
     "fanctrl.h": "c",
     "balancingmodel_24a.h": "c",
-    "rtwtypes.h": "c"
+    "rtwtypes.h": "c",
+    "stddef.h": "c",
+    "stdio.h": "c"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
